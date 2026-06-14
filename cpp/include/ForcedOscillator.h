@@ -2,15 +2,15 @@
 #define FORCEDOSCILLATOR_H_
 
 #include "DynamicalSystem.h"
+#include "InputSignal.h"
 
 class ForcedOscillator : public DynamicalSystem {
   private:
     double damping_coefficient_c;
     double stiffness_coefficient_k;
-    double forcing_amp_a;
-    double forcing_ang_freq;
+    const InputSignal& input_signal;
   public:
-    ForcedOscillator(double c, double k, double a, double omega) : damping_coefficient_c(c), stiffness_coefficient_k(k), forcing_amp_a(a), forcing_ang_freq(omega) {
+    ForcedOscillator(double c, double k, const InputSignal& reference) : damping_coefficient_c(c), stiffness_coefficient_k(k), input_signal(reference) {
 
     }
     StateVector Derivative(const StateVector& , double ) const override;

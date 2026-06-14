@@ -5,7 +5,7 @@
 StateVector ForcedOscillator::Derivative(const StateVector& state, double time) const {
   double x = state[0], v = state[1];
 
-  double input = forcing_amp_a * std::sin(forcing_ang_freq * time);
+  double input = input_signal.Value(time);
 
   double dx_dt = v;
   double dv_dt = -damping_coefficient_c * v - stiffness_coefficient_k * x + input;

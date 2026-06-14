@@ -1,18 +1,29 @@
 CXX := g++
-CXXFLAGS := -Wall -Werror -std=c++17 -Icpp/include
+CXXFLAGS := -Wall -Werror -std=c++17 -Iinclude
 
 all: simulation
 
-simulation: cpp/src/main.cc cpp/src/StateVector.cc cpp/src/FirstOrderDecay.cc cpp/src/EulerIntegration.cc cpp/src/HarmonicOscillator.cc cpp/src/RK4Integration.cc cpp/src/DampedOscillator.cc cpp/src/ForcedOscillator.cc
+simulation: src/main.cc \
+	src/StateVector.cc \
+	src/FirstOrderDecay.cc \
+	src/EulerIntegration.cc \
+	src/HarmonicOscillator.cc \
+	src/RK4Integration.cc \
+	src/DampedOscillator.cc \
+	src/ForcedOscillator.cc \
+	src/SineSignal.cc \
+	src/StepSignal.cc
 	$(CXX) $(CXXFLAGS) \
-	cpp/src/main.cc \
-	cpp/src/StateVector.cc \
-	cpp/src/FirstOrderDecay.cc \
-	cpp/src/EulerIntegration.cc \
-	cpp/src/HarmonicOscillator.cc \
-	cpp/src/RK4Integration.cc \
-	cpp/src/DampedOscillator.cc \
-	cpp/src/ForcedOscillator.cc \
+	src/main.cc \
+	src/StateVector.cc \
+	src/FirstOrderDecay.cc \
+	src/EulerIntegration.cc \
+	src/HarmonicOscillator.cc \
+	src/RK4Integration.cc \
+	src/DampedOscillator.cc \
+	src/ForcedOscillator.cc \
+	src/SineSignal.cc \
+	src/StepSignal.cc \
 	-o simulation
 
 run: simulation
