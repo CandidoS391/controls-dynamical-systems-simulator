@@ -442,8 +442,21 @@ void SimulatePulseResponseRK4() {
 }
 
 int main() {
-  TransferFunction tf({1, 1}, {1, 2});
+  // Test the Transfer Functions
+  TransferFunction tf({1, 1}, {1, 3, 2});
   tf.Print();
-  
+
+  // Degree of numerator: should be 1
+  std::cout << "Numerator degree: " << tf.GetNumeratorDegree();
+  std::cout << std::endl;
+
+  // Degree of denominator: should be 2
+  std::cout << "Denominator degree: " << tf.GetDenominatorDegree();
+  std::cout << std::endl;
+
+  // Evaluate transfer function at 1
+  TransferFunction tf2({1, 1}, {1, 2});
+  std::cout << "Evaluate at 1: " << tf2.Evaluate(1) << std::endl;
+
   return 0;
 }
