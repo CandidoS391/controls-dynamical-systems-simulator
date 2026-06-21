@@ -43,8 +43,23 @@ Here a damped system much like the oscillator in the previous section is subject
 
 For this oscillator, the behaviors studied form the basis of control system theory as given some external input, the responses of the system such as the steady-state response (which studies the response of the system that does not approach 0) or the transient response (the complete opposite of the steady-state) can be studied to specify the control system performance.
 
-# The Step Response
-For the forced oscillator and for this simulator in general, a step response is used to measure how a dynamical system reacts to a sudden change in input. It is represented by the **Unit Step Function**, denoted as $u(t - t_0)$ and defined by:
+# The Input Signals
+This simulator besides oscillators also supports several input signal models that can be applied to the forced dynamical systems represented by the forced oscillator. These include the:
+
+## Sine Signal
+A sinusoidial input models periodic forcing applied to a system and is Denoted as:
+$$
+u(t) = A \sin{\omega t}
+$$
+
+This signal is commonly used to study oscillatory behavior, resonance and frequency-dependent responses. Here, the amplitude $A$ controls the strenght of the forcing while the angular frequency $\omega$ determines how rapid the input oscillates. this signal has applications in:
+
+- Mechanical vibrations
+- AC electrical circuits
+- Resonance Studies
+
+## The Step Signal
+A step response is used to measure how a dynamical system reacts to a sudden change in input. It is represented by the **Unit Step Function**, denoted as $u(t - t_0)$ and defined by:
 
 $$
 u(t - t_0) =
@@ -69,8 +84,63 @@ And it is used to study:
 - Settling Timne
 - Steady-State Value
 
-For this project, the simulator uses both Euler's method and RK4 Integration to calculate the step response.
+The applications of this signal include:
 
+- Control-system testing
+- Setpoint changes
+- Motor Activation
+- Stability Analyis
+
+## The Constant Signal
+A constant signal applies a fixed input to the system for the whole duration of the simulation. It is denoted as:
+
+$$
+u(t) = A
+$$
+
+this type of forcing is useful for stduying equilibrium behavior and long-term steady state responses, with applications including:
+
+- Static loading
+- constant force analysis
+- DC voltage inputs
+- Equilibrium studies
+
+## The Ramp Signal
+A ramp signal increases linearly with time after a specified starting point and is denoted as:
+
+$$
+u(t) =
+\begin{cases}
+0, t < t_0 \\
+m(t - t_0), t \ge t_0
+\end{cases}
+$$
+
+Unlike a step input, a ramp input grows gradually and continuously. Ramp responses are frequently used in control engineering to evaluate a system's ability to track changing inputs and to study steady-state tracking error. Applications include:
+
+- Tracking performance analysis
+- Guidance Systems
+- Motion control
+- Slowly increasing loads
+
+## The Pulse Signal
+A pulse signal applies a temporary input to the system for a finite duration (i.e from $t_{start}$ to $t_{end}$) before returning to zero. Such signal can be denoted as:
+
+$$
+u(t) =
+\begin{cases}
+0, t < t_{start} \\
+A, t_{start} \le t \le t_{end} \\
+0, t > t_{end}
+\end{cases}
+$$
+
+This type of signal is useful for studying transient effects, distrubances, and the natural response of a system after external forcing is removed. Short pulse can also approximate impulse-like excitations. Applications include:
+
+- Disturbance rejection studies
+- Impact and shock loading
+- Transient analysis
+- Impulse-response approximations
 
 # The Future of this Project
 As this project is in work-in-progress, more things will be added on. Eventually this project will also be able to do:
