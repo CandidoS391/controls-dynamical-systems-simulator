@@ -48,9 +48,10 @@ This simulator besides oscillators also supports several input signal models tha
 
 ## Sine Signal
 A sinusoidial input models periodic forcing applied to a system and is Denoted as:
-$$
-u(t) = A\sin(\omega t)
-$$
+
+```math
+u(t)=A\sin(\omega t)
+```
 
 This signal is commonly used to study oscillatory behavior, resonance and frequency-dependent responses. Here, the amplitude $A$ controls the strenght of the forcing while the angular frequency $\omega$ determines how rapid the input oscillates. this signal has applications in:
 
