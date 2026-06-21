@@ -458,5 +458,25 @@ int main() {
   TransferFunction tf2({1, 1}, {1, 2});
   std::cout << "Evaluate at 1: " << tf2.Evaluate(1) << std::endl;
 
+  // Evaluate Poles and Zeros
+  std::vector<double> zeros = tf2.GetZeros();
+  std::vector<double> poles = tf2.GetPoles();
+  std::vector<double> poles_2 = tf.GetPoles();
+
+  std::cout << "Zeros: ";
+  for (double zero : zeros)
+    std::cout << zero << " ";
+  std::cout << std::endl;
+
+  std::cout << "Poles: ";
+  for (double pole : poles)
+    std::cout << pole << " ";
+  std::cout << std::endl;
+
+  std::cout << "Poles of {1, 3, 2}: ";
+  for (double pole: poles_2)
+    std::cout << pole << " ";
+  std::cout << std::endl;
+
   return 0;
 }

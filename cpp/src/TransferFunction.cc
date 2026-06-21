@@ -28,6 +28,32 @@ size_t TransferFunction::Degree(const std::vector<double>& coefficients) const {
   return coefficients.size() - 1;
 }
 
+std::vector<double> TransferFunction::FindRoots(const std::vector<double>& coefficients) const {
+  if (Degree(coefficients) == 0)
+    return {};
+
+  if (Degree(coefficients) == 1) {
+    // a = coefficient[0], b = coefficient[1]
+    double root = -coefficients[1] / coefficients[0]; // For now assume that coefficients[0] != 0
+    return {root};
+  }
+
+  if (Degree(coefficients) == 2) {
+    // a = coefficient[0], b = coefficient[1], c = coefficient[2]
+    double discriminant = std::pow(coefficients[1], 2) - (4 * coefficients[0] * coefficients[2]);
+
+    if (discriminant >= 0) {
+      double root_1 = (-coefficients[1] + std::sqrt(discriminant)) / (2 * coefficients[0]);
+      double root_2 = (-coefficients[1] - std::sqrt(discriminant)) / (2 * coefficients[0]);
+      return {root_1, root_2};
+    }
+
+    return {};
+  }
+
+  return {};
+}
+
 void TransferFunction::Print() const {
   // Print out numerator values
   std::cout << "Numerator: ";
@@ -63,4 +89,24 @@ double TransferFunction::Evaluate(double s) const {
   double denominator_value = EvaluatePolynomial(denominator, s);
 
   return numerator_value / denominator_value;
+}
+
+std::vector<double> TransferFunction::GetPoles() const {
+  return FindRoots(denominator);
+}
+
+std::vector<double> TransferFunction::GetZeros() const {
+  return FindRoots(numerator);
+}
+
+bool TransferFunction::IsStrictlyProper() const {
+  return (Degree(numerator) < Degree(denominator));
+}
+
+bool TransferFunction::IsProper() const {
+  return (Degree(numerator) <= Degree(denominator));
+}
+
+bool TransferFunction::IsImproper() const {
+  return (Degree(numerator) > Degree(denominator));
 }

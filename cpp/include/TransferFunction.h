@@ -11,6 +11,7 @@ class TransferFunction {
 
     double EvaluatePolynomial(const std::vector<double>& coefficients, double s) const;
     size_t Degree(const std::vector<double>& coefficients) const;
+    std::vector<double> FindRoots(const std::vector<double>& coefficients) const;
 
   public:
     TransferFunction(const std::vector<double>& num, const std::vector<double>& den);
@@ -20,6 +21,11 @@ class TransferFunction {
     size_t GetNumeratorDegree() const;
     size_t GetDenominatorDegree() const;
     double Evaluate(double s) const;
+    std::vector<double> GetZeros() const;
+    std::vector<double> GetPoles() const;
+    bool IsStrictlyProper() const;
+    bool IsProper() const;
+    bool IsImproper() const;
 };
 
 #endif
