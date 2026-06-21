@@ -15,7 +15,8 @@ simulation: src/main.cc \
 	src/StepSignal.cc \
 	src/ConstantSignal.cc \
 	src/RampSignal.cc \
-	src/ImpulseSignal.cc
+	src/ImpulseSignal.cc \
+	src/TransferFunction.cc
 	$(CXX) $(CXXFLAGS) \
 	src/main.cc \
 	src/StateVector.cc \
@@ -30,6 +31,7 @@ simulation: src/main.cc \
 	src/ConstantSignal.cc \
 	src/RampSignal.cc \
 	src/ImpulseSignal.cc \
+	src/TransferFunction.cc \
 	-o simulation
 
 run: simulation

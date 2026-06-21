@@ -16,6 +16,7 @@
 #include "ConstantSignal.h"
 #include "RampSignal.h"
 #include "ImpulseSignal.h"
+#include "TransferFunction.h"
 
 void SimulateFirstOrderDecayEuler() {
   FirstOrderDecay decay(0.5);
@@ -441,13 +442,8 @@ void SimulatePulseResponseRK4() {
 }
 
 int main() {
-  SimulateConstantResponseEuler();
-  SimulateConstantResponseRK4();
-  SimulateRampResponseEuler();
-  SimulateRampResponseRK4();
-  SimulatePulseResponseEuler();
-  SimulatePulseResponseRK4();
+  TransferFunction tf({1, 1}, {1, 2});
+  tf.Print();
   
-  std::cout << "Simulation CSV files generated in output/.\n";
   return 0;
 }
