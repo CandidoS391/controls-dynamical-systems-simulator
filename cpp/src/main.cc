@@ -13,6 +13,9 @@
 #include "ForcedOscillator.h"
 #include "SineSignal.h"
 #include "StepSignal.h"
+#include "ConstantSignal.h"
+#include "RampSignal.h"
+#include "ImpulseSignal.h"
 
 void SimulateFirstOrderDecayEuler() {
   FirstOrderDecay decay(0.5);
@@ -269,9 +272,182 @@ void SimulateStepResponseRK4() {
 
 }
 
+void SimulateConstantResponseEuler() {
+  ConstantSignal constant_input(1.0);
+  ForcedOscillator forced(0.3, 1.0, constant_input);
+
+  EulerIntegration euler;
+
+  StateVector state({0.0, 0.0});
+
+  double time = 0.0;
+  double dt = 0.01;
+  int steps = 5000;
+
+  std::string filename = "../output/constant_response_euler.csv";
+  std::ofstream ofs(filename);
+  if (!ofs.is_open()) {
+    std::cerr << "Error opening file " << filename << std::endl;
+    return;
+  }
+
+  ofs << "time,x,v\n";
+  for (int i = 0; i <= steps; i++) {
+    ofs << time << "," << state[0] << "," << state[1] << "\n";
+
+    state = euler.Integrate(forced, state, time, dt);
+    time += dt;
+  }
+}
+
+void SimulateConstantResponseRK4() {
+  ConstantSignal constant_input(1.0);
+  ForcedOscillator forced(0.3, 1.0, constant_input);
+
+  RK4Integration rk4;
+
+  StateVector state({0.0, 0.0});
+
+  double time = 0.0;
+  double dt = 0.01;
+  int steps = 5000;
+
+  std::string filename = "../output/constant_response_rk4.csv";
+  std::ofstream ofs(filename);
+  if (!ofs.is_open()) {
+    std::cerr << "Error opening file " << filename << std::endl;
+    return;
+  }
+
+  ofs << "time,x,v\n";
+  for (int i = 0; i <= steps; i++) {
+    ofs << time << "," << state[0] << "," << state[1] << "\n";
+
+    state = rk4.Integrate(forced, state, time, dt);
+    time += dt;
+  }
+}
+
+void SimulateRampResponseEuler() {
+  RampSignal ramp_input(1.0, 0.0);
+  ForcedOscillator forced(0.3, 1.0, ramp_input);
+
+  EulerIntegration euler;
+
+  StateVector state({0.0, 0.0});
+
+  double time = 0.0;
+  double dt = 0.01;
+  int steps = 5000;
+
+  std::string filename = "../output/ramp_response_euler.csv";
+  std::ofstream ofs(filename);
+  if (!ofs.is_open()) {
+    std::cerr << "Error opening file " << filename << std::endl;
+    return;
+  }
+
+  ofs << "time,x,v\n";
+  for (int i = 0; i <= steps; i++) {
+    ofs << time << "," << state[0] << "," << state[1] << "\n";
+
+    state = euler.Integrate(forced, state, time, dt);
+    time += dt;
+  }
+}
+
+void SimulateRampResponseRK4() {
+  RampSignal ramp_input(1.0, 0.0);
+  ForcedOscillator forced(0.3, 1.0, ramp_input);
+
+  RK4Integration rk4;
+
+  StateVector state({0.0, 0.0});
+
+  double time = 0.0;
+  double dt = 0.01;
+  int steps = 5000;
+
+  std::string filename = "../output/ramp_response_rk4.csv";
+  std::ofstream ofs(filename);
+  if (!ofs.is_open()) {
+    std::cerr << "Error opening file " << filename << std::endl;
+    return;
+  }
+
+  ofs << "time,x,v\n";
+  for (int i = 0; i <= steps; i++) {
+    ofs << time << "," << state[0] << "," << state[1] << "\n";
+
+    state = rk4.Integrate(forced, state, time, dt);
+    time += dt;
+  }
+}
+
+void SimulatePulseResponseEuler() {
+  ImpulseSignal pulse_input(1.0, 5.0, 10.0);
+  ForcedOscillator forced(0.3, 1.0, pulse_input);
+
+  EulerIntegration euler;
+
+  StateVector state({0.0, 0.0});
+
+  double time = 0.0;
+  double dt = 0.01;
+  int steps = 5000;
+
+  std::string filename = "../output/pulse_response_euler.csv";
+  std::ofstream ofs(filename);
+  if (!ofs.is_open()) {
+    std::cerr << "Error opening file " << filename << std::endl;
+    return;
+  }
+
+  ofs << "time,x,v\n";
+  for (int i = 0; i <= steps; i++) {
+    ofs << time << "," << state[0] << "," << state[1] << "\n";
+
+    state = euler.Integrate(forced, state, time, dt);
+    time += dt;
+  }
+}
+
+void SimulatePulseResponseRK4() {
+  ImpulseSignal pulse_input(1.0, 5.0, 10.0);
+  ForcedOscillator forced(0.3, 1.0, pulse_input);
+
+  RK4Integration rk4;
+
+  StateVector state({0.0, 0.0});
+
+  double time = 0.0;
+  double dt = 0.01;
+  int steps = 5000;
+
+  std::string filename = "../output/pulse_response_rk4.csv";
+  std::ofstream ofs(filename);
+  if (!ofs.is_open()) {
+    std::cerr << "Error opening file " << filename << std::endl;
+    return;
+  }
+
+  ofs << "time,x,v\n";
+  for (int i = 0; i <= steps; i++) {
+    ofs << time << "," << state[0] << "," << state[1] << "\n";
+
+    state = rk4.Integrate(forced, state, time, dt);
+    time += dt;
+  }
+}
+
 int main() {
-  SimulateStepResponseEuler();
-  SimulateStepResponseRK4();
+  SimulateConstantResponseEuler();
+  SimulateConstantResponseRK4();
+  SimulateRampResponseEuler();
+  SimulateRampResponseRK4();
+  SimulatePulseResponseEuler();
+  SimulatePulseResponseRK4();
+  
   std::cout << "Simulation CSV files generated in output/.\n";
   return 0;
 }

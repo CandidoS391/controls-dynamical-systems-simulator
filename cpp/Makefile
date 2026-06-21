@@ -12,7 +12,10 @@ simulation: src/main.cc \
 	src/DampedOscillator.cc \
 	src/ForcedOscillator.cc \
 	src/SineSignal.cc \
-	src/StepSignal.cc
+	src/StepSignal.cc \
+	src/ConstantSignal.cc \
+	src/RampSignal.cc \
+	src/ImpulseSignal.cc
 	$(CXX) $(CXXFLAGS) \
 	src/main.cc \
 	src/StateVector.cc \
@@ -24,6 +27,9 @@ simulation: src/main.cc \
 	src/ForcedOscillator.cc \
 	src/SineSignal.cc \
 	src/StepSignal.cc \
+	src/ConstantSignal.cc \
+	src/RampSignal.cc \
+	src/ImpulseSignal.cc \
 	-o simulation
 
 run: simulation
