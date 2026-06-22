@@ -478,5 +478,11 @@ int main() {
     std::cout << pole << " ";
   std::cout << std::endl;
 
+  // Evaluate Multiply Polynomials
+  tf.TestMultiplyPolynomials();
+
+  // Evalute Add Polynomials
+  tf.TestAddPolynomials();
+
   return 0;
 }

@@ -1,4 +1,5 @@
 #include <cmath>
+#include <algorithm>
 
 #include "TransferFunction.h"
 
@@ -109,4 +110,58 @@ bool TransferFunction::IsProper() const {
 
 bool TransferFunction::IsImproper() const {
   return (Degree(numerator) > Degree(denominator));
+}
+
+std::vector<double> TransferFunction::MultiplyPolynomials(const std::vector<double>& poly_1, const std::vector<double>& poly_2) const {
+  std::vector<double> result(poly_1.size() + poly_2.size() - 1, 0);
+
+  for (size_t i = 0; i < poly_1.size(); i++) {
+    for (size_t j = 0; j < poly_2.size(); j++) {
+      result[i + j] += poly_1[i] * poly_2[j];
+    }
+  }
+
+  return result;
+}
+
+std::vector<double> TransferFunction::AddPolynomials(const std::vector<double>& poly_1, const std::vector<double>& poly_2) const {
+  size_t result_size = std::max(poly_1.size(), poly_2.size());
+  std::vector<double> result(result_size, 0);
+
+  // Align the vectors by their ends
+  size_t poly_1_idx = result_size - poly_1.size();
+  size_t poly_2_idx = result_size - poly_2.size();
+
+  // Copy the elements of polynomial 1
+  for (size_t i = 0; i < poly_1.size(); i++) {
+    result[poly_1_idx + i] = poly_1[i];
+  }
+
+  // Add polynomial 2 to the results vector
+  for (size_t i = 0; i < poly_2.size(); i++) {
+    result[poly_2_idx + i] += poly_2[i];
+  }
+
+  return result;
+}
+
+void TransferFunction::TestMultiplyPolynomials() const {
+  std::vector<double> result = MultiplyPolynomials({1, 1}, {1, 2});
+  std::cout << "Result ";
+  for (double coefficient : result)
+    std::cout << coefficient << " ";
+  std::cout << std::endl;
+}
+
+void TransferFunction::TestAddPolynomials() const {
+  std::vector<double> poly_1 = {1, 3, 2};
+  std::vector<double> poly_2 = {1, 5};
+
+  std::vector<double> result = AddPolynomials(poly_1, poly_2);
+
+  std::cout << "AddPolynomials test result: ";
+  for (double coeff : result) {
+    std::cout << coeff << " ";
+  }
+  std::cout << std::endl;
 }
