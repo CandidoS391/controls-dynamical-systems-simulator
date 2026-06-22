@@ -165,3 +165,26 @@ void TransferFunction::TestAddPolynomials() const {
   }
   std::cout << std::endl;
 }
+
+TransferFunction TransferFunction::Series(const TransferFunction& other) const {
+  std::vector<double> new_numerator = MultiplyPolynomials(this->numerator, other.numerator);
+  std::vector<double> new_denominator = MultiplyPolynomials(this->denominator, other.denominator);
+
+  return TransferFunction(new_numerator, new_denominator);
+}
+
+TransferFunction TransferFunction::Parallel(const TransferFunction& other) const {
+  std::vector<double> left_numerator = MultiplyPolynomials(this->numerator, other.denominator);
+  std::vector<double> right_numerator = MultiplyPolynomials(other.numerator, this->denominator);
+
+  std::vector<double> new_numerator = AddPolynomials(left_numerator, right_numerator);
+  std::vector<double> new_denominator = MultiplyPolynomials(this->denominator, other.denominator);
+
+  return TransferFunction(new_numerator, new_denominator);
+}
+
+TransferFunction TransferFunction::Feedback() const {
+  std::vector<double> new_denominator = AddPolynomials(denominator, numerator);
+  
+  return TransferFunction(numerator, new_denominator);
+}

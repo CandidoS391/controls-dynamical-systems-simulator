@@ -442,47 +442,24 @@ void SimulatePulseResponseRK4() {
 }
 
 int main() {
-  // Test the Transfer Functions
-  TransferFunction tf({1, 1}, {1, 3, 2});
-  tf.Print();
+  // Evaluate the Series function
+  // TransferFunction g1({1, 1}, {1, 2});
+  // TransferFunction g2({1, 3}, {1, 4});
 
-  // Degree of numerator: should be 1
-  std::cout << "Numerator degree: " << tf.GetNumeratorDegree();
-  std::cout << std::endl;
+  // TransferFunction result = g1.Series(g2);
+  // result.Print();
 
-  // Degree of denominator: should be 2
-  std::cout << "Denominator degree: " << tf.GetDenominatorDegree();
-  std::cout << std::endl;
+  // Evaluate the Parallel Function
+  TransferFunction g1({1}, {1, 1});  // 1/(s+1)
+  TransferFunction g2({1}, {1, 2});  // 1/(s+2)
 
-  // Evaluate transfer function at 1
-  TransferFunction tf2({1, 1}, {1, 2});
-  std::cout << "Evaluate at 1: " << tf2.Evaluate(1) << std::endl;
+  TransferFunction result = g1.Parallel(g2);
+  result.Print();
 
-  // Evaluate Poles and Zeros
-  std::vector<double> zeros = tf2.GetZeros();
-  std::vector<double> poles = tf2.GetPoles();
-  std::vector<double> poles_2 = tf.GetPoles();
+  // Evaluate the Feedback Function
+  TransferFunction g({1}, {1, 2});  // 1/(s+2)
 
-  std::cout << "Zeros: ";
-  for (double zero : zeros)
-    std::cout << zero << " ";
-  std::cout << std::endl;
-
-  std::cout << "Poles: ";
-  for (double pole : poles)
-    std::cout << pole << " ";
-  std::cout << std::endl;
-
-  std::cout << "Poles of {1, 3, 2}: ";
-  for (double pole: poles_2)
-    std::cout << pole << " ";
-  std::cout << std::endl;
-
-  // Evaluate Multiply Polynomials
-  tf.TestMultiplyPolynomials();
-
-  // Evalute Add Polynomials
-  tf.TestAddPolynomials();
-
+  TransferFunction closed = g.Feedback();
+  closed.Print();
   return 0;
 }
