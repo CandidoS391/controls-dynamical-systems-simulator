@@ -441,25 +441,20 @@ void SimulatePulseResponseRK4() {
   }
 }
 
+void TestBlockDiagramAlgebra() {
+  TransferFunction g1({1}, {1, 1});
+  TransferFunction g2({2}, {1, 2});
+
+  TransferFunction series = g1.Series(g2);
+  series.Print();
+
+  TransferFunction parallel = g1.Parallel(g2);
+  parallel.Print();
+  
+  TransferFunction feedback = series.Feedback();
+  feedback.Print();
+}
+
 int main() {
-  // Evaluate the Series function
-  // TransferFunction g1({1, 1}, {1, 2});
-  // TransferFunction g2({1, 3}, {1, 4});
-
-  // TransferFunction result = g1.Series(g2);
-  // result.Print();
-
-  // Evaluate the Parallel Function
-  TransferFunction g1({1}, {1, 1});  // 1/(s+1)
-  TransferFunction g2({1}, {1, 2});  // 1/(s+2)
-
-  TransferFunction result = g1.Parallel(g2);
-  result.Print();
-
-  // Evaluate the Feedback Function
-  TransferFunction g({1}, {1, 2});  // 1/(s+2)
-
-  TransferFunction closed = g.Feedback();
-  closed.Print();
-  return 0;
+  TestBlockDiagramAlgebra();
 }
