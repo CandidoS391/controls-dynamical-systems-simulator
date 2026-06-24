@@ -143,6 +143,19 @@ This type of signal is useful for studying transient effects, distrubances, and 
 - Transient analysis
 - Impulse-response approximations
 
+# The Transfer Function
+Besides Dynamical systems and oscillators, this project also covers transfer functions which describes the relationship between a system's input and output within an $s$-plane, found by transforming its given differential equation into an algebraic equation using a Laplace transform. By doing such transformation, transfer functions provide a convenient way to analyze and design dynamic systems.
+
+Transfer functions serve as the basis of control system analysis as instead of having to solve directly a bunch of differential equations that govern a dynamical system, transfer functions simplify said differential equations into simple algebraic equations, which makes analyzing the stability, the frequency response, the feedback control, and the interconnections of the system, easier.
+
+Within this project, a transfer function is represented by the `TransferFunction` class, and is defined as:
+
+$$
+G(s) = \frac{N(s)}{D(s)}
+$$
+
+in which within the class, $N(s)$ and $D(s)$ are represented by two vectors.
+
 # The Future of this Project
 As this project is in work-in-progress, more things will be added on. Eventually this project will also be able to do:
 
