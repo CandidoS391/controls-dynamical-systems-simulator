@@ -169,8 +169,6 @@ for $q(t)$ is the electrical charge stored on the capacitor, $\frac{dq}{dt}$ is 
 
 Here, It is similar to the mechanical oscillator implemented via the forced oscillator in this project. So therefore with the existing numerical framework, the simulator can generate the circuit's step response and phase portrait the same way as a mechanical oscillator can be generated via both Euler's and RK4 Integration.
 
-Here, 
-
 # The Future of this Project
 As this project is in work-in-progress, more things will be added on. Eventually this project will also be able to do:
 
