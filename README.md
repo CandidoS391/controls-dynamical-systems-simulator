@@ -156,16 +156,31 @@ $$
 
 in which within the class, $N(s)$ and $D(s)$ are represented by two vectors.
 
+# The RLC Circuit
+So far, the only part of this project that is related to the Electromagnetic section and that is the RLC Circuit.
+
+An series RLC circuit is a fundamental electrical engineering system that is consists of a resistor $R$, an inductor $L$, and a capacitor $C$; and is governed by this differential equation:
+
+$$
+L\frac{^2q}{dt^2} + R\frac{dq}{dt} + \frac{1}{C}q = V(t)
+$$
+
+for $q(t)$ is the electrical charge stored on the capacitor, $\frac{dq}{dt}$ is the circuit current, and $V(t)$ is the applied input voltage.
+
+Here, It is similar to the mechanical oscillator implemented via the forced oscillator in this project. So therefore with the existing numerical framework, the simulator can generate the circuit's step response and phase portrait the same way as a mechanical oscillator can be generated via both Euler's and RK4 Integration.
+
+Here, 
+
 # The Future of this Project
 As this project is in work-in-progress, more things will be added on. Eventually this project will also be able to do:
 
-- Transfer Function Models
+- Transfer Function Models (WIP)
 - Block Diagram Simulation
 - Signal Flow Graph Analysis
 - Bode Plot Generation
 - Root Locus Analysis
 - Nyquis Analysis
-- RLC Circuit Models
+- RLC Circuit Models (WIP)
 - Electromagnetic Wave Simulations
 
 As such, keep an eye out for new additions as they are being added on!
