@@ -162,7 +162,7 @@ So far, the only part of this project that is related to the Electromagnetic sec
 An series RLC circuit is a fundamental electrical engineering system that is consists of a resistor $R$, an inductor $L$, and a capacitor $C$; and is governed by this differential equation:
 
 $$
-L\frac{^2q}{dt^2} + R\frac{dq}{dt} + \frac{1}{C}q = V(t)
+L\frac{d^2q}{dt^2} + R\frac{dq}{dt} + \frac{1}{C}q = V(t)
 $$
 
 for $q(t)$ is the electrical charge stored on the capacitor, $\frac{dq}{dt}$ is the circuit current, and $V(t)$ is the applied input voltage.
