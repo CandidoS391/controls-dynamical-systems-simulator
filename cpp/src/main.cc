@@ -17,6 +17,7 @@
 #include "RampSignal.h"
 #include "ImpulseSignal.h"
 #include "TransferFunction.h"
+#include "RLCCircuit.h"
 
 void SimulateFirstOrderDecayEuler() {
   FirstOrderDecay decay(0.5);
@@ -455,6 +456,64 @@ void TestBlockDiagramAlgebra() {
   feedback.Print();
 }
 
+void SimulateRLCStepResponseEuler() {
+  StepSignal step_input(1.0, 0.0);
+  RLCCircuit rlc(0.3, 1.0, 1.0, step_input);
+
+  EulerIntegration euler;
+
+  StateVector state({0.0, 0.0});
+
+  double time = 0.0;
+  double dt = 0.01;
+  int steps = 5000;
+
+  std::string filename = "../output/rlc_step_response_euler.csv";
+  std::ofstream ofs(filename);
+  if (!ofs.is_open()) {
+    std::cerr << "Error opening file " << filename << std::endl;
+    return;
+  }
+
+  ofs << "time,q,i\n";
+  for (int k = 0; k <= steps; k++) {
+    ofs << time << "," << state[0] << "," << state[1] << "\n";
+
+    state = euler.Integrate(rlc, state, time, dt);
+    time += dt;
+  }
+}
+
+void SimulateRLCStepResponseRK4() {
+  StepSignal step_input(1.0, 0.0);
+  RLCCircuit rlc(0.3, 1.0, 1.0, step_input);
+
+  RK4Integration rk4;
+
+  StateVector state({0.0, 0.0});
+
+  double time = 0.0;
+  double dt = 0.01;
+  int steps = 5000;
+
+  std::string filename = "../output/rlc_step_response_rk4.csv";
+  std::ofstream ofs(filename);
+  if (!ofs.is_open()) {
+    std::cerr << "Error opening file " << filename << std::endl;
+    return;
+  }
+
+  ofs << "time,q,i\n";
+  for (int k = 0; k <= steps; k++) {
+    ofs << time << "," << state[0] << "," << state[1] << "\n";
+
+    state = rk4.Integrate(rlc, state, time, dt);
+    time += dt;
+  }
+}
+
 int main() {
-  TestBlockDiagramAlgebra();
+  SimulateRLCStepResponseRK4();
+
+  return 0;
 }
