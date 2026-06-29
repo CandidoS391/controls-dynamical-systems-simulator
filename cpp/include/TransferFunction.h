@@ -54,6 +54,9 @@ class TransferFunction {
     void TestMultiplyPolynomials() const;
     void TestAddPolynomials() const;
     
+
+    // Print
+    friend std::ostream& operator<<(std::ostream& os, const TransferFunction& rhs);
 };
 
 #endif

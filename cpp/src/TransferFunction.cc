@@ -188,3 +188,16 @@ TransferFunction TransferFunction::Feedback() const {
   
   return TransferFunction(numerator, new_denominator);
 }
+
+std::ostream& operator<<(std::ostream& os, const TransferFunction& rhs) {
+  os << "Numerator: ";
+  for (auto i : rhs.numerator) {
+    os << i << " ";
+  }
+  os << " / Denominator: ";
+  for (auto i : rhs.denominator) {
+    os << i << " ";
+  }
+
+  return os;
+}
