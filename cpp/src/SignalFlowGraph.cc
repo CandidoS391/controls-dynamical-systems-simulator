@@ -25,3 +25,26 @@ void SignalFlowGraph::Print() const {
     std::cout << std::endl;
   }
 }
+
+bool SignalFlowGraph::HasNode(const std::string& node_name) const {
+  for (const auto& node : nodes) {
+    if (node == node_name)
+      return true;
+  }
+
+  return false;
+}
+
+void SignalFlowGraph::SetInputNode(const std::string& node_name) {
+  if (!HasNode(node_name))
+    throw std::out_of_range("Node doesn't exist!");
+
+  input_node = node_name;
+}
+
+void SignalFlowGraph::SetOutputNode(const std::string& node_name) {
+  if (!HasNode(node_name))
+    throw std::out_of_range("Node doesn't exist!");
+
+  output_node = node_name;
+}

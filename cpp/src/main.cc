@@ -531,6 +531,21 @@ void TestSignalFlowGraph() {
   TransferFunction h({{1}, {1}});
   test.AddBranch("C", "x1", h);
   test.Print();
+
+  std::cout << "Testing HasNode function" << std::endl;
+  std::cout << "Has R: ";
+  if (test.HasNode("R"))
+    std::cout << "True" << std::endl;
+  else
+    std::cout << "False" << std::endl;
+
+  std::cout << "Has x2: ";
+  if (test.HasNode("x2"))
+    std::cout << "True" << std::endl;
+  else
+    std::cout << "False" << std::endl;
+
+  
 }
 
 int main() {
