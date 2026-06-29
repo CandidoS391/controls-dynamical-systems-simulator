@@ -18,6 +18,7 @@
 #include "ImpulseSignal.h"
 #include "TransferFunction.h"
 #include "RLCCircuit.h"
+#include "SignalFlowGraph.h"
 
 void SimulateFirstOrderDecayEuler() {
   FirstOrderDecay decay(0.5);
@@ -512,8 +513,28 @@ void SimulateRLCStepResponseRK4() {
   }
 }
 
+void TestSignalFlowGraph() {
+  SignalFlowGraph test;
+
+  test.AddNode("R");
+  test.AddNode("x1");
+  test.AddNode("C");
+
+  TransferFunction g1({1}, {1, 1});
+  TransferFunction g2({2}, {1, 2});
+
+  test.AddBranch("R", "x1", g1);
+  test.AddBranch("x1", "C", g2);
+
+  test.Print();
+
+  TransferFunction h({{1}, {1}});
+  test.AddBranch("C", "x1", h);
+  test.Print();
+}
+
 int main() {
-  SimulateRLCStepResponseRK4();
+  TestSignalFlowGraph();
 
   return 0;
 }

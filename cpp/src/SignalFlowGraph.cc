@@ -21,6 +21,7 @@ void SignalFlowGraph::Print() const {
   // Print out the Branches
   std::cout << "Branches: " << std::endl;
   for (auto branch : branches) {
-    std::cout << branch.from << "->" << branch.gain << "->" << branch.to;
+    std::cout << branch.from << " -> " << branch.gain << " -> " << branch.to;
+    std::cout << std::endl;
   }
 }
