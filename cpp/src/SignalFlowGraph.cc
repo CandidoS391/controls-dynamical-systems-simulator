@@ -62,6 +62,59 @@ TransferFunction SignalFlowGraph::ComputePathGain(const Path& path) const {
 }
 
 TransferFunction SignalFlowGraph::ComputeLoopGain(const Loop& loop) const {
-  Path loop_as_path{loop.branches, loop.gain};
+  Path loop_as_path{loop.branches};
   return ComputePathGain(loop_as_path);
+}
+
+std::vector<Branch> SignalFlowGraph::GetOutgoingBranches(const std::string& node_name) const {
+  std::vector<Branch> outgoing_branches;
+
+  for (const auto& branch : branches) {
+    if (branch.from == node_name)
+      outgoing_branches.push_back(branch);
+  }
+
+  return outgoing_branches;
+}
+
+bool SignalFlowGraph::IsVisited(const std::string& node_name, const std::vector<std::string>& visited_nodes) const {
+  for (const auto& node : visited_nodes) {
+    if (node == node_name)
+      return true;
+  }
+
+  return false;
+}
+
+void SignalFlowGraph::DFSForwardPath(const std::string& curr_node, std::vector<Branch>& curr_path, std::vector<std::string>& visited, std::vector<Path>& paths) const {
+  // Base case
+  if (curr_node == output_node) {
+    Path new_path{curr_path};
+    paths.push_back(new_path);
+    return;
+  }
+
+  visited.push_back(curr_node);
+
+  std::vector<Branch> outgoing_branches = GetOutgoingBranches(curr_node);
+  for (const auto& branch : outgoing_branches) {
+    std::string next_node = branch.to;
+    if (!IsVisited(next_node, visited)) {
+      curr_path.push_back(branch);
+      DFSForwardPath(next_node, curr_path, visited, paths);
+      curr_path.pop_back();
+    }
+  }
+
+  visited.pop_back();
+}
+
+std::vector<Path> SignalFlowGraph::FindForwardPaths() const {
+  std::vector<Path> path;
+  std::vector<Branch> curr_path;
+  std::vector<std::string> visited;
+
+  DFSForwardPath(input_node, curr_path, visited, path);
+
+  return path;
 }

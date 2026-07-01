@@ -541,15 +541,29 @@ void TestSignalFlowGraph() {
 
   graph.Print();
 
-  Path forward_path{{b1, b2, b3}, graph.ComputePathGain(Path{{b1, b2, b3}, g1})};
+  Path forward_path{{b1, b2, b3}};
+  TransferFunction path_gain = graph.ComputePathGain(forward_path);
 
   std::cout << "\nForward Path Gain R -> x1 -> x2 -> C:\n";
-  std::cout << forward_path.gain << std::endl;
+  std::cout << path_gain << std::endl;
 
-  Loop loop{{b2, b3, b4}, graph.ComputeLoopGain(Loop{{b2, b3, b4}, g2})};
+  Loop loop{{b2, b3, b4}};
+  TransferFunction loop_gain = graph.ComputeLoopGain(loop);
+
   
   std::cout << "\nLoop Gain x1 -> x2 -> C -> x1:\n";
-  std::cout << loop.gain << std::endl;
+  std::cout << loop_gain << std::endl;
+
+  std::vector<Path> paths = graph.FindForwardPaths();
+  std::cout << "\nNumber of forward paths found: " << paths.size() << std::endl;
+
+  for (const auto& path : paths) {
+    for (const auto& branch : path.branches) {
+      std::cout << branch.from << " -> ";
+    }
+
+    std::cout << path.branches.back().to << std::endl;
+  }
 }
 
 void TestSignalFlowGraphInvalidNode() {

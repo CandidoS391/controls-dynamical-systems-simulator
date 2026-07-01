@@ -8,7 +8,6 @@
 
 struct Loop {
   std::vector<Branch> branches;
-  TransferFunction gain;
 };
 
 #endif
