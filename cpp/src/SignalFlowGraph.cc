@@ -49,14 +49,19 @@ void SignalFlowGraph::SetOutputNode(const std::string& node_name) {
   output_node = node_name;
 }
 
-TransferFunction SignalFlowGraph::ComputePathGain(const std::vector<Branch>& path_branches) const {
-  if (path_branches.empty())
+TransferFunction SignalFlowGraph::ComputePathGain(const Path& path) const {
+  if (path.branches.empty())
     throw std::invalid_argument("There are no branches!");
 
-  TransferFunction result = path_branches[0].gain;
+  TransferFunction result = path.branches[0].gain;
 
-  for (size_t i = 1; i < path_branches.size(); i++)
-    result = result.Series(path_branches[i].gain);
+  for (size_t i = 1; i < path.branches.size(); i++)
+    result = result.Series(path.branches[i].gain);
 
   return result;
+}
+
+TransferFunction SignalFlowGraph::ComputeLoopGain(const Loop& loop) const {
+  Path loop_as_path{loop.branches, loop.gain};
+  return ComputePathGain(loop_as_path);
 }

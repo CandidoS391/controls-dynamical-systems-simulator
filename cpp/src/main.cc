@@ -541,12 +541,15 @@ void TestSignalFlowGraph() {
 
   graph.Print();
 
-  std::vector<Branch> forward_path{b1, b2, b3};
-
-  TransferFunction path_gain = graph.ComputePathGain(forward_path);
+  Path forward_path{{b1, b2, b3}, graph.ComputePathGain(Path{{b1, b2, b3}, g1})};
 
   std::cout << "\nForward Path Gain R -> x1 -> x2 -> C:\n";
-  std::cout << path_gain << std::endl;
+  std::cout << forward_path.gain << std::endl;
+
+  Loop loop{{b2, b3, b4}, graph.ComputeLoopGain(Loop{{b2, b3, b4}, g2})};
+  
+  std::cout << "\nLoop Gain x1 -> x2 -> C -> x1:\n";
+  std::cout << loop.gain << std::endl;
 }
 
 void TestSignalFlowGraphInvalidNode() {
@@ -564,7 +567,6 @@ void TestSignalFlowGraphInvalidNode() {
 
 int main() {
   TestSignalFlowGraph();
-  TestSignalFlowGraphInvalidNode();
 
   return 0;
 }

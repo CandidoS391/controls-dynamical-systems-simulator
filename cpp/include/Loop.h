@@ -1,13 +1,12 @@
-#ifndef PATH_H_
-#define PATH_H_
+#ifndef LOOP_H_
+#define LOOP_H_
 
 #include <vector>
-#include <string>
 
 #include "TransferFunction.h"
 #include "Branch.h"
 
-struct Path {
+struct Loop {
   std::vector<Branch> branches;
   TransferFunction gain;
 };

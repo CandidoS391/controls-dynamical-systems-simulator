@@ -7,6 +7,8 @@
 
 #include "TransferFunction.h"
 #include "Branch.h"
+#include "Path.h"
+#include "Loop.h"
 
 class SignalFlowGraph {
   private:
@@ -22,7 +24,8 @@ class SignalFlowGraph {
     bool HasNode(const std::string& node_name) const;
     void SetInputNode(const std::string& node_name);
     void SetOutputNode(const std::string& node_name);
-    TransferFunction ComputePathGain(const std::vector<Branch>& path_branches) const;
+    TransferFunction ComputePathGain(const Path& path) const;
+    TransferFunction ComputeLoopGain(const Loop& loop) const;
 };
 
 #endif
