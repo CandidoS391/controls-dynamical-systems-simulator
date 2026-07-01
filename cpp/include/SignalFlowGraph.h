@@ -5,6 +5,7 @@
 #include <vector>
 #include <stdexcept>
 
+#include "TransferFunction.h"
 #include "Branch.h"
 
 class SignalFlowGraph {
@@ -21,7 +22,7 @@ class SignalFlowGraph {
     bool HasNode(const std::string& node_name) const;
     void SetInputNode(const std::string& node_name);
     void SetOutputNode(const std::string& node_name);
-    
+    TransferFunction ComputePathGain(const std::vector<Branch>& path_branches) const;
 };
 
 #endif

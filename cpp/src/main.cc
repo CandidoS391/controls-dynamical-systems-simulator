@@ -514,42 +514,57 @@ void SimulateRLCStepResponseRK4() {
 }
 
 void TestSignalFlowGraph() {
-  SignalFlowGraph test;
+  SignalFlowGraph graph;
 
-  test.AddNode("R");
-  test.AddNode("x1");
-  test.AddNode("C");
+  graph.AddNode("R");
+  graph.AddNode("x1");
+  graph.AddNode("x2");
+  graph.AddNode("C");
+
+  graph.SetInputNode("R");
+  graph.SetOutputNode("C");
 
   TransferFunction g1({1}, {1, 1});
   TransferFunction g2({2}, {1, 2});
+  TransferFunction g3({3}, {1, 3});
+  TransferFunction h1({1}, {1});
 
-  test.AddBranch("R", "x1", g1);
-  test.AddBranch("x1", "C", g2);
+  Branch b1{"R", "x1", g1};
+  Branch b2{"x1", "x2", g2};
+  Branch b3{"x2", "C", g3};
+  Branch b4{"C", "x1", h1};
 
-  test.Print();
+  graph.AddBranch(b1.from, b1.to, b1.gain);
+  graph.AddBranch(b2.from, b2.to, b2.gain);
+  graph.AddBranch(b3.from, b3.to, b3.gain);
+  graph.AddBranch(b4.from, b4.to, b4.gain);
 
-  TransferFunction h({{1}, {1}});
-  test.AddBranch("C", "x1", h);
-  test.Print();
+  graph.Print();
 
-  std::cout << "Testing HasNode function" << std::endl;
-  std::cout << "Has R: ";
-  if (test.HasNode("R"))
-    std::cout << "True" << std::endl;
-  else
-    std::cout << "False" << std::endl;
+  std::vector<Branch> forward_path{b1, b2, b3};
 
-  std::cout << "Has x2: ";
-  if (test.HasNode("x2"))
-    std::cout << "True" << std::endl;
-  else
-    std::cout << "False" << std::endl;
+  TransferFunction path_gain = graph.ComputePathGain(forward_path);
 
-  
+  std::cout << "\nForward Path Gain R -> x1 -> x2 -> C:\n";
+  std::cout << path_gain << std::endl;
+}
+
+void TestSignalFlowGraphInvalidNode() {
+  SignalFlowGraph graph;
+
+  graph.AddNode("R");
+  graph.AddNode("C");
+
+  try {
+    graph.SetInputNode("x1");
+  } catch (const std::out_of_range& e) {
+    std::cout << "Caught expected error: " << e.what() << std::endl;
+  }
 }
 
 int main() {
   TestSignalFlowGraph();
+  TestSignalFlowGraphInvalidNode();
 
   return 0;
 }
