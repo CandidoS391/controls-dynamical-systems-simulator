@@ -618,6 +618,35 @@ void TestSignalFlowGraph() {
   std::vector<Loop> loops3 = graph3.FindLoops();
 
   std::cout << "Number of loops in graph3: " << loops3.size() << std::endl;
+
+  // ------ Testing AreNonTouching -------
+  // Test 1: touching loops
+  Loop loop1{{b2, b3, b4}};
+  Loop loop2{{b3, b4, b2}};
+
+  std::cout << graph.AreNonTouching(loop1, loop2) << std::endl;
+
+  // test 2: Non-touching loops
+  graph.AddNode("a");
+  graph.AddNode("b");
+
+  TransferFunction k1({4}, {1});
+  TransferFunction k2({5}, {1});
+
+  Branch b5{"a", "b", k1};
+  Branch b6{"b", "a", k2};
+
+  Loop loop3{{b5, b6}};
+
+  std::cout << graph.AreNonTouching(loop1, loop3) << std::endl;
+
+  // Test 3: One shared node:
+  Branch b7{"C", "a", k1};
+  Branch b8{"a", "C", k2};
+
+  Loop loop4{{b7, b8}};
+
+  std::cout << graph.AreNonTouching(loop1, loop4) << std::endl;
 }
 
 void TestSignalFlowGraphInvalidNode() {

@@ -152,3 +152,29 @@ std::vector<Loop> SignalFlowGraph::FindLoops() const {
 
   return all_loops;
 }
+
+std::vector<std::string> SignalFlowGraph::GetLoopNodes(const Loop& loop) const {
+  std::vector<std::string> nodes_in_loop;
+
+  for (const auto& branch : loop.branches) {
+    if (!IsVisited(branch.from, nodes_in_loop))
+      nodes_in_loop.push_back(branch.from);
+    
+    if (!IsVisited(branch.to, nodes_in_loop))
+      nodes_in_loop.push_back(branch.to);
+  }
+
+  return nodes_in_loop;
+}
+
+bool SignalFlowGraph::AreNonTouching(const Loop& loop_1, const Loop& loop_2) const {
+  std::vector<std::string> nodes_1 = GetLoopNodes(loop_1);
+  std::vector<std::string> nodes_2 = GetLoopNodes(loop_2);
+
+  for (const auto& node : nodes_1) {
+    if (IsVisited(node, nodes_2))
+      return false;
+  }
+
+  return true;
+}

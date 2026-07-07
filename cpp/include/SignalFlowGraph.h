@@ -24,6 +24,9 @@ class SignalFlowGraph {
     // Helper Functions for FindLoops
     void DFSLoop(const std::string& start_node, const std::string& curr_node, std::vector<Branch>& curr_loop, std::vector<std::string>& visited, std::vector<Loop>& loops) const;
 
+    // Helper Function for NonTouching function
+    std::vector<std::string> GetLoopNodes(const Loop& loop) const;
+
   public:
     void AddNode(const std::string& node_name);
     void AddBranch(const std::string& from, const std::string& to, const TransferFunction& gain);
@@ -40,6 +43,9 @@ class SignalFlowGraph {
     std::vector<Path> FindForwardPaths() const;
 
     std::vector<Loop> FindLoops() const;
+
+    // Check if two loops are non-touching (essentially if two loops share no nodes)
+    bool AreNonTouching(const Loop& loop_1, const Loop& loop_2) const;
 };
 
 #endif
