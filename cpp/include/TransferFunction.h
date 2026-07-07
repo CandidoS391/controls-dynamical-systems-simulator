@@ -19,6 +19,7 @@ class TransferFunction {
     // Operations on two given polynomials
     std::vector<double> MultiplyPolynomials(const std::vector<double>& poly_1, const std::vector<double>& poly_2) const;
     std::vector<double> AddPolynomials(const std::vector<double>& poly_1, const std::vector<double>& poly_2) const;
+    std::vector<double> SubtractPolynomials(const std::vector<double>& poly_1, const std::vector<double>& poly_2) const;
 
   public:
     // Constructor
@@ -56,6 +57,10 @@ class TransferFunction {
 
     // Print
     friend std::ostream& operator<<(std::ostream& os, const TransferFunction& rhs);
+
+    // Operations
+    TransferFunction operator-(const TransferFunction& other) const;
+    TransferFunction operator/(const TransferFunction& other) const;
 };
 
 #endif

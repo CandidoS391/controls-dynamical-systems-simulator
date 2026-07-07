@@ -662,8 +662,54 @@ void TestSignalFlowGraphInvalidNode() {
   }
 }
 
+void TestTransferFunctionSubtract() {
+  TransferFunction g1({1}, {1, 1});  // 1 / (s + 1)
+  TransferFunction g2({2}, {1, 2});  // 2 / (s + 2)
+
+  TransferFunction result = g1 - g2;
+
+  std::cout << "\nSubtract Test: g1 - g2\n";
+  result.Print();
+  // Expected:
+  // Numerator: -1 0
+  // Denominator: 1 3 2
+}
+
+void TestTransferFunctionDivide() {
+  TransferFunction g1({1}, {1, 1});  // 1 / (s + 1)
+  TransferFunction g2({2}, {1, 2});  // 2 / (s + 2)
+
+  TransferFunction result = g1 / g2;
+
+  std::cout << "\nDivide Test: g1 / g2\n";
+  result.Print();
+  // Expected:
+  // Numerator: 1 2
+  // Denominator: 2 2
+}
+
+void TestTransferFunctionMasonPrep() {
+  TransferFunction one({1}, {1});
+  TransferFunction loop1({-2}, {1, 2});
+  TransferFunction loop2({-3}, {1, 3});
+
+  TransferFunction loop_sum = loop1.Parallel(loop2);
+  TransferFunction delta = one - loop_sum;
+
+  std::cout << "\nMason Delta Prep Test: 1 - (L1 + L2)\n";
+  delta.Print();
+  // Expected:
+  // loop_sum = (-5s - 12) / ((s+2)(s+3))
+  // delta = (s^2 + 10s + 18) / (s^2 + 5s + 6)
+}
+
 int main() {
-  TestSignalFlowGraph();
+  // TestSignalFlowGraph();
+
+  TestBlockDiagramAlgebra();
+  TestTransferFunctionSubtract();
+  TestTransferFunctionDivide();
+  TestTransferFunctionMasonPrep();
 
   return 0;
 }

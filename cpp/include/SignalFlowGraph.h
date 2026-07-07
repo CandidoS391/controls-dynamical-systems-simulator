@@ -46,6 +46,11 @@ class SignalFlowGraph {
 
     // Check if two loops are non-touching (essentially if two loops share no nodes)
     bool AreNonTouching(const Loop& loop_1, const Loop& loop_2) const;
+
+    // Mason Gain Formuala
+    TransferFunction ComputeDelta(const std::vector<Loop>& loops) const;
+    TransferFunction ComputeMasonGain() const;
+    
 };
 
 #endif

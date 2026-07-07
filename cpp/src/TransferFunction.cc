@@ -145,6 +145,27 @@ std::vector<double> TransferFunction::AddPolynomials(const std::vector<double>& 
   return result;
 }
 
+std::vector<double> TransferFunction::SubtractPolynomials(const std::vector<double>& poly_1, const std::vector<double>& poly_2) const {
+  size_t result_size = std::max(poly_1.size(), poly_2.size());
+  std::vector<double> result(result_size, 0);
+
+  // Align the vectors by their ends
+  size_t poly_1_idx = result_size - poly_1.size();
+  size_t poly_2_idx = result_size - poly_2.size();
+
+  // Copy the elements of polynomial 1
+  for (size_t i = 0; i < poly_1.size(); i++) {
+    result[poly_1_idx + i] = poly_1[i];
+  }
+  
+  // Subtract Polynomial 2 to the results vector
+  for (size_t i = 0; i < poly_2.size(); i++) {
+    result[poly_2_idx + i] -= poly_2[i];
+  }
+
+  return result;
+}
+
 void TransferFunction::TestMultiplyPolynomials() const {
   std::vector<double> result = MultiplyPolynomials({1, 1}, {1, 2});
   std::cout << "Result ";
@@ -200,4 +221,21 @@ std::ostream& operator<<(std::ostream& os, const TransferFunction& rhs) {
   }
 
   return os;
+}
+
+TransferFunction TransferFunction::operator-(const TransferFunction& other) const {
+  std::vector<double> left_numerator = MultiplyPolynomials(this->numerator, other.denominator);
+  std::vector<double> right_numerator = MultiplyPolynomials(this->denominator, other.numerator);
+
+  std::vector<double> new_numerator = SubtractPolynomials(left_numerator, right_numerator);
+  std::vector<double> new_denominator = MultiplyPolynomials(this->denominator, other.denominator);
+
+  return TransferFunction(new_numerator, new_denominator);
+}
+
+TransferFunction TransferFunction::operator/(const TransferFunction& other) const {
+  std::vector<double> new_numerator = MultiplyPolynomials(this->numerator, other.denominator);
+  std::vector<double> new_denominator = MultiplyPolynomials(this->denominator, other.numerator);
+
+  return TransferFunction(new_numerator, new_denominator);
 }
