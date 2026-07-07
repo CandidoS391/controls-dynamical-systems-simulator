@@ -118,3 +118,37 @@ std::vector<Path> SignalFlowGraph::FindForwardPaths() const {
 
   return path;
 }
+
+void SignalFlowGraph::DFSLoop(const std::string& start_node, const std::string& curr_node, std::vector<Branch>& curr_loop, std::vector<std::string>& visited, std::vector<Loop>& loops) const {
+  visited.push_back(curr_node);
+  std::vector<Branch> outgoing_branches = GetOutgoingBranches(curr_node);
+  
+  for (const auto& branch : outgoing_branches) {
+    std::string next_node = branch.to;
+    if (next_node == start_node) {
+      curr_loop.push_back(branch);
+      Loop new_loop{curr_loop};
+      loops.push_back(new_loop);
+      curr_loop.pop_back();
+    } else if (!IsVisited(next_node, visited)) {
+      curr_loop.push_back(branch);
+      DFSLoop(start_node, next_node, curr_loop, visited, loops);
+      curr_loop.pop_back();
+    }
+
+  }
+  visited.pop_back();
+}
+
+std::vector<Loop> SignalFlowGraph::FindLoops() const {
+  std::vector<Loop> all_loops;
+
+  for (const auto& node : nodes) {
+    std::vector<Branch> curr_loop;
+    std::vector<std::string> visited;
+
+    DFSLoop(node, node, curr_loop, visited, all_loops);
+  }
+
+  return all_loops;
+}

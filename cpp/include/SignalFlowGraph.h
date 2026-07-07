@@ -21,6 +21,9 @@ class SignalFlowGraph {
     void DFSForwardPath(const std::string& curr_node, std::vector<Branch>& curr_path, std::vector<std::string>& visited, std::vector<Path>& paths) const;
     bool IsVisited(const std::string& node_name, const std::vector<std::string>& visited_nodes) const;
 
+    // Helper Functions for FindLoops
+    void DFSLoop(const std::string& start_node, const std::string& curr_node, std::vector<Branch>& curr_loop, std::vector<std::string>& visited, std::vector<Loop>& loops) const;
+
   public:
     void AddNode(const std::string& node_name);
     void AddBranch(const std::string& from, const std::string& to, const TransferFunction& gain);
@@ -35,6 +38,8 @@ class SignalFlowGraph {
 
     // Use DFS helper function to find Forward paths
     std::vector<Path> FindForwardPaths() const;
+
+    std::vector<Loop> FindLoops() const;
 };
 
 #endif

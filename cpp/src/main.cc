@@ -564,6 +564,60 @@ void TestSignalFlowGraph() {
 
     std::cout << path.branches.back().to << std::endl;
   }
+
+  // ------ Testing finding loops -------
+  // Test 1: One Simple loop
+
+  std::vector<Loop> loops = graph.FindLoops();
+  std::cout << "Number of loops found: " << loops.size() << std::endl;
+
+  for (const auto& loop : loops) {
+    std::cout << "Loop: ";
+    for (const auto& branch: loop.branches) {
+      std::cout << branch.from << " -> ";
+    }
+    std::cout << loop.branches.back().to << std::endl;
+
+    std::cout << "Gain: " << graph.ComputeLoopGain(loop) << std::endl;
+  }
+
+  // Test 2: graph with no loop
+  SignalFlowGraph graph2;
+
+  graph2.AddNode("R");
+  graph2.AddNode("x1");
+  graph2.AddNode("C");
+
+  graph2.SetInputNode("R");
+  graph2.SetOutputNode("C");
+
+  graph2.AddBranch("R", "x1", g1);
+  graph2.AddBranch("x1", "C", g2);
+
+  std::vector<Loop> loops_2 = graph2.FindLoops();
+
+  std::cout << "Number of loops in graph2: " << loops_2.size() << std::endl;
+
+  // Test 3: self loop
+  SignalFlowGraph graph3;
+
+  graph3.AddNode("R");
+  graph3.AddNode("x1");
+  graph3.AddNode("C");
+
+  graph3.SetInputNode("R");
+  graph3.SetOutputNode("C");
+
+  TransferFunction g({1}, {1});
+  TransferFunction h({5}, {1});
+
+  graph3.AddBranch("R", "x1", g);
+  graph3.AddBranch("x1", "x1", h);
+  graph3.AddBranch("x1", "C", g);
+
+  std::vector<Loop> loops3 = graph3.FindLoops();
+
+  std::cout << "Number of loops in graph3: " << loops3.size() << std::endl;
 }
 
 void TestSignalFlowGraphInvalidNode() {
