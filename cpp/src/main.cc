@@ -782,7 +782,43 @@ void ExportPoleZeroData() {
   for (const auto& pole : comp_poles) {
     std::cout << pole << std::endl;
   }
-  std::cout << std::endl; 
+  std::cout << std::endl;
+
+  std::string filename_1 = "../output/simple_pole_zero_data.csv";
+  std::ofstream ofs_1(filename_1);
+  if(!ofs_1.is_open()) {
+    std::cerr << "Error opening " << filename_1 << std::endl;
+    return;
+  }
+
+  ofs_1 << "type,real,imaginary\n";
+
+  for (const auto& zero : zeros) {
+    ofs_1 << "zero," << zero.real() << "," << zero.imag() << "\n";
+  }
+
+  for (const auto& pole : poles) {
+    ofs_1 << "pole," << pole.real() << "," << pole.imag() << "\n";
+  }
+
+  ofs_1.close();
+
+  std::string filename_2 = "../output/complex_pole_zero_data.csv";
+  std::ofstream ofs_2(filename_2);
+  if (!ofs_2.is_open()) {
+    std::cerr << "Error opening " << filename_2 << std::endl;
+    return;
+  }
+
+  ofs_2 << "type,real,imaginary\n";
+
+  for (const auto& zero : comp_zeros) {
+    ofs_2 << "zero," << zero.real() << "," << zero.imag() << "\n";
+  }
+  for (const auto& pole : comp_poles) {
+    ofs_2 << "pole," << pole.real() << "," << pole.imag() << "\n";
+  }
+  ofs_2.close();
 }
 
 int main() {
