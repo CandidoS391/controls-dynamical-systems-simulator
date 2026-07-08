@@ -178,3 +178,116 @@ bool SignalFlowGraph::AreNonTouching(const Loop& loop_1, const Loop& loop_2) con
 
   return true;
 }
+
+TransferFunction SignalFlowGraph::ComputeDelta(const std::vector<Loop>& loops) const {
+  TransferFunction delta({1}, {1});
+
+  for (const auto& loop : loops) {
+    TransferFunction loop_gain = ComputeLoopGain(loop);
+    delta = delta - loop_gain;
+  }
+
+  for (size_t i = 0; i < loops.size(); i++) {
+    for (size_t j = i + 1; j < loops.size(); j++) {
+      if (AreNonTouching(loops[i], loops[j])) {
+        TransferFunction loop_i_gain = ComputeLoopGain(loops[i]);
+        TransferFunction loop_j_gain = ComputeLoopGain(loops[j]);
+
+        TransferFunction product = loop_i_gain.Series(loop_j_gain);
+        delta = delta.Parallel(product);
+      }
+    }
+  }
+
+  return delta;
+}
+
+TransferFunction SignalFlowGraph::ComputeMasonGain() const {
+  std::vector<Path> paths = FindForwardPaths();
+  std::vector<Loop> loops = RemoveDuplicateLoops(FindLoops());
+  
+  if (paths.empty())
+    throw std::underflow_error("There are no paths!");
+
+  TransferFunction numerator_sum = ComputePathGain(paths[0]).Series(ComputeDeltaK(paths[0], loops));
+  TransferFunction delta = ComputeDelta(loops);
+
+  for (size_t i = 1; i < paths.size(); i++) {
+    TransferFunction term = ComputePathGain(paths[i]).Series(ComputeDeltaK(paths[i], loops));
+    numerator_sum = numerator_sum.Parallel(term);
+  }
+
+  return numerator_sum / delta;
+}
+
+std::vector<std::string> SignalFlowGraph::GetPathNodes(const Path& path) const {
+  std::vector<std::string> nodes_in_path;
+
+  for (const auto& branch : path.branches) {
+    if (!IsVisited(branch.from, nodes_in_path))
+      nodes_in_path.push_back(branch.from);
+
+    if (!IsVisited(branch.to, nodes_in_path))
+      nodes_in_path.push_back(branch.to);
+  }
+
+  return nodes_in_path;
+}
+
+bool SignalFlowGraph::AreSameLoop(const Loop& loop_1, const Loop& loop_2) const {
+  std::vector<std::string> nodes_1 = GetLoopNodes(loop_1);
+  std::vector<std::string> nodes_2 = GetLoopNodes(loop_2);
+
+  if (nodes_1.size() != nodes_2.size())
+    return false;
+
+  for (const auto& node : nodes_1) {
+    if (!IsVisited(node, nodes_2))
+      return false;
+  }
+
+  return true;
+}
+
+std::vector<Loop> SignalFlowGraph::RemoveDuplicateLoops(const std::vector<Loop>& loops) const {
+  std::vector<Loop> unique_loops;
+
+  for (const auto& loop : loops) {
+    bool duplicate = false;
+
+    for (const auto& unique_loop : unique_loops) {
+      if (AreSameLoop(loop, unique_loop)) {
+        duplicate = true;
+        break;
+      }
+    }
+
+    if (!duplicate)
+      unique_loops.push_back(loop);
+  }
+
+  return unique_loops;
+}
+
+bool SignalFlowGraph::DoesLoopTouchPath(const Loop& loop, const Path& path) const {
+  std::vector<std::string> path_nodes = GetPathNodes(path);
+  std::vector<std::string> loop_nodes = GetLoopNodes(loop);
+
+  for (const auto& node : loop_nodes) {
+    if (IsVisited(node, path_nodes))
+      return true;
+  }
+
+  return false;
+}
+
+TransferFunction SignalFlowGraph::ComputeDeltaK(const Path& path, const std::vector<Loop>& loops) const {
+  std::vector<Loop> usable_loops;
+
+  for (const auto& loop : loops) {
+    if (!DoesLoopTouchPath(loop, path))
+      usable_loops.push_back(loop);
+  }
+
+  return ComputeDelta(usable_loops);
+}

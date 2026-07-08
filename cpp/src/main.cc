@@ -647,6 +647,20 @@ void TestSignalFlowGraph() {
   Loop loop4{{b7, b8}};
 
   std::cout << graph.AreNonTouching(loop1, loop4) << std::endl;
+
+  // ------ Testing Mason Gain Formula ------
+  std::vector<Loop> one_loop{loops[0]};
+
+  TransferFunction delta = graph.ComputeDelta(one_loop);
+  std::cout << "\nDelta:\n";
+  delta.Print();
+
+  
+
+  TransferFunction mason_gain = graph.ComputeMasonGain();
+
+  std::cout << "\nMason Gain:\n";
+  mason_gain.Print();
 }
 
 void TestSignalFlowGraphInvalidNode() {
@@ -703,13 +717,41 @@ void TestTransferFunctionMasonPrep() {
   // delta = (s^2 + 10s + 18) / (s^2 + 5s + 6)
 }
 
-int main() {
-  // TestSignalFlowGraph();
+void TestNonTouchingDelta() {
+  SignalFlowGraph graph;
 
-  TestBlockDiagramAlgebra();
-  TestTransferFunctionSubtract();
-  TestTransferFunctionDivide();
-  TestTransferFunctionMasonPrep();
+  TransferFunction one({1}, {1});
+  TransferFunction g1({2}, {1});
+  TransferFunction g2({3}, {1});
+  TransferFunction h1({4}, {1});
+  TransferFunction h2({5}, {1});
+
+  Branch b1{"x1", "x2", g1};
+  Branch b2{"x2", "x1", h1};
+
+  Branch b3{"x3", "x4", g2};
+  Branch b4{"x4", "x3", h2};
+
+  Loop loop1{{b1, b2}};
+  Loop loop2{{b3, b4}};
+
+  std::cout << "\nNon-Touching Test:\n";
+  std::cout << "Are non-touching: "
+            << graph.AreNonTouching(loop1, loop2)
+            << std::endl;
+
+  std::vector<Loop> loops{loop1, loop2};
+
+  TransferFunction delta = graph.ComputeDelta(loops);
+
+  std::cout << "Delta:\n";
+  delta.Print();
+}
+
+int main() {
+  TestSignalFlowGraph();
+
+  //TestNonTouchingDelta();
 
   return 0;
 }

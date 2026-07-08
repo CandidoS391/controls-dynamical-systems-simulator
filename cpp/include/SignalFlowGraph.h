@@ -17,6 +17,8 @@ class SignalFlowGraph {
     std::string input_node;
     std::string output_node;
 
+    // ---- Helper Functions ----
+
     // Helper Functions for FindForwardPath
     void DFSForwardPath(const std::string& curr_node, std::vector<Branch>& curr_path, std::vector<std::string>& visited, std::vector<Path>& paths) const;
     bool IsVisited(const std::string& node_name, const std::vector<std::string>& visited_nodes) const;
@@ -26,6 +28,12 @@ class SignalFlowGraph {
 
     // Helper Function for NonTouching function
     std::vector<std::string> GetLoopNodes(const Loop& loop) const;
+
+    // Helper Function for ComputeDeltaK
+    bool DoesLoopTouchPath(const Loop& loop, const Path& path) const;
+    std::vector<std::string> GetPathNodes(const Path& path) const;
+    bool AreSameLoop(const Loop& loop_1, const Loop& loop_2) const;
+    std::vector<Loop> RemoveDuplicateLoops(const std::vector<Loop>& loops) const;
 
   public:
     void AddNode(const std::string& node_name);
@@ -50,6 +58,7 @@ class SignalFlowGraph {
     // Mason Gain Formuala
     TransferFunction ComputeDelta(const std::vector<Loop>& loops) const;
     TransferFunction ComputeMasonGain() const;
+    TransferFunction ComputeDeltaK(const Path& path, const std::vector<Loop>& loops) const;
     
 };
 
