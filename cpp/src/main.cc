@@ -748,8 +748,46 @@ void TestNonTouchingDelta() {
   delta.Print();
 }
 
+void ExportPoleZeroData() {
+  // Test 1 (simple case)
+  TransferFunction g({1, 1}, {1, 5, 4});
+
+  std::vector<std::complex<double>> zeros = g.GetZeros();
+  std::cout << "Zero:\n";
+  for (const auto& zero : zeros) {
+    std::cout << zero << std::endl;
+  }
+  std::cout << std::endl;
+
+  std::vector<std::complex<double>> poles = g.GetPoles();
+  std::cout << "Pole:\n";
+  for (const auto& pole : poles) {
+    std::cout << pole << std::endl;
+  }
+  std::cout << std::endl;
+
+
+  // Test 2: (Complex)
+  TransferFunction g_2({1}, {1, 2, 5});
+  
+  std::vector<std::complex<double>> comp_zeros = g_2.GetZeros();
+  std::cout << "Zero:\n";
+  for (const auto& zero : comp_zeros) {
+    std::cout << zero << std::endl;
+  }
+  std::cout << std::endl; 
+  
+  std::vector<std::complex<double>> comp_poles = g_2.GetPoles();
+  std::cout << "Pole:\n";
+  for (const auto& pole : comp_poles) {
+    std::cout << pole << std::endl;
+  }
+  std::cout << std::endl; 
+}
+
 int main() {
-  TestSignalFlowGraph();
+  //TestSignalFlowGraph();
+  ExportPoleZeroData();
 
   //TestNonTouchingDelta();
 

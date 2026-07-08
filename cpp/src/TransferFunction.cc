@@ -1,5 +1,7 @@
 #include <cmath>
 #include <algorithm>
+#include <complex>
+
 
 #include "TransferFunction.h"
 
@@ -29,14 +31,14 @@ size_t TransferFunction::Degree(const std::vector<double>& coefficients) const {
   return coefficients.size() - 1;
 }
 
-std::vector<double> TransferFunction::FindRoots(const std::vector<double>& coefficients) const {
+std::vector<std::complex<double>> TransferFunction::FindRoots(const std::vector<double>& coefficients) const {
   if (Degree(coefficients) == 0)
     return {};
 
   if (Degree(coefficients) == 1) {
     // a = coefficient[0], b = coefficient[1]
     double root = -coefficients[1] / coefficients[0]; // For now assume that coefficients[0] != 0
-    return {root};
+    return {std::complex<double>(root, 0.0)};
   }
 
   if (Degree(coefficients) == 2) {
@@ -46,10 +48,12 @@ std::vector<double> TransferFunction::FindRoots(const std::vector<double>& coeff
     if (discriminant >= 0) {
       double root_1 = (-coefficients[1] + std::sqrt(discriminant)) / (2 * coefficients[0]);
       double root_2 = (-coefficients[1] - std::sqrt(discriminant)) / (2 * coefficients[0]);
-      return {root_1, root_2};
+      return {std::complex<double>(root_1, 0.0), std::complex<double>(root_2, 0.0)};
+    } else {
+      double real_part = -coefficients[1] / std::abs(2 * coefficients[0]);
+      double imag_part = std::sqrt(-discriminant) / (2 * coefficients[0]);
+      return {std::complex<double>(real_part, imag_part), std::complex<double>(real_part, -imag_part)};
     }
-
-    return {};
   }
 
   return {};
@@ -92,11 +96,11 @@ double TransferFunction::Evaluate(double s) const {
   return numerator_value / denominator_value;
 }
 
-std::vector<double> TransferFunction::GetPoles() const {
+std::vector<std::complex<double>> TransferFunction::GetPoles() const {
   return FindRoots(denominator);
 }
 
-std::vector<double> TransferFunction::GetZeros() const {
+std::vector<std::complex<double>> TransferFunction::GetZeros() const {
   return FindRoots(numerator);
 }
 
