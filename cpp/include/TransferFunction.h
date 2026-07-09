@@ -5,6 +5,8 @@
 #include <iostream>
 #include <complex>
 
+#include "StabilityStatus.h"
+
 class TransferFunction {
   private:
     std::vector<double> numerator;
@@ -22,8 +24,6 @@ class TransferFunction {
     std::vector<double> AddPolynomials(const std::vector<double>& poly_1, const std::vector<double>& poly_2) const;
     std::vector<double> SubtractPolynomials(const std::vector<double>& poly_1, const std::vector<double>& poly_2) const;
 
-    // Private helper function for Stability Analysis
-    bool IsStable() const;
 
   public:
     // Constructor
@@ -32,7 +32,8 @@ class TransferFunction {
     // Print out the contents of the Transfer function
     void Print() const;
 
-    // Test Stability Analysis
+    // Stability Analysis
+    StabilityStatus GetStability() const;
     void PrintStability() const;
 
     // Getter functions

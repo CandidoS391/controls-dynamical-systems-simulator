@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <complex>
 
-
+#include "StabilityStatus.h"
 #include "TransferFunction.h"
 
 TransferFunction::TransferFunction(const std::vector<double>& num, const std::vector<double>& den) : numerator(num), denominator(den) {
@@ -244,21 +244,37 @@ TransferFunction TransferFunction::operator/(const TransferFunction& other) cons
   return TransferFunction(new_numerator, new_denominator);
 }
 
-bool TransferFunction::IsStable() const {
+StabilityStatus TransferFunction::GetStability() const {
+  bool has_imaginary_axis_pole = false;
   std::vector<std::complex<double>> poles = GetPoles();
 
   for (const auto& pole : poles) {
-    if (pole.real() >= 0)
-      return false;
+    if (pole.real() > 0)
+      return StabilityStatus::k_unstable;
+
+    if (pole.real() == 0)
+      has_imaginary_axis_pole = true;
+
   }
 
-  return true;
+  if (has_imaginary_axis_pole)
+    return StabilityStatus::k_marginally_stable;
+  
+  return StabilityStatus::k_stable;
 }
 
 void TransferFunction::PrintStability() const {
-  if (IsStable()) {
-    std::cout << "System is stable" << std::endl;
-  } else {
-    std::cout << "System is unstable" << std::endl;
+  StabilityStatus stability = GetStability();
+
+  switch (stability) {
+    case StabilityStatus::k_stable:
+      std::cout << "System is stable\n";
+      break;
+    case StabilityStatus::k_marginally_stable:
+      std::cout << "System is marginally stable\n";
+      break;
+    case StabilityStatus::k_unstable:
+      std::cout << "System is unstable\n";
+      break;
   }
 }

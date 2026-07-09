@@ -821,7 +821,6 @@ void ExportPoleZeroData() {
   ofs_2.close();
 }
 
-
 void TestStability() {
   // Test 1: Stable Real Transfer Function
   TransferFunction stable({1}, {1, 1});
@@ -830,7 +829,7 @@ void TestStability() {
   stable.PrintStability();
   std::cout << std::endl;
 
-  // Test 2: Unstable Real Transfer Function
+    // Test 2: Unstable Real Transfer Function
   TransferFunction unstable({1}, {1, -2});
 
   std::cout << unstable << std::endl;
@@ -853,8 +852,8 @@ void TestStability() {
 }
 
 int main() {
-
   TestStability();
 
+  
   return 0;
 }
