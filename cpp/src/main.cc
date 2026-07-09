@@ -821,11 +821,40 @@ void ExportPoleZeroData() {
   ofs_2.close();
 }
 
-int main() {
-  //TestSignalFlowGraph();
-  ExportPoleZeroData();
 
-  //TestNonTouchingDelta();
+void TestStability() {
+  // Test 1: Stable Real Transfer Function
+  TransferFunction stable({1}, {1, 1});
+
+  std::cout << stable << std::endl;
+  stable.PrintStability();
+  std::cout << std::endl;
+
+  // Test 2: Unstable Real Transfer Function
+  TransferFunction unstable({1}, {1, -2});
+
+  std::cout << unstable << std::endl;
+  unstable.PrintStability();
+  std::cout << std::endl;
+
+  // Test 3: Stable Complex Transfer Function
+  TransferFunction stable_complex({1}, {1, 2, 5});
+
+  std::cout << stable_complex << std::endl;
+  stable_complex.PrintStability();
+  std::cout << std::endl;
+
+  // Test 4: Imaginary Axis Poles
+  TransferFunction unstable_complex({1}, {1, 0, 1});
+
+  std::cout << unstable_complex << std::endl;
+  unstable_complex.PrintStability();
+  std::cout << std::endl;
+}
+
+int main() {
+
+  TestStability();
 
   return 0;
 }

@@ -22,12 +22,18 @@ class TransferFunction {
     std::vector<double> AddPolynomials(const std::vector<double>& poly_1, const std::vector<double>& poly_2) const;
     std::vector<double> SubtractPolynomials(const std::vector<double>& poly_1, const std::vector<double>& poly_2) const;
 
+    // Private helper function for Stability Analysis
+    bool IsStable() const;
+
   public:
     // Constructor
     TransferFunction(const std::vector<double>& num, const std::vector<double>& den);
 
     // Print out the contents of the Transfer function
     void Print() const;
+
+    // Test Stability Analysis
+    void PrintStability() const;
 
     // Getter functions
     std::vector<double> GetNumerator() const;

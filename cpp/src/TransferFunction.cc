@@ -243,3 +243,22 @@ TransferFunction TransferFunction::operator/(const TransferFunction& other) cons
 
   return TransferFunction(new_numerator, new_denominator);
 }
+
+bool TransferFunction::IsStable() const {
+  std::vector<std::complex<double>> poles = GetPoles();
+
+  for (const auto& pole : poles) {
+    if (pole.real() >= 0)
+      return false;
+  }
+
+  return true;
+}
+
+void TransferFunction::PrintStability() const {
+  if (IsStable()) {
+    std::cout << "System is stable" << std::endl;
+  } else {
+    std::cout << "System is unstable" << std::endl;
+  }
+}
