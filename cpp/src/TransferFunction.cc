@@ -5,6 +5,8 @@
 #include "StabilityStatus.h"
 #include "TransferFunction.h"
 
+const double kPi = 3.14159265358979323846;
+
 TransferFunction::TransferFunction(const std::vector<double>& num, const std::vector<double>& den) : numerator(num), denominator(den) {
 
 }
@@ -72,11 +74,82 @@ std::vector<std::complex<double>> TransferFunction::FindRoots(const std::vector<
     }
   }
 
-  return {};
+  return FindRootsNumerically(coefficients);
+}
+
+std::vector<std::complex<double>> TransferFunction::GenerateInitialGuesses(const std::vector<double>& coefficients) const {
+  size_t degree = Degree(coefficients);
+  if (degree <= 0) {
+    throw std::invalid_argument("Polynomial degrees must be greater than 0");
+  }
+
+  std::vector<double> normalized = coefficients;
+
+  double leading_coefficient = normalized[0];
+
+  // Normalize the vector
+  for (auto& coefficient : normalized) {
+    coefficient /= leading_coefficient;
+  }
+
+  double radius = 1.0;
+
+  for (size_t i = 1; i < normalized.size(); i++) {
+    radius = std::max(radius, 1 + std::abs(normalized[i]));
+  }
+
+  std::vector<std::complex<double>> guesses;
+  
+
+  for (size_t k = 0; k < degree; k++) {
+    double angle = (2 * kPi * k) / degree + (kPi / (2 * degree));
+    double real_part = radius * std::cos(angle);
+    double imag_part = radius * std::sin(angle);
+
+    guesses.push_back(std::complex<double>(real_part, imag_part));
+  }
+
+  return guesses;
 }
 
 std::vector<std::complex<double>> TransferFunction::FindRootsNumerically(const std::vector<double>& coefficients) const {
   size_t degree = Degree(coefficients);
+  if (degree <= 0) {
+    throw std::invalid_argument("Polynomial degrees must be greater than 0");
+  }
+  std::vector<std::complex<double>> roots = GenerateInitialGuesses(coefficients);
+
+  double tolerance = 1e-10;
+  size_t max_iterations = 1000;
+
+  for (size_t iteration = 0; iteration < max_iterations; iteration++) {
+    std::vector<std::complex<double>> updated_roots;
+    double max_change = 0;
+    for (size_t i = 0; i < roots.size(); i++) {
+      std::complex<double> curr_root(roots[i]);
+      std::complex<double> numerator(EvaluatePolynomial(coefficients, curr_root));
+      std::complex<double> denominator(1.0, 0.0);
+
+      for (size_t j = 0; j < roots.size(); j++) {
+        if (i == j)
+          continue;
+
+        std::complex<double> difference(roots[i] - roots[j]);
+        denominator = denominator * difference;
+      }
+
+      std::complex<double> new_root = curr_root - (numerator / denominator);
+      double change = std::abs(new_root - curr_root);
+      max_change = std::max(max_change, change);
+      updated_roots.push_back(new_root);
+    }
+    roots = updated_roots;
+
+    if (max_change < tolerance)
+      break;
+  }
+
+  return roots;
 }
 
 void TransferFunction::Print() const {

@@ -27,7 +27,8 @@ class TransferFunction {
     std::vector<double> SubtractPolynomials(const std::vector<double>& poly_1, const std::vector<double>& poly_2) const;
     // Find polynomial roots numerically 
     std::vector<std::complex<double>> FindRootsNumerically(const std::vector<double>& coefficients) const;
-
+    // Make initial guesses for Finding Roots numerically
+    std::vector<std::complex<double>> GenerateInitialGuesses(const std::vector<double>& coefficients) const;
 
   public:
     // Constructor

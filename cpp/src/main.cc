@@ -851,9 +851,40 @@ void TestStability() {
   std::cout << std::endl;
 }
 
-int main() {
-  TestStability();
+void TestHigherOrderRoots() {
+  // Test 1: Three real roots
+  // s^3 + 6s^2 + 11s + 6 = (s + 1)(s + 2)(s + 3)
+  TransferFunction real_roots({1}, {1, 6, 11, 6});
 
-  
+  std::cout << "Cubic with real roots:\n";
+  for (const auto& pole : real_roots.GetPoles())
+    std::cout << pole << std::endl;
+
+  std::cout << std::endl;
+
+  // Test 2: One real root and one complex-conjugate pair
+  // s^3 + 1
+  TransferFunction mixed_roots({1}, {1, 0, 0, 1});
+
+  std::cout << "Cubic with complex roots:\n";
+  for (const auto& pole : mixed_roots.GetPoles())
+    std::cout << pole << std::endl;
+
+  std::cout << std::endl;
+
+  // Test 3: Fourth-order polynomial
+  // (s + 1)(s + 2)(s + 3)(s + 4)
+  TransferFunction fourth_order({1}, {1, 10, 35, 50, 24});
+
+  std::cout << "Fourth-order roots:\n";
+  for (const auto& pole : fourth_order.GetPoles())
+    std::cout << pole << std::endl;
+
+  std::cout << std::endl;
+}
+
+int main() {
+  TestHigherOrderRoots();
+    
   return 0;
 }
