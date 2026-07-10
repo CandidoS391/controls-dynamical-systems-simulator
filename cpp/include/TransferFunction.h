@@ -15,6 +15,8 @@ class TransferFunction {
 
     // Evaluate Polynomial at specified value s
     double EvaluatePolynomial(const std::vector<double>& coefficients, double s) const;
+    // Additional Polynomial at specified COMPLEX value s
+    std::complex<double> EvaluatePolynomial(const std::vector<double>& coefficients, const std::complex<double>& value) const;
     // Find the degree of the polynomial
     size_t Degree(const std::vector<double>& coefficients) const;
     // Find the roots of a polynomial
@@ -23,6 +25,8 @@ class TransferFunction {
     std::vector<double> MultiplyPolynomials(const std::vector<double>& poly_1, const std::vector<double>& poly_2) const;
     std::vector<double> AddPolynomials(const std::vector<double>& poly_1, const std::vector<double>& poly_2) const;
     std::vector<double> SubtractPolynomials(const std::vector<double>& poly_1, const std::vector<double>& poly_2) const;
+    // Find polynomial roots numerically 
+    std::vector<std::complex<double>> FindRootsNumerically(const std::vector<double>& coefficients) const;
 
 
   public:

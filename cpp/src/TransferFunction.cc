@@ -10,14 +10,30 @@ TransferFunction::TransferFunction(const std::vector<double>& num, const std::ve
 }
 
 double TransferFunction::EvaluatePolynomial(const std::vector<double>& coefficients, double s) const {
-  if (coefficients.size() == 0)
+  if (coefficients.empty())
     return 0;
   
   double result = 0;
-  int degree = static_cast<int>(coefficients.size() - 1);
+  size_t degree = coefficients.size() - 1;
 
   for (double coe : coefficients) {
     result += coe * std::pow(s, degree);
+    degree--;
+  }
+
+  return result;
+}
+
+std::complex<double> TransferFunction::EvaluatePolynomial(const std::vector<double>& coefficients, const std::complex<double>& value) const {
+  if (coefficients.empty())
+    return std::complex<double>(0.0, 0.0);
+
+  
+  std::complex<double> result(0.0, 0.0);
+  size_t degree = coefficients.size() - 1;
+
+  for (const auto& coe : coefficients) {
+    result += coe * std::pow(value, degree);
     degree--;
   }
 
@@ -50,13 +66,17 @@ std::vector<std::complex<double>> TransferFunction::FindRoots(const std::vector<
       double root_2 = (-coefficients[1] - std::sqrt(discriminant)) / (2 * coefficients[0]);
       return {std::complex<double>(root_1, 0.0), std::complex<double>(root_2, 0.0)};
     } else {
-      double real_part = -coefficients[1] / std::abs(2 * coefficients[0]);
-      double imag_part = std::sqrt(-discriminant) / (2 * coefficients[0]);
+      double real_part = -coefficients[1] / (2 * coefficients[0]);
+      double imag_part = std::sqrt(-discriminant) / std::abs(2 * coefficients[0]);
       return {std::complex<double>(real_part, imag_part), std::complex<double>(real_part, -imag_part)};
     }
   }
 
   return {};
+}
+
+std::vector<std::complex<double>> TransferFunction::FindRootsNumerically(const std::vector<double>& coefficients) const {
+  size_t degree = Degree(coefficients);
 }
 
 void TransferFunction::Print() const {
