@@ -284,6 +284,25 @@ void TransferFunction::TestAddPolynomials() const {
   std::cout << std::endl;
 }
 
+std::vector<double> TransferFunction::DifferentiatePolynomial(const std::vector<double>& coefficients) const {
+  if (coefficients.empty())
+    return {};
+
+  size_t degree = Degree(coefficients);
+
+  if (degree == 0)
+    return {0};
+
+  std::vector<double> derivative;
+  for (size_t i = 0; i < coefficients.size() - 1; i++) {
+    size_t curr_power = degree - i;
+    double derivative_coefficient = coefficients[i] * curr_power;
+    derivative.push_back(derivative_coefficient);
+  }
+
+  return derivative;
+}
+
 TransferFunction TransferFunction::Series(const TransferFunction& other) const {
   std::vector<double> new_numerator = MultiplyPolynomials(this->numerator, other.numerator);
   std::vector<double> new_denominator = MultiplyPolynomials(this->denominator, other.denominator);

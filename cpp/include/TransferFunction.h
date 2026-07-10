@@ -7,6 +7,12 @@
 
 #include "StabilityStatus.h"
 
+struct PartialFractionTerm {
+  std::complex<double> residue;
+  std::complex<double> pole;
+  size_t multiplicity;
+};
+
 class TransferFunction {
   private:
     std::vector<double> numerator;
@@ -29,6 +35,8 @@ class TransferFunction {
     std::vector<std::complex<double>> FindRootsNumerically(const std::vector<double>& coefficients) const;
     // Make initial guesses for Finding Roots numerically
     std::vector<std::complex<double>> GenerateInitialGuesses(const std::vector<double>& coefficients) const;
+    // Differentiate Polynomial
+    std::vector<double> DifferentiatePolynomial(const std::vector<double>& coefficients) const;
 
   public:
     // Constructor
@@ -68,10 +76,11 @@ class TransferFunction {
     void TestMultiplyPolynomials() const;
     void TestAddPolynomials() const;
 
-    // Print
-    friend std::ostream& operator<<(std::ostream& os, const TransferFunction& rhs);
+    // Evaluate via Partial Fractions
+    std::vector<PartialFractionTerm> PartialFractionExpansion() const;
 
-    // Operations
+    // Overloaded Operations
+    friend std::ostream& operator<<(std::ostream& os, const TransferFunction& rhs);
     TransferFunction operator-(const TransferFunction& other) const;
     TransferFunction operator/(const TransferFunction& other) const;
 };
