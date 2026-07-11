@@ -7,7 +7,7 @@
 
 const double kPi = 3.14159265358979323846;
 
-TransferFunction::TransferFunction(const std::vector<double>& num, const std::vector<double>& den) : numerator(num), denominator(den) {
+TransferFunction::TransferFunction(const std::vector<double>& num, const std::vector<double>& den) : numerator(RemoveLeadingZeros(num)), denominator(RemoveLeadingZeros(den)) {
 
 }
 
@@ -49,32 +49,49 @@ size_t TransferFunction::Degree(const std::vector<double>& coefficients) const {
   return coefficients.size() - 1;
 }
 
+std::vector<double> TransferFunction::RemoveLeadingZeros(const std::vector<double>& coefficients) {
+  constexpr double k_zero_tolerance = 1e-12;
+
+  if (coefficients.empty())
+    return {0.0};
+
+  size_t first_nonzero = 0;
+
+  while (first_nonzero < coefficients.size() - 1 && std::abs(coefficients[first_nonzero]) < k_zero_tolerance) {
+    first_nonzero++;
+  }
+
+  return std::vector<double>(coefficients.begin() + first_nonzero, coefficients.end());
+}
+
 std::vector<std::complex<double>> TransferFunction::FindRoots(const std::vector<double>& coefficients) const {
-  if (Degree(coefficients) == 0)
+  std::vector<double> cleaned = RemoveLeadingZeros(coefficients);
+
+  if (Degree(cleaned) == 0)
     return {};
 
-  if (Degree(coefficients) == 1) {
+  if (Degree(cleaned) == 1) {
     // a = coefficient[0], b = coefficient[1]
-    double root = -coefficients[1] / coefficients[0]; // For now assume that coefficients[0] != 0
+    double root = -cleaned[1] / cleaned[0]; // For now assume that coefficients[0] != 0
     return {std::complex<double>(root, 0.0)};
   }
 
-  if (Degree(coefficients) == 2) {
+  if (Degree(cleaned) == 2) {
     // a = coefficient[0], b = coefficient[1], c = coefficient[2]
-    double discriminant = std::pow(coefficients[1], 2) - (4 * coefficients[0] * coefficients[2]);
+    double discriminant = std::pow(cleaned[1], 2) - (4 * cleaned[0] * cleaned[2]);
 
     if (discriminant >= 0) {
-      double root_1 = (-coefficients[1] + std::sqrt(discriminant)) / (2 * coefficients[0]);
-      double root_2 = (-coefficients[1] - std::sqrt(discriminant)) / (2 * coefficients[0]);
+      double root_1 = (-cleaned[1] + std::sqrt(discriminant)) / (2 * cleaned[0]);
+      double root_2 = (-cleaned[1] - std::sqrt(discriminant)) / (2 * cleaned[0]);
       return {std::complex<double>(root_1, 0.0), std::complex<double>(root_2, 0.0)};
     } else {
-      double real_part = -coefficients[1] / (2 * coefficients[0]);
-      double imag_part = std::sqrt(-discriminant) / std::abs(2 * coefficients[0]);
+      double real_part = -cleaned[1] / (2 * cleaned[0]);
+      double imag_part = std::sqrt(-discriminant) / std::abs(2 * cleaned[0]);
       return {std::complex<double>(real_part, imag_part), std::complex<double>(real_part, -imag_part)};
     }
   }
 
-  return FindRootsNumerically(coefficients);
+  return FindRootsNumerically(cleaned);
 }
 
 std::vector<std::complex<double>> TransferFunction::GenerateInitialGuesses(const std::vector<double>& coefficients) const {
@@ -288,15 +305,17 @@ std::vector<double> TransferFunction::DifferentiatePolynomial(const std::vector<
   if (coefficients.empty())
     return {};
 
-  size_t degree = Degree(coefficients);
+  std::vector<double> cleaned = RemoveLeadingZeros(coefficients);
+
+  size_t degree = Degree(cleaned);
 
   if (degree == 0)
     return {0};
 
   std::vector<double> derivative;
-  for (size_t i = 0; i < coefficients.size() - 1; i++) {
+  for (size_t i = 0; i < cleaned.size() - 1; i++) {
     size_t curr_power = degree - i;
-    double derivative_coefficient = coefficients[i] * curr_power;
+    double derivative_coefficient = cleaned[i] * curr_power;
     derivative.push_back(derivative_coefficient);
   }
 
@@ -389,4 +408,37 @@ void TransferFunction::PrintStability() const {
       std::cout << "System is unstable\n";
       break;
   }
+}
+
+std::vector<PartialFractionTerm> TransferFunction::PartialFractionExpansion() const {
+  if (Degree(numerator) >= Degree(denominator))
+    throw std::invalid_argument("Partial fraction decomposition requires a proper transfer function.");
+
+  std::vector<std::complex<double>> poles = GetPoles();
+  double tolerance = 1e-8;
+
+  for (size_t i = 0; i < poles.size(); i++) {
+    for (size_t j = i + 1; j < poles.size(); j++) {
+      if (std::abs(poles[i] - poles[j]) < tolerance)
+        throw std::invalid_argument("Repeated poles are not supported.");
+    }
+  }
+
+  std::vector<double> denominator_derivative = DifferentiatePolynomial(denominator);
+
+  std::vector<PartialFractionTerm> terms;
+  for (const auto& pole : poles) {
+    std::complex<double> numerator_value = EvaluatePolynomial(numerator, pole);
+    std::complex<double> derivative_value = EvaluatePolynomial(denominator_derivative, pole);
+    std::complex<double> residue = numerator_value / derivative_value;
+
+    PartialFractionTerm term;
+    term.residue = residue;
+    term.pole = pole;
+    term.multiplicity = 1;
+
+    terms.push_back(term);
+  }
+
+  return terms;
 }

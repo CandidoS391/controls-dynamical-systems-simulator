@@ -37,6 +37,8 @@ class TransferFunction {
     std::vector<std::complex<double>> GenerateInitialGuesses(const std::vector<double>& coefficients) const;
     // Differentiate Polynomial
     std::vector<double> DifferentiatePolynomial(const std::vector<double>& coefficients) const;
+    // Remove Leading Zeros
+    static std::vector<double> RemoveLeadingZeros(const std::vector<double>& coefficients);
 
   public:
     // Constructor

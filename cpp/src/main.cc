@@ -883,8 +883,52 @@ void TestHigherOrderRoots() {
   std::cout << std::endl;
 }
 
+void TestPartialFractionExpansion() {
+  // Test 1: Two distinct real poles
+  TransferFunction g({5, 7}, {1, 3, 2});
+
+  std::vector<PartialFractionTerm> terms = g.PartialFractionExpansion();
+
+  std::cout << "Partial Fraction Terms (Test 1):\n";
+  for (const auto& term : terms) {
+    std::cout << "Residue: " << term.residue << std::endl;
+    std::cout << "Pole: " << term.pole << std::endl;
+    std::cout << "Multiplicity: " << term.multiplicity << std::endl;
+    std::cout << std::endl;
+  }
+
+  // Test 2: Three distinct real poles
+  TransferFunction g_2({1}, {1, 6, 11, 6});
+
+  std::cout << "Partial Fraction Terms (Test 2):\n";
+  std::vector<PartialFractionTerm> terms_2 = g_2.PartialFractionExpansion();
+
+  for (const auto& term : terms_2) {
+    std::cout << "Residue: " << term.residue << std::endl;
+    std::cout << "Pole: " << term.pole << std::endl;
+    std::cout << "Multiplicity: " << term.multiplicity << std::endl;
+    std::cout << std::endl;
+  }
+
+  // Test 3: Repeated pole
+  // 1 / (s + 1)^2
+  TransferFunction g_3({1}, {1, 2, 1});
+  std::cout << "Partial Fraction Terms (Test 3):\n";
+
+  try {
+    std::vector<PartialFractionTerm> terms_3 =
+        g_3.PartialFractionExpansion();
+    std::cout << "ERROR: Repeated pole was not detected.\n";
+  } catch (const std::invalid_argument& error) {
+    std::cout << "Expected exception: "
+              << error.what() << std::endl;
+  }
+  std::cout << std::endl;
+
+}
+
 int main() {
-  TestHigherOrderRoots();
-    
+  TestPartialFractionExpansion();
+
   return 0;
 }
