@@ -175,10 +175,7 @@ $$
 
 in which three components are calculated:
 - $P_i$ represents the $i$ number of forward paths, or the continuous, unidirectional paths from the input node to the output node
-- $\Delta$ represents the determinant of the graph, which is calculated using all the loops in the signal flow graph, with the equation being:
-$
-\Delta = 1 - \sum (\text{Individual loop gains}) + \sum (\text{Gain products of all possible two non-touching loops}) - \sum (\text(Gain products of all possible three non-touching loops)) \ldots
-$
+- $\Delta$ represents the determinant of the graph, which is calculated using all the loops in the signal flow graph, with the equation being: $\Delta = 1 - \sum (\text{Individual loop gains}) + \sum (\text{Gain products of all possible two non-touching loops}) - \sum (\text(Gain products of all possible three non-touching loops)) \ldots$
 - $\Delta_{i}$ represents cofactor of the $i^{th}$ path of $\Delta$ for the portion of the graph that does **not touch** the $i^{th}$ forward path. If all loops touch the $i^{th}$ forward path, then $\Delta_{i} = 1$.
 
 *Footnote: A loop gain (L) is the product of all branch gains that form from a loop (a closed path that begins and ends at the same node). While a loop is considered to be non-touching if the loop does not share any common nodes.*
