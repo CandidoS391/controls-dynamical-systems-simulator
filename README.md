@@ -154,7 +154,34 @@ $$
 G(s) = \frac{N(s)}{D(s)}
 $$
 
-in which within the class, $N(s)$ and $D(s)$ are represented by two vectors.
+in which within the class, $N(s)$, the numerator, and $D(s)$, the denominator are represented by two vectors.
+
+Within the `TransferFunction` class, there are private helper functions that evaluates the polynomials $N(s)$ and $D(s)$ at a specified value $s$, evaluates the degree of the polynomials, as well as perform several operations including adding, subtracting, dividing, and taking the derivative of the polynomials.
+
+# How Systems are Represented
+Within control system theory, there are two main ways of representing a control system, a block diagram and a signal flow graph.
+
+A block diagram uses functional blocks, summing junctions and take-off points to visualize the flow of signals through subsystems. Looking more in detail:
+
+- Blocks: Represent system components or operations.
+- Summing Points: Circles where signals are either added or subtracted.
+- Take-off Points: Locations where a signal branches off to multiple destinations.
+
+A signal flow graph on the otherhand is more streamlined, consisting of only nodes that represent a signal/variable, and directional branches that represents the "branch gains" of the system. What makes flow graphs more advantageous compared to block diagrams is that using a flow graph allows engineers and mathematicians to compute the system's overall transfer function using something called **Mason's gain formula**, which is defined as:
+
+$$
+T = \frac{\sum_{i} P_i \Delta_{i}}{\Delta}
+$$
+
+in which three components are calculated:
+- $P_i$ represents the $i$ number of forward paths, or the continuous, unidirectional paths from the input node to the output node
+- $\Delta$ represents the determinant of the graph, which is calculated using all the loops in the signal flow graph, with the equation being:
+$$
+\Delta = 1 - \sum (\text{Individual loop gains}) + \sum (\text{Gain products of all possible two non-touching loops}) - \sum (\text(Gain products of all possible three non-touching loops)) \ldots
+$$
+- $\Delta_{i}$ represents cofactor of the $i^{th}$ path of $\Delta$ for the portion of the graph that does **not touch** the $i^{th}$ forward path. If all loops touch the $i^{th}$ forward path, then $\Delta_{i} = 1$.
+
+*Footnote: A loop gain $L$ is the product of all branch gains that form from a loop (a closed path that begins and ends at the same node). While a loop is considered to be non-touching if the loop does not share any common nodes.*
 
 # The RLC Circuit
 So far, the only part of this project that is related to the Electromagnetic section and that is the RLC Circuit.
