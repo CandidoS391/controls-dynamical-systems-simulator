@@ -8,7 +8,8 @@
 const double kPi = 3.14159265358979323846;
 
 TransferFunction::TransferFunction(const std::vector<double>& num, const std::vector<double>& den) : numerator(RemoveLeadingZeros(num)), denominator(RemoveLeadingZeros(den)) {
-
+  if (denominator.size() == 1 && std::abs(denominator[0]) < 1e-12)
+    throw std::invalid_argument("Invalid denominator");
 }
 
 double TransferFunction::EvaluatePolynomial(const std::vector<double>& coefficients, double s) const {
@@ -62,6 +63,55 @@ std::vector<double> TransferFunction::RemoveLeadingZeros(const std::vector<doubl
   }
 
   return std::vector<double>(coefficients.begin() + first_nonzero, coefficients.end());
+}
+
+std::vector<PoleGroup> TransferFunction::GroupPoles(const std::vector<std::complex<double>>& poles) const {
+  double tolerance = 1e-7;
+
+  std::vector<PoleGroup> groups;
+  for (const auto& pole : poles) {
+    bool found_group = false;
+
+    for (auto& group : groups) {
+      double distance = std::abs(pole - group.pole);
+      if (distance < tolerance) {
+        group.multiplicity++;
+        found_group = true;
+        break;
+      }
+    }
+
+    if (found_group == false) {
+      PoleGroup new_group;
+      new_group.pole = pole;
+      new_group.multiplicity = 1;
+      groups.push_back(new_group);
+    }
+  }
+
+  return groups;
+}
+
+std::vector<double> TransferFunction::DividePolynomialByLinearFactor(const std::vector<double>& coefficients, double pole) const {
+  if (coefficients.size() <= 1)
+    throw std::invalid_argument("Invalid number of passed in coefficients.");
+  
+  double tolerance = 1e-7;
+  std::vector<double> quotient;
+  double current_value = coefficients[0];
+  quotient.push_back(current_value);
+
+  for (size_t i = 1; i < coefficients.size() - 1; i++) {
+    current_value = coefficients[i] + pole * current_value;
+    quotient.push_back(current_value);
+  }
+
+  double remainder = coefficients[coefficients.size() - 1] + pole * current_value;
+  if (std::abs(remainder) > tolerance) {
+    throw std::runtime_error("Pole is not a root");
+  }
+
+  return quotient;
 }
 
 std::vector<std::complex<double>> TransferFunction::FindRoots(const std::vector<double>& coefficients) const {
@@ -415,29 +465,61 @@ std::vector<PartialFractionTerm> TransferFunction::PartialFractionExpansion() co
     throw std::invalid_argument("Partial fraction decomposition requires a proper transfer function.");
 
   std::vector<std::complex<double>> poles = GetPoles();
+  std::vector<PoleGroup> groups = GroupPoles(poles);
   double tolerance = 1e-8;
-
-  for (size_t i = 0; i < poles.size(); i++) {
-    for (size_t j = i + 1; j < poles.size(); j++) {
-      if (std::abs(poles[i] - poles[j]) < tolerance)
-        throw std::invalid_argument("Repeated poles are not supported.");
-    }
-  }
 
   std::vector<double> denominator_derivative = DifferentiatePolynomial(denominator);
 
   std::vector<PartialFractionTerm> terms;
-  for (const auto& pole : poles) {
-    std::complex<double> numerator_value = EvaluatePolynomial(numerator, pole);
-    std::complex<double> derivative_value = EvaluatePolynomial(denominator_derivative, pole);
-    std::complex<double> residue = numerator_value / derivative_value;
+  for (const auto& group : groups) {
+    if (group.multiplicity == 1) {
+      const std::complex<double>& pole = group.pole;
 
-    PartialFractionTerm term;
-    term.residue = residue;
-    term.pole = pole;
-    term.multiplicity = 1;
+      std::complex<double> numerator_value = EvaluatePolynomial(numerator, pole);
+      std::complex<double> derivative_value = EvaluatePolynomial(denominator_derivative, pole);
+      std::complex<double> residue = numerator_value / derivative_value;
 
-    terms.push_back(term);
+      PartialFractionTerm term;
+      term.residue = residue;
+      term.pole = pole;
+      term.multiplicity = 1;
+
+      terms.push_back(term);
+    } else if (group.multiplicity == 2) {
+      if (std::abs(group.pole.imag()) >= tolerance)
+        throw std::invalid_argument("Imaginary part of pole is over tolerance");
+
+      double real_pole = group.pole.real();
+
+      std::vector<double> q_coefficients = denominator;
+      q_coefficients = DividePolynomialByLinearFactor(q_coefficients, real_pole);
+      q_coefficients = DividePolynomialByLinearFactor(q_coefficients, real_pole);
+
+      std::complex<double> pole_complex = group.pole;
+      std::complex<double> n_at_p = EvaluatePolynomial(numerator, pole_complex);
+      std::complex<double> q_at_p = EvaluatePolynomial(q_coefficients, pole_complex);
+      std::complex<double> a_2 = n_at_p / q_at_p;
+
+      std::vector<double> numerator_derivative = DifferentiatePolynomial(numerator);
+      std::vector<double> q_derivative = DifferentiatePolynomial(q_coefficients);
+      std::complex<double> n_prime_at_p = EvaluatePolynomial(numerator_derivative, pole_complex);
+      std::complex<double> q_prime_at_p = EvaluatePolynomial(q_derivative, pole_complex);
+      std::complex<double> a_1 = (n_prime_at_p * q_at_p - n_at_p * q_prime_at_p) / (q_at_p * q_at_p);
+
+      PartialFractionTerm term_1;
+      term_1.residue = a_1;
+      term_1.pole = group.pole;
+      term_1.multiplicity = 1;
+      terms.push_back(term_1);
+
+      PartialFractionTerm term_2;
+      term_2.residue = a_2;
+      term_2.pole = group.pole;
+      term_2.multiplicity = 2;
+      terms.push_back(term_2);
+    } else {
+      throw std::invalid_argument("Pole multiplicities greater than two are not supported.");
+    }
   }
 
   return terms;

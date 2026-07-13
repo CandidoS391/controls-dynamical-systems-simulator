@@ -4,11 +4,17 @@
 #include <vector>
 #include <iostream>
 #include <complex>
+#include <stdexcept>
 
 #include "StabilityStatus.h"
 
 struct PartialFractionTerm {
   std::complex<double> residue;
+  std::complex<double> pole;
+  size_t multiplicity;
+};
+
+struct PoleGroup {
   std::complex<double> pole;
   size_t multiplicity;
 };
@@ -39,6 +45,10 @@ class TransferFunction {
     std::vector<double> DifferentiatePolynomial(const std::vector<double>& coefficients) const;
     // Remove Leading Zeros
     static std::vector<double> RemoveLeadingZeros(const std::vector<double>& coefficients);
+    // Group the poles for Partial Fraction Expression
+    std::vector<PoleGroup> GroupPoles(const std::vector<std::complex<double>>& poles) const;
+    // Dividing Polynomials by a real linear factor
+    std::vector<double> DividePolynomialByLinearFactor(const std::vector<double>& coefficients, double pole) const;
 
   public:
     // Constructor
