@@ -19,6 +19,8 @@
 #include "TransferFunction.h"
 #include "RLCCircuit.h"
 #include "SignalFlowGraph.h"
+#include "RouthTable.h"
+#include "StabilityStatus.h"
 
 void SimulateFirstOrderDecayEuler() {
   FirstOrderDecay decay(0.5);
@@ -926,8 +928,65 @@ void TestPartialFractionExpansion() {
   std::cout << std::endl;
 }
 
+void TestRouthTable() {
+  // Test 1: Stable cubic
+  // s^3 + 6s^2 + 11s + 6
+  RouthTable stable_table({1, 6, 11, 6});
+
+  std::cout << "Routh Table (Test 1 - Stable Cubic):\n";
+  stable_table.Build();
+  stable_table.Print();
+
+  StabilityStatus stable_status = stable_table.GetStability();
+
+  if (stable_status == StabilityStatus::k_stable)
+    std::cout << "System is stable\n";
+  else
+    std::cout << "ERROR: Expected stable system\n";
+
+  std::cout << std::endl;
+
+
+  // Test 2: Unstable cubic
+  // s^3 - 2s^2 - s + 2
+  RouthTable unstable_table({1, -2, -1, 2});
+
+  std::cout << "Routh Table (Test 2 - Unstable Cubic):\n";
+  unstable_table.Build();
+  unstable_table.Print();
+
+  StabilityStatus unstable_status = unstable_table.GetStability();
+
+  if (unstable_status == StabilityStatus::k_unstable)
+    std::cout << "System is unstable\n";
+  else
+    std::cout << "ERROR: Expected unstable system\n";
+
+  std::cout << std::endl;
+
+
+  // Test 3: Stable fourth-order polynomial
+  // (s + 1)(s + 2)(s + 3)(s + 4)
+  // s^4 + 10s^3 + 35s^2 + 50s + 24
+  RouthTable fourth_order_table({1, 10, 35, 50, 24});
+
+  std::cout << "Routh Table (Test 3 - Stable Fourth Order):\n";
+  fourth_order_table.Build();
+  fourth_order_table.Print();
+
+  StabilityStatus fourth_order_status =
+      fourth_order_table.GetStability();
+
+  if (fourth_order_status == StabilityStatus::k_stable)
+    std::cout << "System is stable\n";
+  else
+    std::cout << "ERROR: Expected stable system\n";
+
+  std::cout << std::endl;
+}
+
 int main() {
-  TestPartialFractionExpansion();
+  TestRouthTable();
 
   return 0;
 }
