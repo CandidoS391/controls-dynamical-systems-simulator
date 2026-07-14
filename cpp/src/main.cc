@@ -915,16 +915,30 @@ void TestPartialFractionExpansion() {
   TransferFunction g_3({1}, {1, 2, 1});
   std::cout << "Partial Fraction Terms (Test 3):\n";
 
-  try {
-    std::vector<PartialFractionTerm> terms_3 =
-        g_3.PartialFractionExpansion();
-    std::cout << "ERROR: Repeated pole was not detected.\n";
-  } catch (const std::invalid_argument& error) {
-    std::cout << "Expected exception: "
-              << error.what() << std::endl;
-  }
-  std::cout << std::endl;
+  std::vector<PartialFractionTerm> terms_3 = g_3.PartialFractionExpansion();
 
+  for (const auto& term : terms_3) {
+    std::cout << "Residue: " << term.residue << std::endl;
+    std::cout << "Pole: " << term.pole << std::endl;
+    std::cout << "Multiplicity: " << term.multiplicity << std::endl;
+    std::cout << std::endl; 
+  }
+
+  // Test 4: Unsupported triple pole
+  // 1 / (s + 1)^3
+  TransferFunction g_4({1}, {1, 3, 3, 1});
+
+  std::cout << "Partial Fraction Terms (Test 4):\n";
+
+  try {
+    std::vector<PartialFractionTerm> terms_4 = g_4.PartialFractionExpansion();
+
+    std::cout << "ERROR: Triple pole was not rejected.\n";
+  } catch (const std::invalid_argument& error) {
+    std::cout << "Expected exception: " << error.what() << std::endl;
+  }
+
+  std::cout << std::endl;
 }
 
 int main() {

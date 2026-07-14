@@ -66,7 +66,7 @@ std::vector<double> TransferFunction::RemoveLeadingZeros(const std::vector<doubl
 }
 
 std::vector<PoleGroup> TransferFunction::GroupPoles(const std::vector<std::complex<double>>& poles) const {
-  double tolerance = 1e-7;
+  double tolerance = 1e-5;
 
   std::vector<PoleGroup> groups;
   for (const auto& pole : poles) {
@@ -466,6 +466,7 @@ std::vector<PartialFractionTerm> TransferFunction::PartialFractionExpansion() co
 
   std::vector<std::complex<double>> poles = GetPoles();
   std::vector<PoleGroup> groups = GroupPoles(poles);
+
   double tolerance = 1e-8;
 
   std::vector<double> denominator_derivative = DifferentiatePolynomial(denominator);
