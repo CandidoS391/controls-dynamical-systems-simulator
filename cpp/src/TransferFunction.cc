@@ -525,3 +525,14 @@ std::vector<PartialFractionTerm> TransferFunction::PartialFractionExpansion() co
 
   return terms;
 }
+
+void TransferFunction::PrintPartialFractionExpression() const {
+  std::vector<PartialFractionTerm> terms = PartialFractionExpansion();
+
+  for (const auto& term : terms) {
+    std::cout << "Residue: " << term.residue << std::endl;
+    std::cout << "Pole: " << term.pole << std::endl;
+    std::cout << "Multiplicity: " << term.multiplicity << std::endl;
+    std::cout << std::endl;
+  }
+}

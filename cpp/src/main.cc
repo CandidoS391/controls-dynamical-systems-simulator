@@ -890,12 +890,7 @@ void TestPartialFractionExpansion() {
   std::vector<PartialFractionTerm> terms = g.PartialFractionExpansion();
 
   std::cout << "Partial Fraction Terms (Test 1):\n";
-  for (const auto& term : terms) {
-    std::cout << "Residue: " << term.residue << std::endl;
-    std::cout << "Pole: " << term.pole << std::endl;
-    std::cout << "Multiplicity: " << term.multiplicity << std::endl;
-    std::cout << std::endl;
-  }
+  g.PrintPartialFractionExpression();
 
   // Test 2: Three distinct real poles
   TransferFunction g_2({1}, {1, 6, 11, 6});
@@ -903,12 +898,7 @@ void TestPartialFractionExpansion() {
   std::cout << "Partial Fraction Terms (Test 2):\n";
   std::vector<PartialFractionTerm> terms_2 = g_2.PartialFractionExpansion();
 
-  for (const auto& term : terms_2) {
-    std::cout << "Residue: " << term.residue << std::endl;
-    std::cout << "Pole: " << term.pole << std::endl;
-    std::cout << "Multiplicity: " << term.multiplicity << std::endl;
-    std::cout << std::endl;
-  }
+  g_2.PrintPartialFractionExpression();
 
   // Test 3: Repeated pole
   // 1 / (s + 1)^2
@@ -917,12 +907,7 @@ void TestPartialFractionExpansion() {
 
   std::vector<PartialFractionTerm> terms_3 = g_3.PartialFractionExpansion();
 
-  for (const auto& term : terms_3) {
-    std::cout << "Residue: " << term.residue << std::endl;
-    std::cout << "Pole: " << term.pole << std::endl;
-    std::cout << "Multiplicity: " << term.multiplicity << std::endl;
-    std::cout << std::endl; 
-  }
+  g_3.PrintPartialFractionExpression();
 
   // Test 4: Unsupported triple pole
   // 1 / (s + 1)^3

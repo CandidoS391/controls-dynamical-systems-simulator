@@ -91,6 +91,9 @@ class TransferFunction {
     // Evaluate via Partial Fractions
     std::vector<PartialFractionTerm> PartialFractionExpansion() const;
 
+    // Print out Partial Fraction
+    void PrintPartialFractionExpression() const;
+
     // Overloaded Operations
     friend std::ostream& operator<<(std::ostream& os, const TransferFunction& rhs);
     TransferFunction operator-(const TransferFunction& other) const;
