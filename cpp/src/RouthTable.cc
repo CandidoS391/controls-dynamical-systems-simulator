@@ -6,6 +6,17 @@ RouthTable::RouthTable(const std::vector<double>& coe) : coefficients(coe) {
 
 }
 
+bool RouthTable::RowIsZero(const std::vector<double>& row) const {
+  double tolerance = 1e-12;
+
+  for (const auto& value : row) {
+    if (std::abs(value) >= tolerance)
+      return false;
+  }
+
+  return true;
+}
+
 void RouthTable::Build() {
   if (coefficients.empty())
     throw std::invalid_argument("Characteristic polynomial cannot be empty.");
@@ -28,6 +39,10 @@ void RouthTable::Build() {
     }
   }
 
+  // Check if row 0 is not zero
+  if (RowIsZero(table[0]))
+    throw std::runtime_error("First row of Routh table cannot be entirely zero.");
+
   coefficient_index = 1;
 
   // Fill row 1
@@ -39,6 +54,10 @@ void RouthTable::Build() {
         coefficient_index += 2;
       }
     }
+
+    // Check if row 1 is not zero after populating it
+    if (RowIsZero(table[1]))
+      throw std::runtime_error("Entire row of zeros detected.");
   }
 
   // Build rows 2 through rows - 1
@@ -60,6 +79,9 @@ void RouthTable::Build() {
 
       table[i][j] = (lower_left * upper_next - upper_left * lower_next) / lower_left;
     }
+    // Check for a zero row after an entire row has been populated
+    if (RowIsZero(table[i]))
+      throw std::runtime_error("Entire row of zeros detected.");
   }
 
 }

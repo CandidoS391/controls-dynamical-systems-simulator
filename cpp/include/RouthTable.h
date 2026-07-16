@@ -13,6 +13,9 @@ class RouthTable {
     std::vector<double> coefficients;
     std::vector<std::vector<double>> table;
 
+    // Check if row in the table is completely zero
+    bool RowIsZero(const std::vector<double>& row) const;
+
   public:
     explicit RouthTable(const std::vector<double>& coe);
     void Build();

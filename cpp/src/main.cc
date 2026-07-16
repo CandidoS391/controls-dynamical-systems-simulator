@@ -948,8 +948,8 @@ void TestRouthTable() {
 
 
   // Test 2: Unstable cubic
-  // s^3 - 2s^2 - s + 2
-  RouthTable unstable_table({1, -2, -1, 2});
+  // s^3 - 2s^2 + s + 2
+  RouthTable unstable_table({1, -2, 1, 2});
 
   std::cout << "Routh Table (Test 2 - Unstable Cubic):\n";
   unstable_table.Build();
@@ -981,6 +981,23 @@ void TestRouthTable() {
     std::cout << "System is stable\n";
   else
     std::cout << "ERROR: Expected stable system\n";
+
+  std::cout << std::endl;
+
+  // Test 4: Entire row of zeros
+  // s^4 + 2s^2 + 1 = (s^2 + 1)^2
+  RouthTable zero_row_table({1, 0, 2, 0, 1});
+  
+  std::cout << "Routh Table (Test 4 - Entire Row of Zeros):\n";
+
+  try {
+    zero_row_table.Build();
+    zero_row_table.Print();
+
+    std::cout << "ERROR: Entire row of zeros was not detected.\n";
+  } catch (const std::runtime_error& error) {
+    std::cout << "Expected exception: " << error.what() << std::endl;
+  }
 
   std::cout << std::endl;
 }
