@@ -212,8 +212,15 @@ Since there are no sign changes in the first column, the system is **stable**.
 Once the table is filled, the stability is determined based only on the **first column** of the array:
 - A system is stable if and only if every element in the first column is positive
 - If there are changes in the sign of the elements in the first column, then the system is unstable. Furthermore, the exact number of sign changes equals the number of unstable poles that are located in the right half plane of the complex $s$-plane.
+- If there exists a row of zeros within the table, then it signals that the system has roots on the imaginary axis and therefore the system is marginally stable.
 
-In this project, Routh Tables have their own separate class, in which the table itself is built on a vector of vectors of double type. 
+In this project, Routh Tables have their own separate class, in which the table itself is built on a vector of vectors of double type. This class can:
+- Construct Routh Tables from given characteristic polynomial coefficients.
+- Classfy the systems based on the aforementioned classifications.
+- Detect sign changes in the first column of the Routh table to determine the number of right-half-plane poles
+- Handle zero first-colum elements using the epsilon substitution method.
+- Handle rows of zeros using the auxiliary polynomial method.
+- Print out a completed Routh table in a way that is readable to humans.
 
 # How Systems are Represented
 Within control system theory, there are two main ways of representing a control system, a block diagram and a signal flow graph.

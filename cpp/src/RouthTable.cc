@@ -17,9 +17,33 @@ bool RouthTable::RowIsZero(const std::vector<double>& row) const {
   return true;
 }
 
+void RouthTable::ReplaceZeroRow(size_t row_index) {
+  if (row_index == 0)
+    throw std::logic_error("There is no previous row that can be calculated");
+
+  size_t prev_row_index = row_index - 1;
+  size_t polynomial_degree = coefficients.size() - 1;
+  size_t prev_row_power = polynomial_degree - prev_row_index;
+  size_t curr_power = prev_row_power;
+
+  for (size_t i = 0; i < table[prev_row_index].size(); i++) {
+    double prev_coefficient = table[prev_row_index][i];
+    double derivative_coefficient = prev_coefficient * curr_power;
+
+    table[row_index][i] = derivative_coefficient;
+
+    if (curr_power >= 2)
+      curr_power -= 2;
+    else
+      curr_power = 0;
+  }
+}
+
 void RouthTable::Build() {
   if (coefficients.empty())
     throw std::invalid_argument("Characteristic polynomial cannot be empty.");
+
+  zero_row_count = 0;
 
   size_t degree = coefficients.size() - 1;
 
@@ -39,10 +63,6 @@ void RouthTable::Build() {
     }
   }
 
-  // Check if row 0 is not zero
-  if (RowIsZero(table[0]))
-    throw std::runtime_error("First row of Routh table cannot be entirely zero.");
-
   coefficient_index = 1;
 
   // Fill row 1
@@ -56,8 +76,10 @@ void RouthTable::Build() {
     }
 
     // Check if row 1 is not zero after populating it
-    if (RowIsZero(table[1]))
-      throw std::runtime_error("Entire row of zeros detected.");
+    if (RowIsZero(table[1])) {
+      zero_row_count++;
+      ReplaceZeroRow(1);
+    }
   }
 
   // Build rows 2 through rows - 1
@@ -80,8 +102,10 @@ void RouthTable::Build() {
       table[i][j] = (lower_left * upper_next - upper_left * lower_next) / lower_left;
     }
     // Check for a zero row after an entire row has been populated
-    if (RowIsZero(table[i]))
-      throw std::runtime_error("Entire row of zeros detected.");
+    if (RowIsZero(table[i])) {
+      zero_row_count++;
+      ReplaceZeroRow(i);
+    }
   }
 
 }
@@ -109,8 +133,11 @@ StabilityStatus RouthTable::GetStability() const {
     }
   }
 
-  if (sign_changes == 0)
-    return StabilityStatus::k_stable;
+  if (sign_changes > 0)
+    return StabilityStatus::k_unstable;
 
-  return StabilityStatus::k_unstable;
+  if (zero_row_count > 0)
+    return StabilityStatus::k_marginally_stable;
+
+  return StabilityStatus::k_stable;
 }

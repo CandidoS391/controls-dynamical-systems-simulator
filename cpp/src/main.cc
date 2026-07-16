@@ -984,20 +984,22 @@ void TestRouthTable() {
 
   std::cout << std::endl;
 
-  // Test 4: Entire row of zeros
+  // Test 4: Entire row of zeros handled with auxiliary polynomial
   // s^4 + 2s^2 + 1 = (s^2 + 1)^2
   RouthTable zero_row_table({1, 0, 2, 0, 1});
-  
-  std::cout << "Routh Table (Test 4 - Entire Row of Zeros):\n";
 
-  try {
-    zero_row_table.Build();
-    zero_row_table.Print();
+  std::cout << "Routh Table (Test 4 - Zero Row Replacement):\n";
 
-    std::cout << "ERROR: Entire row of zeros was not detected.\n";
-  } catch (const std::runtime_error& error) {
-    std::cout << "Expected exception: " << error.what() << std::endl;
-  }
+  zero_row_table.Build();
+  zero_row_table.Print();
+
+  StabilityStatus zero_row_status =
+      zero_row_table.GetStability();
+
+  if (zero_row_status == StabilityStatus::k_marginally_stable)
+    std::cout << "System is marginally stable\n";
+  else
+    std::cout << "ERROR: Expected marginally stable system\n";
 
   std::cout << std::endl;
 }
