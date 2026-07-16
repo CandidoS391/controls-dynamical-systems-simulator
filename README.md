@@ -158,6 +158,63 @@ in which within the class, $N(s)$, the numerator, and $D(s)$, the denominator ar
 
 Within the `TransferFunction` class, there are private helper functions that evaluates the polynomials $N(s)$ and $D(s)$ at a specified value $s$, evaluates the degree of the polynomials, as well as perform several operations including adding, subtracting, dividing, and taking the derivative of the polynomials.
 
+## Zeros and Poles
+In a transfer function, the terms **poles** and **zeros** refer to the roots of the denominator polynomial and numerator polynomial of the transfer function respectively. On one hand, poles represent the frequencies or conditions for where the system's output theoretically approaches infinity, and act as *attractors* for signals. On the other hand, zeros represent frequencies or conditions where the output is perfectly zero, and act as *repellors* for signals.
+
+Poles are important as they determine the stability of the system (See Stability section for more detail), whereas zeros shape the transient response (e.g how fast a system reacts) and the frequency response.
+
+For this project, the `TransferFunction` class include functions that calculate the poles and zeros of a transfer function by simply calculating the roots of polynomial, using a private helper.
+
+Additionally, this project also allows for the graphing of poles and zeros, as through python's matplotlib graphing capabilities, a transfer functions poles and zeros can be graphed on a **pole-zero map**, in which poles are represented with an 'x', while zeros are represented with a circle. See the plotting files for an example.
+
+## Stability of a Transfer Function
+Within the study of transfer functions, the stability of said functions are critical as stability dictates whether a system's output remains bounded in response to an input. If a system is deemed *unstable*, the said system can produce outputs that grow exponentially, leading to unpredictable behavior in the control system.
+
+The stability of transfer functions are determined by the system's poles, or in other words the roots of the denominator polynomial $D(s)$. By setting $D(s) = 0$, we get the **characteristic equation** of the transfer function, and by plotting it out on a **pole-zero map**, which sits on a complex $s$-plane, we can determine the following stabilities:
+
+- If all poles of the system have stricly negative real parts (i.e they lay on the **Left-Half Plane** for $\text{Re}(s) < 0$>), that means the output decays over time and that the system is **stable**.
+- If at least one pole has one positive real part (i.e there's a pole graphed on the **Right-Half Plane** for $\text{Re}(s) > 0$, then output will grow exponentially, deeming the system as **unstable**).
+- If poles are situatied on the imaginary axis (i.e $\text{Re}(s) = 0$), then oscillations are sustained, and the system is **marginally stable**.
+
+### Routh-Hurwitz Stability Criterion and Routh Tables
+Whilst this project can calculate the roots $n^{th}$ order polynomials using the Durand-Kerner method, another way that the stability of a transfer function can be determined is via the **Routh-Hurwitz stability criterion**. Instead of calculating roots, this method uses a structured array called the **Routh table** based on the coefficients of the characteristic equation.
+
+A Routh table is built in the following order:
+- First the coefficients of the characteristic equations are arranged in descending powers of $s$ from $s^n$ to $s^0$.
+- Next, the first two rows are populated with the coefficients in an alternating pattern.
+- For all subsequent rows, they're calcualted by using a cross-multiplication determinant formula (divide by the leading term of the row directly above) until the table is complete.
+
+#### Example Routh Table
+
+Given the characteristic polynomial
+
+$begin:math:display$
+P\(s\) \= s\^3 \+ 6s\^2 \+ 11s \+ 6
+$end:math:display$
+
+the corresponding Routh table is:
+
+| Power of $begin:math:text$s$end:math:text$ | Column 1 | Column 2 |
+|----------------|----------|----------|
+| $begin:math:text$s\^3$end:math:text$ | 1 | 11 |
+| $begin:math:text$s\^2$end:math:text$ | 6 | 6 |
+| $begin:math:text$s\^1$end:math:text$ | 10 | 0 |
+| $begin:math:text$s\^0$end:math:text$ | 6 | 0 |
+
+The first column is:
+
+$begin:math:display$
+1\,\\\;6\,\\\;10\,\\\;6
+$end:math:display$
+
+Since there are no sign changes in the first column, the system is **stable**.
+
+Once the table is filled, the stability is determined based only on the **first column** of the array:
+- A system is stable if and only if every element in the first column is positive
+- If there are changes in the sign of the elements in the first column, then the system is unstable. Furthermore, the exact number of sign changes equals the number of unstable poles that are located in the right half plane of the complex $s$-plane.
+
+In this project, Routh Tables have their own separate class, in which the table itself is built on a vector of vectors of double type. 
+
 # How Systems are Represented
 Within control system theory, there are two main ways of representing a control system, a block diagram and a signal flow graph.
 
