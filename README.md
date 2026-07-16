@@ -188,24 +188,24 @@ A Routh table is built in the following order:
 
 Given the characteristic polynomial
 
-$begin:math:display$
+$$
 P\(s\) \= s\^3 \+ 6s\^2 \+ 11s \+ 6
-$end:math:display$
+$$
 
 the corresponding Routh table is:
 
-| Power of $begin:math:text$s$end:math:text$ | Column 1 | Column 2 |
+| Power of $s$ | Column 1 | Column 2 |
 |----------------|----------|----------|
-| $begin:math:text$s\^3$end:math:text$ | 1 | 11 |
-| $begin:math:text$s\^2$end:math:text$ | 6 | 6 |
-| $begin:math:text$s\^1$end:math:text$ | 10 | 0 |
-| $begin:math:text$s\^0$end:math:text$ | 6 | 0 |
+| $s^3$ | 1 | 11 |
+| $s^2$ | 6 | 6 |
+| $s^1$ | 10 | 0 |
+| $s^0$ | 6 | 0 |
 
 The first column is:
 
-$begin:math:display$
+$$
 1\,\\\;6\,\\\;10\,\\\;6
-$end:math:display$
+$$
 
 Since there are no sign changes in the first column, the system is **stable**.
 
