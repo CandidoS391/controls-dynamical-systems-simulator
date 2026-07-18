@@ -264,6 +264,7 @@ This leads into the concept of **error constants**, in which there are three typ
 
 ### Position Error Constants
 The **position error constant** $K_p$ for an type $l$ system is defined as:
+
 $$
 K_P \equiv \lim_{s \to 0} G(s) = \lim_{s \to 0} \frac{K B_1(s)}{s^l B_2(s)} =
 \begin{cases}
@@ -271,7 +272,9 @@ K_P \equiv \lim_{s \to 0} G(s) = \lim_{s \to 0} \frac{K B_1(s)}{s^l B_2(s)} =
 \infty, l > 0
 \end{cases}
 $$
+
 The steady state error for a type $l$ system when the input is the unit-step function is
+
 $$
 e_{ss} = \lim_{t \to \infty} e_{ss} = \frac{1}{1 + K_p}
 $$
