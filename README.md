@@ -247,6 +247,8 @@ in which three components are calculated:
 In this project, Signal Flow Graphs are represented by the `SignalFlowGraph` class, with functions being able to add Nodes and Branches, find Forward Paths using Depth-First Search, and calculate all parts needed for Mason's Gain Formula.
 
 # System Types, Error Constants, and Sensitivity
+
+## System Type Definition
 In control system theory, a **system type** is a metric that describes a closed-loop's ability to track standard input signals. In a technical sense, if an open-loop transfer function of a system is defined/written as:
 
 $$
@@ -255,6 +257,24 @@ $$
 
 then here, $l$ represents the system type, for which using the definition of a transfer function, that means there are $l$ open-loop poles at the origin $(s = 0)$.
 
+System types are important in control systems theory as they serve a purpose of determining the **steady-state error**, or in other words the difference between the desired input, and the actual output after the system's transient response has died out.
+
+## Error Constants
+This leads into the concept of **error constants**, in which there are three types of error constants: **position** $(K_p)$, **velocity** $(K_v)$, and **acceleration** $(K_p)$. These constants define the system's steady-state error $(e_{ss})$ when tracking standard inputs (step, ramp, and parabolic respectively). The magnitude of these constants - and the resulting error - depends entirely on the system type.
+
+### Position Error Constants
+The **position error constant** $K_p$ for an type $l$ system is defined as:
+$$
+K_P \equiv \lim_{s \to 0} G(s) = \lim_{s \to 0} \frac{K B_1(s)}{s^l B_2(s)} =
+\begin{cases}
+\frac{K B_1(0)}{B_2(0)}, l = 0 \\
+\infty, l > 0
+\end{cases}
+$$
+The steady state error for a type $l$ system when the input is the unit-step function is
+$$
+e_{ss} = \lim_{t \to \infty} e_{ss} = \frac{1}{1 + K_p}
+$$
 
 # The RLC Circuit
 So far, the only part of this project that is related to the Electromagnetic section and that is the RLC Circuit.
