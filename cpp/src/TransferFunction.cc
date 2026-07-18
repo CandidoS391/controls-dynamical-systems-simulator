@@ -536,3 +536,16 @@ void TransferFunction::PrintPartialFractionExpression() const {
     std::cout << std::endl;
   }
 }
+
+size_t TransferFunction::GetSystemType() const {
+  std::vector<std::complex<double>> poles = GetPoles();
+
+  double tolerance = 1e-8;
+  size_t type = 0;
+  for (const auto& pole : poles) {
+    if (std::abs(pole) < tolerance)
+      type++;
+  }
+
+  return type;
+}

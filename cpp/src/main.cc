@@ -1004,8 +1004,52 @@ void TestRouthTable() {
   std::cout << std::endl;
 }
 
+void TestTransferFunctionSystemType() {
+  std::cout << "==============================\n";
+  std::cout << "Testing Transfer Function Type\n";
+  std::cout << "==============================\n\n";
+
+  // Test 1: Type 0
+  TransferFunction type_zero({5}, {1, 2});
+  std::cout << "Test 1 - Type 0\n";
+  std::cout << "Expected: 0\n";
+  std::cout << "Actual:   " << type_zero.GetSystemType() << "\n\n";
+
+  // Test 2: Type 1
+  TransferFunction type_one({5}, {1, 2, 0});
+  std::cout << "Test 2 - Type 1\n";
+  std::cout << "Expected: 1\n";
+  std::cout << "Actual:   " << type_one.GetSystemType() << "\n\n";
+
+  // Test 3: Type 2
+  TransferFunction type_two({5}, {1, 2, 0, 0});
+  std::cout << "Test 3 - Type 2\n";
+  std::cout << "Expected: 2\n";
+  std::cout << "Actual:   " << type_two.GetSystemType() << "\n\n";
+
+  // Test 4: Type 3
+  TransferFunction type_three({5}, {1, 2, 0, 0, 0});
+  std::cout << "Test 4 - Type 3\n";
+  std::cout << "Expected: 3\n";
+  std::cout << "Actual:   " << type_three.GetSystemType() << "\n\n";
+
+  // Test 5: Type 1 with additional poles
+  TransferFunction mixed({10}, {1, 6, 11, 6, 0});
+  std::cout << "Test 5 - Type 1 with additional poles\n";
+  std::cout << "Expected: 1\n";
+  std::cout << "Actual:   " << mixed.GetSystemType() << "\n\n";
+
+  // Test 6: Nonconstant numerator
+  TransferFunction numerator({3, 7}, {1, 4, 0});
+  std::cout << "Test 6 - Nonconstant numerator\n";
+  std::cout << "Expected: 1\n";
+  std::cout << "Actual:   " << numerator.GetSystemType() << "\n\n";
+}
+
 int main() {
-  TestRouthTable();
+  // TestRouthTable();
+
+  TestTransferFunctionSystemType();
 
   return 0;
 }

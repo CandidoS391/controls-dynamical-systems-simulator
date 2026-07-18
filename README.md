@@ -246,6 +246,16 @@ in which three components are calculated:
 
 In this project, Signal Flow Graphs are represented by the `SignalFlowGraph` class, with functions being able to add Nodes and Branches, find Forward Paths using Depth-First Search, and calculate all parts needed for Mason's Gain Formula.
 
+# System Types, Error Constants, and Sensitivity
+In control system theory, a **system type** is a metric that describes a closed-loop's ability to track standard input signals. In a technical sense, if an open-loop transfer function of a system is defined/written as:
+
+$$
+G(s)H(s) = \frac{K \prod_{i=1}^{m}(s + z_i)}{s^l \prod_{i=1}^{n} (s + p_i)}
+$$
+
+then here, $l$ represents the system type, for which using the definition of a transfer function, that means there are $l$ open-loop poles at the origin $(s = 0)$.
+
+
 # The RLC Circuit
 So far, the only part of this project that is related to the Electromagnetic section and that is the RLC Circuit.
 

@@ -94,6 +94,9 @@ class TransferFunction {
     // Print out Partial Fraction
     void PrintPartialFractionExpression() const;
 
+    // Get the type of system based on the l-type of the transfer function
+    size_t GetSystemType() const;
+
     // Overloaded Operations
     friend std::ostream& operator<<(std::ostream& os, const TransferFunction& rhs);
     TransferFunction operator-(const TransferFunction& other) const;
