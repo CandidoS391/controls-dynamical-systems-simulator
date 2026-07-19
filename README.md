@@ -263,7 +263,7 @@ System types are important in control systems theory as they serve a purpose of 
 This leads into the concept of **error constants**, in which there are three types of error constants: **position** $(K_p)$, **velocity** $(K_v)$, and **acceleration** $(K_p)$. These constants define the system's steady-state error $(e_{ss})$ when tracking standard inputs (step, ramp, and parabolic respectively). The magnitude of these constants - and the resulting error - depends entirely on the system type.
 
 ### Position Error Constants
-The **position error constant** $K_p$ for an type $l$ system is defined as:
+The **position error constant** $K_p$ for an type *stable* $l$ system is defined as:
 
 $$
 K_P \equiv \lim_{s \to 0} G(s) = \lim_{s \to 0} \frac{K B_1(s)}{s^l B_2(s)} =
@@ -273,10 +273,46 @@ K_P \equiv \lim_{s \to 0} G(s) = \lim_{s \to 0} \frac{K B_1(s)}{s^l B_2(s)} =
 \end{cases}
 $$
 
-The steady state error for a type $l$ system when the input is the unit-step function is
+The steady state error for a *stable* type $l$ system when the input is the unit-step function is
 
 $$
 e_{ss} = \lim_{t \to \infty} e_{ss} = \frac{1}{1 + K_p}
+$$
+
+### Velocity Error Constants
+The **velocity error constant** $K_v$ for a *stable* type $l$ system is defined as:
+
+$$
+K_v \equiv \lim_{s \to 0} sG(s) = \lim_{s \to 0} \frac{K B_1(s)}{s^{l-1}B_2(s)} =
+\begin{cases}
+0, l = 0 \\
+\frac{K B_1(0)}{B_2(0)}, l = 1 \\
+\infty, l > 1
+\end{cases}
+$$
+
+The steady-state error for a *stable* type $l$ system when the input is the unit-ramp function is
+
+$$
+e_{ss} = \frac{1}{K_v}
+$$
+
+### Acceleration Error Constants
+The **acceleration error constant** $K_a$ of type $l$ system is defined as:
+
+$$
+K_a \equiv \lim_{s \to 0} s^2 G(s) = \lim_{s \to 0} \frac{K B_1(s)}{s^{l-2} B_2(s)} =
+\begin{cases}
+0, l = 0,1 \\
+\frac{K B_1(0)}{B_2(0)}, l = 2 \\
+\infty, l > 2
+\end{cases}
+$$
+
+The steady-state error of a *stable* type $l$ system when the input is a unit-parabolic function is:
+
+$$
+e_{ss} = \frac{1}{K_a}
 $$
 
 # The RLC Circuit
