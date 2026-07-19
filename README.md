@@ -303,9 +303,9 @@ The **acceleration error constant** $K_a$ of type $l$ system is defined as:
 $$
 K_a \equiv \lim_{s \to 0} s^2 G(s) = \lim_{s \to 0} \frac{K B_1(s)}{s^{l-2} B_2(s)} =
 \begin{cases}
-0, l = 0,1 \\
-\frac{K B_1(0)}{B_2(0)}, l = 2 \\
-\infty, l > 2
+0 \quad l = 0,1 \\
+\frac{K B_1(0)}{B_2(0)} \quad l = 2 \\
+\infty \quad l > 2
 \end{cases}
 $$
 
