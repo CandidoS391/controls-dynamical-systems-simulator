@@ -21,6 +21,7 @@
 #include "SignalFlowGraph.h"
 #include "RouthTable.h"
 #include "StabilityStatus.h"
+#include "FeedbackSystem.h"
 
 void SimulateFirstOrderDecayEuler() {
   FirstOrderDecay decay(0.5);
@@ -1046,10 +1047,77 @@ void TestTransferFunctionSystemType() {
   std::cout << "Actual:   " << numerator.GetSystemType() << "\n\n";
 }
 
+void TestFeedbackSystemBasicFunctions() {
+  // ============================================================
+  // TESTING FEEDBACK SYSTEM
+  // ============================================================
+
+  // G(s) = 2 / (s + 2)
+  TransferFunction forward_path({2}, {1, 2});
+
+  // H(s) = 1
+  TransferFunction feedback_path({1}, {1});
+
+  // Td(s) = 1
+  TransferFunction desired_transfer({1}, {1});
+
+  FeedbackSystem feedback_system(forward_path,
+                                feedback_path,
+                                desired_transfer);
+
+  // ------------------------------------------------------------
+  // Test 1: Loop Transfer Function
+  // Expected:
+  //      G(s)H(s)
+  //    = 2 / (s + 2)
+  // ------------------------------------------------------------
+  std::cout << "TESTING LOOP TRANSFER FUNCTION" << std::endl;
+  std::cout << feedback_system.GetLoopTransferFunction() << std::endl;
+  std::cout << std::endl;
+
+
+  // ------------------------------------------------------------
+  // Test 2: Closed Loop Transfer Function
+  // Expected:
+  //
+  //          2
+  // ----------------
+  // (s + 2) + 2
+  //
+  //      2
+  // = --------
+  //    s + 4
+  // ------------------------------------------------------------
+  std::cout << "TESTING CLOSED LOOP TRANSFER FUNCTION" << std::endl;
+  std::cout << feedback_system.GetClosedLoopTransferFunction() << std::endl;
+  std::cout << std::endl;
+  // ------------------------------------------------------------
+  // Test 3: Transfer Error
+  //
+  // Td(s) = 1
+  //
+  // Expected:
+  //
+  //      1 - 2/(s+4)
+  //
+  //      (s+4)-2
+  // = -------------
+  //       s+4
+  //
+  //      s+2
+  // = --------
+  //      s+4
+  // ------------------------------------------------------------
+  std::cout << "TESTING TRANSFER ERROR" << std::endl;
+  std::cout << feedback_system.GetTransferError() << std::endl;
+  std::cout << std::endl;
+}
+
 int main() {
   // TestRouthTable();
 
-  TestTransferFunctionSystemType();
+  TestFeedbackSystemBasicFunctions();
+
 
   return 0;
 }

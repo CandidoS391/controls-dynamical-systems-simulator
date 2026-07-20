@@ -19,7 +19,8 @@ simulation: src/main.cc \
 	src/TransferFunction.cc \
 	src/RLCCircuit.cc \
 	src/SignalFlowGraph.cc \
-	src/RouthTable.cc
+	src/RouthTable.cc \
+	src/FeedbackSystem.cc
 	$(CXX) $(CXXFLAGS) \
 	src/main.cc \
 	src/StateVector.cc \
@@ -38,6 +39,7 @@ simulation: src/main.cc \
 	src/RLCCircuit.cc \
 	src/SignalFlowGraph.cc \
 	src/RouthTable.cc \
+	src/FeedbackSystem.cc \
 	-o simulation
 
 run: simulation
