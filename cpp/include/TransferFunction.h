@@ -97,6 +97,9 @@ class TransferFunction {
     // Get the type of system based on the l-type of the transfer function
     size_t GetSystemType() const;
 
+    // Evaluate the limit of the transger function after diving by power S
+    double LimitAtOriginAfterDividingBySPower(int power) const;
+
     // Overloaded Operations
     friend std::ostream& operator<<(std::ostream& os, const TransferFunction& rhs);
     TransferFunction operator-(const TransferFunction& other) const;
