@@ -1,4 +1,5 @@
 #include "FeedbackSystem.h"
+#include "ErrorConstantType.h"
 
 FeedbackSystem::FeedbackSystem(const TransferFunction& forward, const TransferFunction& feedback, const TransferFunction& desired) : forward_path(forward), feedback_path(feedback), desired_transfer_function(desired) {
 
@@ -38,4 +39,20 @@ TransferFunction FeedbackSystem::GetTransferError() const {
   TransferFunction closed_loop = GetClosedLoopTransferFunction();
 
   return desired_transfer_function - closed_loop;
+}
+
+double FeedbackSystem::EvaluateErrorConstant(ErrorConstantType type) const {
+
+}
+
+double FeedbackSystem::GetStepErrorConstant() const {
+  return EvaluateErrorConstant(ErrorConstantType::kStep);
+}
+
+double FeedbackSystem::GetRampErrorConstant() const {
+  return EvaluateErrorConstant(ErrorConstantType::kRamp);
+}
+
+double FeedbackSystem::GetRampErrorConstant() const {
+  return EvaluateErrorConstant(ErrorConstantType::kParabolic);
 }
