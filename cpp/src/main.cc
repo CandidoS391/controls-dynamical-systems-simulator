@@ -1005,6 +1005,81 @@ void TestRouthTable() {
   std::cout << std::endl;
 }
 
+void TestLimitAtOrigin() {
+  std::cout << "==============================" << std::endl;
+  std::cout << "Testing Limit At Origin" << std::endl;
+  std::cout << "==============================" << std::endl;
+
+  // ------------------------------------------------------------
+  // Test 1
+  // T(s) = 1 / (s + 1)
+  // ------------------------------------------------------------
+  TransferFunction t1({1}, {1, 1});
+
+  std::cout << "Test 1 - 1 / (s + 1)" << std::endl;
+  std::cout << "Power 0 (Expected: 1): "
+            << t1.LimitAtOriginAfterDividingBySPower(0)
+            << std::endl;
+  std::cout << "Power 1 (Expected: inf): "
+            << t1.LimitAtOriginAfterDividingBySPower(1)
+            << std::endl;
+  std::cout << std::endl;
+
+
+  // ------------------------------------------------------------
+  // Test 2
+  // T(s) = s / (s + 1)
+  // ------------------------------------------------------------
+  TransferFunction t2({1, 0}, {1, 1});
+
+  std::cout << "Test 2 - s / (s + 1)" << std::endl;
+  std::cout << "Power 0 (Expected: 0): "
+            << t2.LimitAtOriginAfterDividingBySPower(0)
+            << std::endl;
+  std::cout << "Power 1 (Expected: 1): "
+            << t2.LimitAtOriginAfterDividingBySPower(1)
+            << std::endl;
+  std::cout << "Power 2 (Expected: inf): "
+            << t2.LimitAtOriginAfterDividingBySPower(2)
+            << std::endl;
+  std::cout << std::endl;
+
+
+  // ------------------------------------------------------------
+  // Test 3
+  // T(s) = s² / (s + 1)
+  // ------------------------------------------------------------
+  TransferFunction t3({1, 0, 0}, {1, 1});
+
+  std::cout << "Test 3 - s^2 / (s + 1)" << std::endl;
+  std::cout << "Power 0 (Expected: 0): "
+            << t3.LimitAtOriginAfterDividingBySPower(0)
+            << std::endl;
+  std::cout << "Power 1 (Expected: 0): "
+            << t3.LimitAtOriginAfterDividingBySPower(1)
+            << std::endl;
+  std::cout << "Power 2 (Expected: 1): "
+            << t3.LimitAtOriginAfterDividingBySPower(2)
+            << std::endl;
+  std::cout << std::endl;
+
+
+  // ------------------------------------------------------------
+  // Test 4
+  // T(s) = 0
+  // ------------------------------------------------------------
+  TransferFunction t4({0}, {1});
+
+  std::cout << "Test 4 - Zero Transfer Function" << std::endl;
+  std::cout << "Power 0 (Expected: 0): "
+            << t4.LimitAtOriginAfterDividingBySPower(0)
+            << std::endl;
+  std::cout << "Power 1 (Expected: 0): "
+            << t4.LimitAtOriginAfterDividingBySPower(1)
+            << std::endl;
+  std::cout << std::endl;
+}
+
 void TestTransferFunctionSystemType() {
   std::cout << "==============================\n";
   std::cout << "Testing Transfer Function Type\n";
@@ -1115,8 +1190,8 @@ void TestFeedbackSystemBasicFunctions() {
 
 int main() {
   // TestRouthTable();
-
-  TestFeedbackSystemBasicFunctions();
+  TestLimitAtOrigin();
+  //TestFeedbackSystemBasicFunctions();
 
 
   return 0;

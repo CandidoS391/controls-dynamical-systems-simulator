@@ -65,6 +65,19 @@ std::vector<double> TransferFunction::RemoveLeadingZeros(const std::vector<doubl
   return std::vector<double>(coefficients.begin() + first_nonzero, coefficients.end());
 }
 
+size_t TransferFunction::CountTrailingZeros(const std::vector<double>& coefficients) const {
+  size_t count = 0;
+
+  for (size_t i = coefficients.size(); i-- > 0;) {
+    if (std::abs(coefficients[i]) < 1e-8)
+      count++;
+    else
+      break;
+  }
+
+  return count;
+}
+
 std::vector<PoleGroup> TransferFunction::GroupPoles(const std::vector<std::complex<double>>& poles) const {
   double tolerance = 1e-5;
 
@@ -548,4 +561,24 @@ size_t TransferFunction::GetSystemType() const {
   }
 
   return type;
+}
+
+double TransferFunction::LimitAtOriginAfterDividingBySPower(int power) const {
+  if (numerator.size() == 1 && std::abs(numerator[0]) < 1e-8)
+    return 0.0;
+  
+  size_t trailing_zero_numerator = CountTrailingZeros(numerator);
+  size_t trailing_zero_denominator = CountTrailingZeros(denominator);
+
+  int net_power = static_cast<int>(trailing_zero_numerator) - static_cast<int>(trailing_zero_denominator) - power;
+
+  if (net_power > 0)
+    return 0;
+  else if (net_power < 0)
+    return std::numeric_limits<double>::infinity();
+  
+  size_t numerator_nonzero_index = numerator.size() - 1 - trailing_zero_numerator;
+  size_t denominator_nonzero_index = denominator.size() - 1 - trailing_zero_denominator;
+
+  return numerator[numerator_nonzero_index] / denominator[denominator_nonzero_index];
 }

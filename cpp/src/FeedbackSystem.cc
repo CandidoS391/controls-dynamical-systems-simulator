@@ -42,7 +42,25 @@ TransferFunction FeedbackSystem::GetTransferError() const {
 }
 
 double FeedbackSystem::EvaluateErrorConstant(ErrorConstantType type) const {
+  TransferFunction transfer_error = GetTransferError();
+  size_t power;
 
+  if (type == ErrorConstantType::kStep)
+    power = 0;
+  else if (type == ErrorConstantType::kRamp)
+    power = 1;
+  else if (type == ErrorConstantType::kParabolic)
+    power = 2;
+  else
+    throw std::invalid_argument("Invalid Error constant type");
+
+  double limit = transfer_error.LimitAtOriginAfterDividingBySPower(power);
+  if (limit == 1e-8)
+    return std::numeric_limits<double>::infinity();
+  if (limit == std::numeric_limits<double>::infinity())
+    return 0;
+
+  return 1 / limit;
 }
 
 double FeedbackSystem::GetStepErrorConstant() const {
@@ -53,6 +71,6 @@ double FeedbackSystem::GetRampErrorConstant() const {
   return EvaluateErrorConstant(ErrorConstantType::kRamp);
 }
 
-double FeedbackSystem::GetRampErrorConstant() const {
+double FeedbackSystem::GetParabolicErrorConstant() const {
   return EvaluateErrorConstant(ErrorConstantType::kParabolic);
 }

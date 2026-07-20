@@ -5,6 +5,7 @@
 #include <iostream>
 #include <complex>
 #include <stdexcept>
+#include <limits>
 
 #include "StabilityStatus.h"
 
@@ -49,6 +50,9 @@ class TransferFunction {
     std::vector<PoleGroup> GroupPoles(const std::vector<std::complex<double>>& poles) const;
     // Dividing Polynomials by a real linear factor
     std::vector<double> DividePolynomialByLinearFactor(const std::vector<double>& coefficients, double pole) const;
+    // Count the number of trailing zeros in a polynomial
+    size_t CountTrailingZeros(const std::vector<double>& coefficients) const;
+
 
   public:
     // Constructor

@@ -4,6 +4,8 @@
 #include <vector>
 #include <stdexcept>
 #include <iostream>
+#include <cmath>
+#include <limits>
 
 #include "TransferFunction.h"
 #include "ErrorConstantType.h"
