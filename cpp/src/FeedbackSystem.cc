@@ -43,21 +43,27 @@ TransferFunction FeedbackSystem::GetTransferError() const {
 
 double FeedbackSystem::EvaluateErrorConstant(ErrorConstantType type) const {
   TransferFunction transfer_error = GetTransferError();
-  size_t power;
+  int power;
 
-  if (type == ErrorConstantType::kStep)
-    power = 0;
-  else if (type == ErrorConstantType::kRamp)
-    power = 1;
-  else if (type == ErrorConstantType::kParabolic)
-    power = 2;
-  else
-    throw std::invalid_argument("Invalid Error constant type");
+  switch (type) {
+    case ErrorConstantType::kStep:
+      power = 0;
+      break;
+    case ErrorConstantType::kRamp:
+      power = 1;
+      break;
+    case ErrorConstantType::kParabolic:
+      power = 2;
+      break;
+    default:
+      throw std::invalid_argument("Invalid error constant!");
+  }
+
 
   double limit = transfer_error.LimitAtOriginAfterDividingBySPower(power);
-  if (limit == 1e-8)
+  if (std::abs(limit) < 1e-8)
     return std::numeric_limits<double>::infinity();
-  if (limit == std::numeric_limits<double>::infinity())
+  if (std::isinf(limit))
     return 0;
 
   return 1 / limit;

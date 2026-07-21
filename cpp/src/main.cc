@@ -1188,10 +1188,121 @@ void TestFeedbackSystemBasicFunctions() {
   std::cout << std::endl;
 }
 
+void TestErrorConstants() {
+  std::cout << "======================================" << std::endl;
+  std::cout << "Testing Error Constants" << std::endl;
+  std::cout << "======================================" << std::endl;
+
+  // ------------------------------------------------------------
+  // Test 1
+  // G(s) = s / (s + 1)
+  // H(s) = 1
+  // Desired = 1
+  //
+  // Transfer Error = s / (s + 1)
+  //
+  // Ks  = infinity
+  // Kr  = 1
+  // Kpa = 0
+  // ------------------------------------------------------------
+
+  FeedbackSystem system_1(
+      TransferFunction({0}, {1}),
+      TransferFunction({1}, {1}),
+      TransferFunction({1, 0}, {1, 1}));
+
+  std::cout << "Test 1" << std::endl;
+  std::cout << "Expected Ks: inf" << std::endl;
+  std::cout << "Actual Ks:   "
+            << system_1.GetStepErrorConstant()
+            << std::endl;
+
+  std::cout << "Expected Kr: 1" << std::endl;
+  std::cout << "Actual Kr:   "
+            << system_1.GetRampErrorConstant()
+            << std::endl;
+
+  std::cout << "Expected Kpa: 0" << std::endl;
+  std::cout << "Actual Kpa:   "
+            << system_1.GetParabolicErrorConstant()
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // ------------------------------------------------------------
+  // Test 2
+  // Zero transfer error
+  //
+  // Desired = Closed-loop
+  //
+  // Transfer Error = 0
+  //
+  // Ks  = inf
+  // Kr  = inf
+  // Kpa = inf
+  // ------------------------------------------------------------
+
+
+  FeedbackSystem system_2(
+      TransferFunction({1}, {1}),
+      TransferFunction({1}, {1}),
+      TransferFunction({1}, {2}));
+
+  std::cout << "Test 2 - Zero Transfer Error" << std::endl;
+
+  std::cout << "Expected Ks: inf" << std::endl;
+  std::cout << "Actual Ks:   "
+            << system_2.GetStepErrorConstant()
+            << std::endl;
+
+  std::cout << "Expected Kr: inf" << std::endl;
+  std::cout << "Actual Kr:   "
+            << system_2.GetRampErrorConstant()
+            << std::endl;
+
+  std::cout << "Expected Kpa: inf" << std::endl;
+  std::cout << "Actual Kpa:   "
+            << system_2.GetParabolicErrorConstant()
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // ------------------------------------------------------------
+  // Test 3
+  // Transfer Error = 1 / (s + 1)
+  //
+  // Ks  = 1
+  // Kr  = 0
+  // Kpa = 0
+  // ------------------------------------------------------------
+
+  FeedbackSystem system_3(
+      TransferFunction({0}, {1}),
+      TransferFunction({1}, {1}),
+      TransferFunction({1}, {1}));
+
+  std::cout << "Test 3" << std::endl;
+
+  std::cout << "Expected Ks: 1" << std::endl;
+  std::cout << "Actual Ks:   "
+            << system_3.GetStepErrorConstant()
+            << std::endl;
+
+  std::cout << "Expected Kr: 0" << std::endl;
+  std::cout << "Actual Kr:   "
+            << system_3.GetRampErrorConstant()
+            << std::endl;
+
+  std::cout << "Expected Kpa: 0" << std::endl;
+  std::cout << "Actual Kpa:   "
+            << system_3.GetParabolicErrorConstant()
+            << std::endl;
+}
+
 int main() {
-  // TestRouthTable();
-  TestLimitAtOrigin();
-  //TestFeedbackSystemBasicFunctions();
+  TestErrorConstants();
 
 
   return 0;
