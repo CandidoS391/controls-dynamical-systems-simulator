@@ -65,8 +65,8 @@ A step response is used to measure how a dynamical system reacts to a sudden cha
 $$
 u(t - t_0) =
 \begin{cases}
-0, & t \le 0 \\
-1, & t > 0
+0 \quad & t \le 0 \\
+1 \quad & t > 0
 \end{cases}
 $$
 
@@ -112,8 +112,8 @@ A ramp signal increases linearly with time after a specified starting point and 
 $$
 u(t) =
 \begin{cases}
-0, t < t_0 \\
-m(t - t_0), t \ge t_0
+0 \quad t < t_0 \\
+m(t - t_0) \quad t \ge t_0
 \end{cases}
 $$
 
@@ -130,9 +130,9 @@ A pulse signal applies a temporary input to the system for a finite duration (i.
 $$
 u(t) =
 \begin{cases}
-0, t < t_{start} \\
-A, t_{start} \le t \le t_{end} \\
-0, t > t_{end}
+0 \quad t < t_{start} \\
+A \quad t_{start} \le t \le t_{end} \\
+0 \quad t > t_{end}
 \end{cases}
 $$
 
@@ -246,6 +246,27 @@ in which three components are calculated:
 
 In this project, Signal Flow Graphs are represented by the `SignalFlowGraph` class, with functions being able to add Nodes and Branches, find Forward Paths using Depth-First Search, and calculate all parts needed for Mason's Gain Formula.
 
+# Feedback Systems
+A **feedback system** is a type of control system, in which a process where the output of an action or system is circled back and used as a new input, to regulate, correct, or enhance future performance.
+
+## Components of a Feedback System
+Within a standard feedback system, the following components are featured:
+- **Reference Input**: The target value or state the system needs to reach.
+- **Controller**: The "brain" of the system that calculates the corrective action based on the error.
+- **Actuator**: The physical mechanism that drives the system or process.
+- **Plant**: The dynamic system or process that's being controlled (i.e a motor, heater, or engine).
+- **Sensor**: The elements used to measure the actual input, closing the loop
+
+## Types of Feedback
+The way that the measured signal is applied back to the input defines the type of feedback
+- **Negative Feedback**: Used in most control systems, this reduces the difference between the reference and the measured output, improving stability and reduces the system sensitivity to parameter variations. The transfer function for a closed-loop negative feedback system is defined as: $T(s) = \frac{G(s)}{1 + G(s)H(s)}$ For $G(s)$ is the open-loop plant gain, and $H(s)$ is the feedback path gain.
+- **Positive Feedback**: the feedback signal is *added* to the reference, amplifying the signal in-phase and increasing the overall system gain.
+
+## Implementation in this Project
+In this project, Feedback Systems are represented by the `FeedbackSystem` class, in which the forward path (or the main path of the system), as well as the feedback path (the path in which the output is fed back into the input), are represented by objects of the `TransferFunction` class. Additionally, there's another object of the `TransferFunction` class that represents the desired transfer function of the system, which simply represents the transfer function of the system in desired conditions. This `desired_transfer_function` plays importance in calculating the **error** of the system, or the difference between the aforementioned desired function and the actual transfer function representing the system, a job taken care of by the `GetTransferError()` function.
+
+Other functions besides basic accessor functions include `GetLoopTransferFunction()`, which calculates multiplying $G(s)$ and $H(s)$ together; `GetClosedLoopTransferFunction()`, which calculates the main transfer function for the feedback system; and `EvaluateErrorConstant()` function that evaluates the error constant, something that will be discussed in the next section. 
+
 # System Types, Error Constants, and Sensitivity
 
 ## System Type Definition
@@ -285,9 +306,9 @@ The **velocity error constant** $K_v$ for a *stable* type $l$ system is defined 
 $$
 K_v \equiv \lim_{s \to 0} sG(s) = \lim_{s \to 0} \frac{K B_1(s)}{s^{l-1}B_2(s)} =
 \begin{cases}
-0, l = 0 \\
-\frac{K B_1(0)}{B_2(0)}, l = 1 \\
-\infty, l > 1
+0 \quad l = 0 \\
+\frac{K B_1(0)}{B_2(0)} \quad l = 1 \\
+\infty \quad l > 1
 \end{cases}
 $$
 
