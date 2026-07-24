@@ -20,7 +20,8 @@ simulation: src/main.cc \
 	src/RLCCircuit.cc \
 	src/SignalFlowGraph.cc \
 	src/RouthTable.cc \
-	src/FeedbackSystem.cc
+	src/FeedbackSystem.cc \
+	src/SensitivityAnalysis.cc
 	$(CXX) $(CXXFLAGS) \
 	src/main.cc \
 	src/StateVector.cc \
@@ -40,6 +41,7 @@ simulation: src/main.cc \
 	src/SignalFlowGraph.cc \
 	src/RouthTable.cc \
 	src/FeedbackSystem.cc \
+	src/SensitivityAnalysis.cc \
 	-o simulation
 
 run: simulation

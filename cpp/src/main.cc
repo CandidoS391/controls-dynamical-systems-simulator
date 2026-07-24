@@ -22,6 +22,7 @@
 #include "RouthTable.h"
 #include "StabilityStatus.h"
 #include "FeedbackSystem.h"
+#include "SensitivityAnalysis.h"
 
 void SimulateFirstOrderDecayEuler() {
   FirstOrderDecay decay(0.5);
@@ -1301,8 +1302,151 @@ void TestErrorConstants() {
             << std::endl;
 }
 
+void TestSensitivityAnalysis() {
+  std::cout << "======================================" << std::endl;
+  std::cout << "Testing Sensitivity Analysis" << std::endl;
+  std::cout << "======================================" << std::endl;
+
+  // ----------------------------------------------------------
+  // Test 1
+  //
+  // A1 = 1
+  // A2 = 1
+  // A3 = s + 1
+  // A4 = 0
+  // k  = 2
+  //
+  // Nominal:
+  // T(s) = (1 + 2)/(s + 1) = 3/(s + 1)
+  //
+  // Sensitivity:
+  // S(s) = 2(s + 1) / 3(s + 1) = 2/3
+  //
+  // The TransferFunction may print the unsimplified result:
+  // (2s + 2)/(3s + 3)
+  // ----------------------------------------------------------
+  SensitivityAnalysis analysis_1(
+      {1},
+      {1},
+      {1, 1},
+      {0},
+      2.0);
+
+  std::cout << "Test 1" << std::endl;
+  std::cout << "Expected nominal: 3 / (s + 1)" << std::endl;
+  std::cout << "Actual nominal:   "
+            << analysis_1.GetNominalTransferFunction()
+            << std::endl;
+
+  std::cout << "Expected sensitivity: 2/3" << std::endl;
+  std::cout << "Actual sensitivity:   "
+            << analysis_1.GetTransferFunctionSensitivity()
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // ----------------------------------------------------------
+  // Test 2
+  //
+  // A1 = s + 1
+  // A2 = 0
+  // A3 = s + 2
+  // A4 = 0
+  // k  = 5
+  //
+  // T does not depend on k.
+  //
+  // Nominal:
+  // T(s) = (s + 1)/(s + 2)
+  //
+  // Sensitivity:
+  // S(s) = 0
+  // ----------------------------------------------------------
+  SensitivityAnalysis analysis_2(
+      {1, 1},
+      {0},
+      {1, 2},
+      {0},
+      5.0);
+
+  std::cout << "Test 2 - Zero Sensitivity" << std::endl;
+  std::cout << "Expected nominal: (s + 1)/(s + 2)" << std::endl;
+  std::cout << "Actual nominal:   "
+            << analysis_2.GetNominalTransferFunction()
+            << std::endl;
+
+  std::cout << "Expected sensitivity: 0" << std::endl;
+  std::cout << "Actual sensitivity:   "
+            << analysis_2.GetTransferFunctionSensitivity()
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // ----------------------------------------------------------
+  // Test 3
+  //
+  // A1 = 1
+  // A2 = 0
+  // A3 = s
+  // A4 = 1
+  // k  = 2
+  //
+  // Nominal:
+  // T(s) = 1/(s + 2)
+  //
+  // Sensitivity:
+  // S(s) = -2/(s + 2)
+  // ----------------------------------------------------------
+  SensitivityAnalysis analysis_3(
+      {1},
+      {0},
+      {1, 0},
+      {1},
+      2.0);
+
+  std::cout << "Test 3 - Parameter in Denominator" << std::endl;
+  std::cout << "Expected nominal: 1/(s + 2)" << std::endl;
+  std::cout << "Actual nominal:   "
+            << analysis_3.GetNominalTransferFunction()
+            << std::endl;
+
+  std::cout << "Expected sensitivity: -2/(s + 2)" << std::endl;
+  std::cout << "Actual sensitivity:   "
+            << analysis_3.GetTransferFunctionSensitivity()
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // ----------------------------------------------------------
+  // Test 4: Invalid nominal denominator
+  //
+  // A3 + kA4 = -2 + 2(1) = 0
+  // ----------------------------------------------------------
+  try {
+    SensitivityAnalysis analysis_4(
+        {1},
+        {0},
+        {-2},
+        {1},
+        2.0);
+
+    analysis_4.GetNominalTransferFunction();
+
+    std::cout << "Test 4: FAILED - exception expected"
+              << std::endl;
+  } catch (const std::invalid_argument& exception) {
+    std::cout << "Test 4: PASSED - caught expected exception: "
+              << exception.what()
+              << std::endl;
+  }
+}
+
 int main() {
-  TestErrorConstants();
+  //TestErrorConstants();
+  TestSensitivityAnalysis();
 
 
   return 0;

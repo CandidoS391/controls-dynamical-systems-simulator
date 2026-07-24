@@ -80,3 +80,24 @@ double FeedbackSystem::GetRampErrorConstant() const {
 double FeedbackSystem::GetParabolicErrorConstant() const {
   return EvaluateErrorConstant(ErrorConstantType::kParabolic);
 }
+
+TransferFunction FeedbackSystem::GetForwardPathSensitivity() const {
+  // Compute the loop transfer function G(s)H(s)
+  TransferFunction loop_transfer_function = GetForwardPath();
+  // Constant 
+  TransferFunction constant({1}, {1});
+
+  return constant / constant.Parallel(loop_transfer_function);
+}
+
+TransferFunction FeedbackSystem::GetFeedbackPathSensitivity() const {
+  // Compute the loop transfer function G(s)H(s)
+  TransferFunction loop_transfer_function = GetForwardPath();
+  // Constant (both positive and negative)
+  TransferFunction constant({1}, {1});
+  TransferFunction negative_constant({-1}, {1});
+
+  // Add 1 to the loop transfer, the negate it
+  TransferFunction negative_loop_transfer_function = negative_constant.Series(loop_transfer_function);
+  return negative_loop_transfer_function / constant.Parallel(loop_transfer_function);
+}

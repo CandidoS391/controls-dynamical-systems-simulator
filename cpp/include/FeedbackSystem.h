@@ -9,6 +9,7 @@
 
 #include "TransferFunction.h"
 #include "ErrorConstantType.h"
+#include "SensitivityAnalysis.h"
 
 class FeedbackSystem {
   private:
@@ -37,6 +38,9 @@ class FeedbackSystem {
     double GetRampErrorConstant() const;
     double GetParabolicErrorConstant() const;
 
+    // Sensitivity Analysis
+    TransferFunction GetForwardPathSensitivity() const;
+    TransferFunction GetFeedbackPathSensitivity() const;
 };
 
 #endif
