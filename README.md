@@ -336,6 +336,44 @@ $$
 e_{ss} = \frac{1}{K_a}
 $$
 
+### Error Constants in General Systems
+For the aforementioned error constants, they're only applicable for *stable unity-feedback systems*, but that doesn't mean that they can be extended to general stable systems. For a system that contains the transfer function of a desired system $T_d$, and the transfer function of the actual system $C/R$ (an approximation of $T_d$):
+
+The **step error constant** $K_s$ is defined as: 
+
+$$
+K_s \equiv \frac{1}{\lim_{s \to 0} \[T_d - C/R \]}
+$$ 
+
+with the steady-state error for the general system when the input is a *unit-step* function being: 
+
+$$
+e_{ss} = \frac{1}{K_s}
+$$
+
+The **ramp error constant** $K_r$ is defined as: 
+
+$$K_r \equiv \frac{1}{\lim_{s \to 0} \frac{1}{s} \[T_d - C/R \]}
+$$ 
+
+with the steady state for the general system when the input is a *unit-ramp* function being:
+
+$$
+e_{ss} = \frac{1}{K_r}
+$$
+
+The **parabolic error constant** $K_{pa}$ is defined as:
+
+$$
+K_{pa} = \frac{1}{\lim{s \to 0} \frac{1}{s^2}\[T_d - C/R \]}
+$$
+
+with the steady state for the general system when the input is a *unit-parabolic* function being:
+
+$$
+e_{ss} = \frac{1}{K_pa}
+$$
+
 # The RLC Circuit
 So far, the only part of this project that is related to the Electromagnetic section and that is the RLC Circuit.
 

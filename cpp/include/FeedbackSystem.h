@@ -41,6 +41,9 @@ class FeedbackSystem {
     // Sensitivity Analysis
     TransferFunction GetForwardPathSensitivity() const;
     TransferFunction GetFeedbackPathSensitivity() const;
+    TransferFunction GetForwardParameterSensitivity(const SensitivityAnalysis& forward_analysis) const;
+    TransferFunction GetFeedbackParameterSensitivity(const SensitivityAnalysis& feedback_analysis) const;
+    TransferFunction GetCombinedParameterSensitivity(const SensitivityAnalysis& forward_analysis, const SensitivityAnalysis& feedback_analysis) const;
 };
 
 #endif
