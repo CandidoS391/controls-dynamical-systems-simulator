@@ -1444,9 +1444,131 @@ void TestSensitivityAnalysis() {
   }
 }
 
+void TestFeedbackSystemSensitivity() {
+  std::cout << "======================================" << std::endl;
+  std::cout << "Testing Feedback System Sensitivity" << std::endl;
+  std::cout << "======================================" << std::endl;
+
+  // Nominal forward path:
+  // G(s) = 1 / (s + 1)
+  TransferFunction forward_path({1}, {1, 1});
+
+  // Nominal feedback path:
+  // H(s) = 1
+  TransferFunction feedback_path({1}, {1});
+
+  TransferFunction desired_transfer({1}, {1});
+
+  FeedbackSystem system(
+      forward_path,
+      feedback_path,
+      desired_transfer);
+
+  // G(s, k) = k / (s + 1)
+  //
+  // A1 = 0
+  // A2 = 1
+  // A3 = s + 1
+  // A4 = 0
+  // k  = 1
+  //
+  // Therefore S_k^G = 1
+  SensitivityAnalysis forward_analysis(
+      {0},
+      {1},
+      {1, 1},
+      {0},
+      1.0);
+
+  // H(s, k) = k
+  //
+  // A1 = 0
+  // A2 = 1
+  // A3 = 1
+  // A4 = 0
+  // k  = 1
+  //
+  // Therefore S_k^H = 1
+  SensitivityAnalysis feedback_analysis(
+      {0},
+      {1},
+      {1},
+      {0},
+      1.0);
+
+  // ----------------------------------------------------------
+  // Loop transfer:
+  //
+  // GH = 1 / (s + 1)
+  //
+  // Forward-path sensitivity:
+  //
+  // S_G^T = 1 / (1 + GH)
+  //       = (s + 1) / (s + 2)
+  // ----------------------------------------------------------
+  std::cout << "Forward-path sensitivity" << std::endl;
+  std::cout << "Expected: (s + 1)/(s + 2)" << std::endl;
+  std::cout << "Actual:   "
+            << system.GetForwardPathSensitivity()
+            << std::endl;
+  std::cout << std::endl;
+
+  // ----------------------------------------------------------
+  // Feedback-path sensitivity:
+  //
+  // S_H^T = -GH / (1 + GH)
+  //       = -1 / (s + 2)
+  // ----------------------------------------------------------
+  std::cout << "Feedback-path sensitivity" << std::endl;
+  std::cout << "Expected: -1/(s + 2)" << std::endl;
+  std::cout << "Actual:   "
+            << system.GetFeedbackPathSensitivity()
+            << std::endl;
+  std::cout << std::endl;
+
+  // Since S_k^G = 1:
+  //
+  // S_k^T through G
+  // = S_G^T S_k^G
+  // = (s + 1)/(s + 2)
+  std::cout << "Forward-parameter sensitivity" << std::endl;
+  std::cout << "Expected: (s + 1)/(s + 2)" << std::endl;
+  std::cout << "Actual:   "
+            << system.GetForwardParameterSensitivity(
+                   forward_analysis)
+            << std::endl;
+  std::cout << std::endl;
+
+  // Since S_k^H = 1:
+  //
+  // S_k^T through H
+  // = S_H^T S_k^H
+  // = -1/(s + 2)
+  std::cout << "Feedback-parameter sensitivity" << std::endl;
+  std::cout << "Expected: -1/(s + 2)" << std::endl;
+  std::cout << "Actual:   "
+            << system.GetFeedbackParameterSensitivity(
+                   feedback_analysis)
+            << std::endl;
+  std::cout << std::endl;
+
+  // Combined:
+  //
+  // (s + 1)/(s + 2) - 1/(s + 2)
+  // = s/(s + 2)
+  std::cout << "Combined parameter sensitivity" << std::endl;
+  std::cout << "Expected: s/(s + 2)" << std::endl;
+  std::cout << "Actual:   "
+            << system.GetCombinedParameterSensitivity(
+                   forward_analysis,
+                   feedback_analysis)
+            << std::endl;
+}
+
 int main() {
   //TestErrorConstants();
-  TestSensitivityAnalysis();
+  //TestSensitivityAnalysis();
+  TestFeedbackSystemSensitivity();
 
 
   return 0;
