@@ -365,14 +365,20 @@ $$
 The **parabolic error constant** $K_{pa}$ is defined as:
 
 $$
-K_{pa} = \frac{1}{\lim{s \to 0} \frac{1}{s^2}\[T_d - C/R \]}
+K_{pa} = \frac{1}{\lim_{s^2 \to 0} \frac{1}{s^2}\[T_d - C/R \]}
 $$
 
 with the steady state for the general system when the input is a *unit-parabolic* function being:
 
 $$
-e_{ss} = \frac{1}{K_pa}
+e_{ss} = \frac{1}{K_{pa}}
 $$
+
+### Error Constants in this Project
+In this project, Error Constants are represented by a enum class called `ErrorConstantType`, which tracks the three main error constants, previously mentioned.
+
+These error constants are then used to determine the steady state of the feedback system using the function `EvaluateErrorConstant()`, which when an object of `ErrorConstantType` is passed in, the function then evaluates which type of limit to evaluate based on the object passed in, before returning $1 / \text{limit}$.
+
 
 # The RLC Circuit
 So far, the only part of this project that is related to the Electromagnetic section and that is the RLC Circuit.
