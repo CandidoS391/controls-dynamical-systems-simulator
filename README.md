@@ -365,7 +365,7 @@ $$
 The **parabolic error constant** $K_{pa}$ is defined as:
 
 $$
-K_{pa} = \frac{1}{\lim_{s^2 \to 0} \frac{1}{s^2}\[T_d - C/R \]}
+K_{pa} = \frac{1}{\lim_{s \to 0} \frac{1}{s^2}\[T_d - C/R \]}
 $$
 
 with the steady state for the general system when the input is a *unit-parabolic* function being:
@@ -384,7 +384,9 @@ In control systems, **sensitivity** is the measure of how variations in the plan
 
 Mathematically, consider two transfer functions for a system, one function that represents the **nominal** or the ideal transfer function, and the other representing the actual transfer function of the system. Then in this case, the *sensitivity* of the system is the measure of the amount by which the actual transfer function differs from the nominal transfer function.
 
-In this project, there are three scenarios that are considered in sensitivity analysis, which are found in the class `SensitivityAnalysis`. Consider the mathematical model $T(k)$, written in polar form as
+In this project, there are three aspects of sensitivity that are considered in sensitivity analysis: the sensitivity of a function, the sensitivity of the magnitude of a function, and the sensitivity of the phase angle. All of which are represented in the class `SensitivityAnalysis`. 
+
+To understand these aspects mathematically, consider the mathematical model $T(k)$, written in polar form as
 
 $$
 T(k) = \lVert T(k) \rVert e^{j\Phi_T}
@@ -398,6 +400,23 @@ $$
 S_k^{T(k)} \equiv \frac{d \ln(T(k))}{d \ln(k)} = \frac{d T(k)/T(k)}{dk/k} = \frac{dT(k)}{dk} \cdot \frac{k}{T(k)}
 $$
 
+The **sensitivity of tha magnitude of T(k)** is defined by
+
+$$
+S_k^{\lVert T(k) \rVert} \equiv \frac{d \ln(\lVert T(k) \rVert)}{d \ln(k)} = \frac{d \lVert T(k) \rVert / \lVert T(k) \rVert}{dk / k} = \frac{d \lVert T(k) \rVert}{dk} \cdot \frac{k}{\lVert T(k) \rVert}
+$$
+
+And the **sensitivity of the phase angle** $\mathbf{\Phi_T}$ is defined by
+
+$$
+S_k^{\Phi_T} = \frac{d \ln(\Phi_T)}{d \ln(k)} = \frac{d \Phi_T / \Phi_T}{dk / k} = \frac{d\Phi_T}{dk} \cdot \frac{k}{Phi_T} 
+$$
+
+With these aspects, they're all related with this expression:
+
+$$
+S_k^{T(k)} = S_k^{\lVert T(k) \rVert} + j\Phi_T S_k^{\Phi_T}
+$$
 
 # The RLC Circuit
 So far, the only part of this project that is related to the Electromagnetic section and that is the RLC Circuit.
