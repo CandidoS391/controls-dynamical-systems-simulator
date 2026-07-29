@@ -379,6 +379,25 @@ In this project, Error Constants are represented by a enum class called `ErrorCo
 
 These error constants are then used to determine the steady state of the feedback system using the function `EvaluateErrorConstant()`, which when an object of `ErrorConstantType` is passed in, the function then evaluates which type of limit to evaluate based on the object passed in, before returning $1 / \text{limit}$.
 
+## Sensitivity Analysis
+In control systems, **sensitivity** is the measure of how variations in the plant parameters affected the closed-loop transfer function, or the frequency-response function, which is in itself, the transfer function in respect to $j\omega$.
+
+Mathematically, consider two transfer functions for a system, one function that represents the **nominal** or the ideal transfer function, and the other representing the actual transfer function of the system. Then in this case, the *sensitivity* of the system is the measure of the amount by which the actual transfer function differs from the nominal transfer function.
+
+In this project, there are three scenarios that are considered in sensitivity analysis, which are found in the class `SensitivityAnalysis`. Consider the mathematical model $T(k)$, written in polar form as
+
+$$
+T(k) = \lVert T(k) \rVert e^{j\Phi_T}
+$$
+
+for $k$ is a parameter upon which $T(k)$, and $\Phi_T$ depend on $k$, which in itself can be some real or complex quantity.
+
+The **sensitivity of T(k) with respect to the parameter k** is defined by
+
+$$
+S_k^{T(k)} \equiv \frac{d \ln(T(k))}{d \ln(k)} = \frac{d T(k)/T(k)}{dk/k} = \frac{dT(k)}{dk} \cdot \frac{k}{T(k)}
+$$
+
 
 # The RLC Circuit
 So far, the only part of this project that is related to the Electromagnetic section and that is the RLC Circuit.
