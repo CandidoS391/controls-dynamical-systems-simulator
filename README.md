@@ -392,7 +392,7 @@ $$
 T(k) = \lVert T(k) \rVert e^{j\Phi_T}
 $$
 
-for $k$ is a parameter upon which $T(k)$, and $\Phi_T$ depend on $k$, which in itself can be some real or complex quantity.
+for $k$ is a parameter upon which $T(k)$, and $\phi_T$ depend on $k$, which in itself can be some real or complex quantity.
 
 The **sensitivity of T(k) with respect to the parameter k** is defined by
 
@@ -409,7 +409,7 @@ $$
 And the **sensitivity of the phase angle** $\mathbf{\Phi_T}$ is defined by
 
 $$
-S_k^{\Phi_T} = \frac{d \ln(\Phi_T)}{d \ln(k)} = \frac{d \Phi_T / \Phi_T}{dk / k} = \frac{d\Phi_T}{dk} \cdot \frac{k}{Phi_T} 
+S_k^{\Phi_T} = \frac{d \ln(\phi_T)}{d \ln(k)} = \frac{d \phi_T / \phi_T}{dk / k} = \frac{d\phi_T}{dk} \cdot \frac{k}{\phi_T} 
 $$
 
 With these aspects, they're all related with this expression:
