@@ -125,11 +125,11 @@ double PerformanceAnalysis::GetRiseTime() const {
 }
 
 double PerformanceAnalysis::GetSettlingTime(double tolerance_percent) const {
-  // Check if tolerance_percent is not less than or equal to zero
+  // Check if tolerance_percent is less than or equal to zero
   if (tolerance_percent <= 0)
     throw std::invalid_argument("tolerance cannot be less than or equal to zero.");
 
-  // Check if steady_state_value is not approximately equal to zero
+  // Check if steady_state_value is approximately equal to zero
   if (std::abs(steady_state_value) < 1e-8)
     throw std::domain_error("Steady-state value cannot be zero.");
 
@@ -142,7 +142,7 @@ double PerformanceAnalysis::GetSettlingTime(double tolerance_percent) const {
     // Check if the current response is outside the tolerance bounds
     if (response_values[i] < lower_bound || response_values[i] > upper_bound) {
       // If the final response sample is outside the tolerance bound, then the response hasn't settled
-      if (i == response_values.size() - 1)
+      if (i == static_cast<int>(response_values.size()) - 1)
         throw std::runtime_error("Response has not settled.");
 
       // The current sample is the last sample outside the band.

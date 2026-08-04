@@ -415,8 +415,23 @@ $$
 With these aspects, they're all related with this expression:
 
 $$
-S_k^{T(k)} = S_k^{\lVert T(k) \rVert} + j\Phi_T S_k^{\Phi_T}
+S_k^{T(k)} = S_k^{\lVert T(k) \rVert} + j\phi_T S_k^{\phi_T}
 $$
+
+### Sensitivity Analysis in this Project
+Whilst sensitivity of a control system can be calculated directly from the four equations above, this project in particular uses a different approach. It uses a special type of transfer functions in the form of:
+
+$$
+T = \frac{A_1 + kA_2}{A_3 + kA_4}
+$$
+
+where $k$ is a parameter, and $A_1, \cdots , A_4$ are polynomials in $s$. For a transfer function in this form, we can calculate the sensitivity of $T$ with respect to $k$ by
+
+$$
+S_k^T \equiv \frac{dT}{dk} \cdot \frac{k}{T} = \frac{k(A_2A_3 - A_1A_4)}{(A_3 + kA_4)(A_1 + kA_2)}
+$$
+
+This is how the project calculates sensitivity within the class `SensitivityAnalysis`, where the function `GetNominalTransferFunction()` calculates $T$, and `GetTransferFunctionSensitivity()` calculates $S_k^T$.
 
 # The RLC Circuit
 So far, the only part of this project that is related to the Electromagnetic section and that is the RLC Circuit.

@@ -23,6 +23,7 @@
 #include "StabilityStatus.h"
 #include "FeedbackSystem.h"
 #include "SensitivityAnalysis.h"
+#include "PerformanceAnalysis.h"
 
 void SimulateFirstOrderDecayEuler() {
   FirstOrderDecay decay(0.5);
@@ -517,241 +518,6 @@ void SimulateRLCStepResponseRK4() {
   }
 }
 
-void TestSignalFlowGraph() {
-  SignalFlowGraph graph;
-
-  graph.AddNode("R");
-  graph.AddNode("x1");
-  graph.AddNode("x2");
-  graph.AddNode("C");
-
-  graph.SetInputNode("R");
-  graph.SetOutputNode("C");
-
-  TransferFunction g1({1}, {1, 1});
-  TransferFunction g2({2}, {1, 2});
-  TransferFunction g3({3}, {1, 3});
-  TransferFunction h1({1}, {1});
-
-  Branch b1{"R", "x1", g1};
-  Branch b2{"x1", "x2", g2};
-  Branch b3{"x2", "C", g3};
-  Branch b4{"C", "x1", h1};
-
-  graph.AddBranch(b1.from, b1.to, b1.gain);
-  graph.AddBranch(b2.from, b2.to, b2.gain);
-  graph.AddBranch(b3.from, b3.to, b3.gain);
-  graph.AddBranch(b4.from, b4.to, b4.gain);
-
-  graph.Print();
-
-  Path forward_path{{b1, b2, b3}};
-  TransferFunction path_gain = graph.ComputePathGain(forward_path);
-
-  std::cout << "\nForward Path Gain R -> x1 -> x2 -> C:\n";
-  std::cout << path_gain << std::endl;
-
-  Loop loop{{b2, b3, b4}};
-  TransferFunction loop_gain = graph.ComputeLoopGain(loop);
-
-  
-  std::cout << "\nLoop Gain x1 -> x2 -> C -> x1:\n";
-  std::cout << loop_gain << std::endl;
-
-  std::vector<Path> paths = graph.FindForwardPaths();
-  std::cout << "\nNumber of forward paths found: " << paths.size() << std::endl;
-
-  for (const auto& path : paths) {
-    for (const auto& branch : path.branches) {
-      std::cout << branch.from << " -> ";
-    }
-
-    std::cout << path.branches.back().to << std::endl;
-  }
-
-  // ------ Testing finding loops -------
-  // Test 1: One Simple loop
-
-  std::vector<Loop> loops = graph.FindLoops();
-  std::cout << "Number of loops found: " << loops.size() << std::endl;
-
-  for (const auto& loop : loops) {
-    std::cout << "Loop: ";
-    for (const auto& branch: loop.branches) {
-      std::cout << branch.from << " -> ";
-    }
-    std::cout << loop.branches.back().to << std::endl;
-
-    std::cout << "Gain: " << graph.ComputeLoopGain(loop) << std::endl;
-  }
-
-  // Test 2: graph with no loop
-  SignalFlowGraph graph2;
-
-  graph2.AddNode("R");
-  graph2.AddNode("x1");
-  graph2.AddNode("C");
-
-  graph2.SetInputNode("R");
-  graph2.SetOutputNode("C");
-
-  graph2.AddBranch("R", "x1", g1);
-  graph2.AddBranch("x1", "C", g2);
-
-  std::vector<Loop> loops_2 = graph2.FindLoops();
-
-  std::cout << "Number of loops in graph2: " << loops_2.size() << std::endl;
-
-  // Test 3: self loop
-  SignalFlowGraph graph3;
-
-  graph3.AddNode("R");
-  graph3.AddNode("x1");
-  graph3.AddNode("C");
-
-  graph3.SetInputNode("R");
-  graph3.SetOutputNode("C");
-
-  TransferFunction g({1}, {1});
-  TransferFunction h({5}, {1});
-
-  graph3.AddBranch("R", "x1", g);
-  graph3.AddBranch("x1", "x1", h);
-  graph3.AddBranch("x1", "C", g);
-
-  std::vector<Loop> loops3 = graph3.FindLoops();
-
-  std::cout << "Number of loops in graph3: " << loops3.size() << std::endl;
-
-  // ------ Testing AreNonTouching -------
-  // Test 1: touching loops
-  Loop loop1{{b2, b3, b4}};
-  Loop loop2{{b3, b4, b2}};
-
-  std::cout << graph.AreNonTouching(loop1, loop2) << std::endl;
-
-  // test 2: Non-touching loops
-  graph.AddNode("a");
-  graph.AddNode("b");
-
-  TransferFunction k1({4}, {1});
-  TransferFunction k2({5}, {1});
-
-  Branch b5{"a", "b", k1};
-  Branch b6{"b", "a", k2};
-
-  Loop loop3{{b5, b6}};
-
-  std::cout << graph.AreNonTouching(loop1, loop3) << std::endl;
-
-  // Test 3: One shared node:
-  Branch b7{"C", "a", k1};
-  Branch b8{"a", "C", k2};
-
-  Loop loop4{{b7, b8}};
-
-  std::cout << graph.AreNonTouching(loop1, loop4) << std::endl;
-
-  // ------ Testing Mason Gain Formula ------
-  std::vector<Loop> one_loop{loops[0]};
-
-  TransferFunction delta = graph.ComputeDelta(one_loop);
-  std::cout << "\nDelta:\n";
-  delta.Print();
-
-  
-
-  TransferFunction mason_gain = graph.ComputeMasonGain();
-
-  std::cout << "\nMason Gain:\n";
-  mason_gain.Print();
-}
-
-void TestSignalFlowGraphInvalidNode() {
-  SignalFlowGraph graph;
-
-  graph.AddNode("R");
-  graph.AddNode("C");
-
-  try {
-    graph.SetInputNode("x1");
-  } catch (const std::out_of_range& e) {
-    std::cout << "Caught expected error: " << e.what() << std::endl;
-  }
-}
-
-void TestTransferFunctionSubtract() {
-  TransferFunction g1({1}, {1, 1});  // 1 / (s + 1)
-  TransferFunction g2({2}, {1, 2});  // 2 / (s + 2)
-
-  TransferFunction result = g1 - g2;
-
-  std::cout << "\nSubtract Test: g1 - g2\n";
-  result.Print();
-  // Expected:
-  // Numerator: -1 0
-  // Denominator: 1 3 2
-}
-
-void TestTransferFunctionDivide() {
-  TransferFunction g1({1}, {1, 1});  // 1 / (s + 1)
-  TransferFunction g2({2}, {1, 2});  // 2 / (s + 2)
-
-  TransferFunction result = g1 / g2;
-
-  std::cout << "\nDivide Test: g1 / g2\n";
-  result.Print();
-  // Expected:
-  // Numerator: 1 2
-  // Denominator: 2 2
-}
-
-void TestTransferFunctionMasonPrep() {
-  TransferFunction one({1}, {1});
-  TransferFunction loop1({-2}, {1, 2});
-  TransferFunction loop2({-3}, {1, 3});
-
-  TransferFunction loop_sum = loop1.Parallel(loop2);
-  TransferFunction delta = one - loop_sum;
-
-  std::cout << "\nMason Delta Prep Test: 1 - (L1 + L2)\n";
-  delta.Print();
-  // Expected:
-  // loop_sum = (-5s - 12) / ((s+2)(s+3))
-  // delta = (s^2 + 10s + 18) / (s^2 + 5s + 6)
-}
-
-void TestNonTouchingDelta() {
-  SignalFlowGraph graph;
-
-  TransferFunction one({1}, {1});
-  TransferFunction g1({2}, {1});
-  TransferFunction g2({3}, {1});
-  TransferFunction h1({4}, {1});
-  TransferFunction h2({5}, {1});
-
-  Branch b1{"x1", "x2", g1};
-  Branch b2{"x2", "x1", h1};
-
-  Branch b3{"x3", "x4", g2};
-  Branch b4{"x4", "x3", h2};
-
-  Loop loop1{{b1, b2}};
-  Loop loop2{{b3, b4}};
-
-  std::cout << "\nNon-Touching Test:\n";
-  std::cout << "Are non-touching: "
-            << graph.AreNonTouching(loop1, loop2)
-            << std::endl;
-
-  std::vector<Loop> loops{loop1, loop2};
-
-  TransferFunction delta = graph.ComputeDelta(loops);
-
-  std::cout << "Delta:\n";
-  delta.Print();
-}
-
 void ExportPoleZeroData() {
   // Test 1 (simple case)
   TransferFunction g({1, 1}, {1, 5, 4});
@@ -887,241 +653,7 @@ void TestHigherOrderRoots() {
   std::cout << std::endl;
 }
 
-void TestPartialFractionExpansion() {
-  // Test 1: Two distinct real poles
-  TransferFunction g({5, 7}, {1, 3, 2});
 
-  std::vector<PartialFractionTerm> terms = g.PartialFractionExpansion();
-
-  std::cout << "Partial Fraction Terms (Test 1):\n";
-  g.PrintPartialFractionExpression();
-
-  // Test 2: Three distinct real poles
-  TransferFunction g_2({1}, {1, 6, 11, 6});
-
-  std::cout << "Partial Fraction Terms (Test 2):\n";
-  std::vector<PartialFractionTerm> terms_2 = g_2.PartialFractionExpansion();
-
-  g_2.PrintPartialFractionExpression();
-
-  // Test 3: Repeated pole
-  // 1 / (s + 1)^2
-  TransferFunction g_3({1}, {1, 2, 1});
-  std::cout << "Partial Fraction Terms (Test 3):\n";
-
-  std::vector<PartialFractionTerm> terms_3 = g_3.PartialFractionExpansion();
-
-  g_3.PrintPartialFractionExpression();
-
-  // Test 4: Unsupported triple pole
-  // 1 / (s + 1)^3
-  TransferFunction g_4({1}, {1, 3, 3, 1});
-
-  std::cout << "Partial Fraction Terms (Test 4):\n";
-
-  try {
-    std::vector<PartialFractionTerm> terms_4 = g_4.PartialFractionExpansion();
-
-    std::cout << "ERROR: Triple pole was not rejected.\n";
-  } catch (const std::invalid_argument& error) {
-    std::cout << "Expected exception: " << error.what() << std::endl;
-  }
-
-  std::cout << std::endl;
-}
-
-void TestRouthTable() {
-  // Test 1: Stable cubic
-  // s^3 + 6s^2 + 11s + 6
-  RouthTable stable_table({1, 6, 11, 6});
-
-  std::cout << "Routh Table (Test 1 - Stable Cubic):\n";
-  stable_table.Build();
-  stable_table.Print();
-
-  StabilityStatus stable_status = stable_table.GetStability();
-
-  if (stable_status == StabilityStatus::k_stable)
-    std::cout << "System is stable\n";
-  else
-    std::cout << "ERROR: Expected stable system\n";
-
-  std::cout << std::endl;
-
-
-  // Test 2: Unstable cubic
-  // s^3 - 2s^2 + s + 2
-  RouthTable unstable_table({1, -2, 1, 2});
-
-  std::cout << "Routh Table (Test 2 - Unstable Cubic):\n";
-  unstable_table.Build();
-  unstable_table.Print();
-
-  StabilityStatus unstable_status = unstable_table.GetStability();
-
-  if (unstable_status == StabilityStatus::k_unstable)
-    std::cout << "System is unstable\n";
-  else
-    std::cout << "ERROR: Expected unstable system\n";
-
-  std::cout << std::endl;
-
-
-  // Test 3: Stable fourth-order polynomial
-  // (s + 1)(s + 2)(s + 3)(s + 4)
-  // s^4 + 10s^3 + 35s^2 + 50s + 24
-  RouthTable fourth_order_table({1, 10, 35, 50, 24});
-
-  std::cout << "Routh Table (Test 3 - Stable Fourth Order):\n";
-  fourth_order_table.Build();
-  fourth_order_table.Print();
-
-  StabilityStatus fourth_order_status =
-      fourth_order_table.GetStability();
-
-  if (fourth_order_status == StabilityStatus::k_stable)
-    std::cout << "System is stable\n";
-  else
-    std::cout << "ERROR: Expected stable system\n";
-
-  std::cout << std::endl;
-
-  // Test 4: Entire row of zeros handled with auxiliary polynomial
-  // s^4 + 2s^2 + 1 = (s^2 + 1)^2
-  RouthTable zero_row_table({1, 0, 2, 0, 1});
-
-  std::cout << "Routh Table (Test 4 - Zero Row Replacement):\n";
-
-  zero_row_table.Build();
-  zero_row_table.Print();
-
-  StabilityStatus zero_row_status =
-      zero_row_table.GetStability();
-
-  if (zero_row_status == StabilityStatus::k_marginally_stable)
-    std::cout << "System is marginally stable\n";
-  else
-    std::cout << "ERROR: Expected marginally stable system\n";
-
-  std::cout << std::endl;
-}
-
-void TestLimitAtOrigin() {
-  std::cout << "==============================" << std::endl;
-  std::cout << "Testing Limit At Origin" << std::endl;
-  std::cout << "==============================" << std::endl;
-
-  // ------------------------------------------------------------
-  // Test 1
-  // T(s) = 1 / (s + 1)
-  // ------------------------------------------------------------
-  TransferFunction t1({1}, {1, 1});
-
-  std::cout << "Test 1 - 1 / (s + 1)" << std::endl;
-  std::cout << "Power 0 (Expected: 1): "
-            << t1.LimitAtOriginAfterDividingBySPower(0)
-            << std::endl;
-  std::cout << "Power 1 (Expected: inf): "
-            << t1.LimitAtOriginAfterDividingBySPower(1)
-            << std::endl;
-  std::cout << std::endl;
-
-
-  // ------------------------------------------------------------
-  // Test 2
-  // T(s) = s / (s + 1)
-  // ------------------------------------------------------------
-  TransferFunction t2({1, 0}, {1, 1});
-
-  std::cout << "Test 2 - s / (s + 1)" << std::endl;
-  std::cout << "Power 0 (Expected: 0): "
-            << t2.LimitAtOriginAfterDividingBySPower(0)
-            << std::endl;
-  std::cout << "Power 1 (Expected: 1): "
-            << t2.LimitAtOriginAfterDividingBySPower(1)
-            << std::endl;
-  std::cout << "Power 2 (Expected: inf): "
-            << t2.LimitAtOriginAfterDividingBySPower(2)
-            << std::endl;
-  std::cout << std::endl;
-
-
-  // ------------------------------------------------------------
-  // Test 3
-  // T(s) = s² / (s + 1)
-  // ------------------------------------------------------------
-  TransferFunction t3({1, 0, 0}, {1, 1});
-
-  std::cout << "Test 3 - s^2 / (s + 1)" << std::endl;
-  std::cout << "Power 0 (Expected: 0): "
-            << t3.LimitAtOriginAfterDividingBySPower(0)
-            << std::endl;
-  std::cout << "Power 1 (Expected: 0): "
-            << t3.LimitAtOriginAfterDividingBySPower(1)
-            << std::endl;
-  std::cout << "Power 2 (Expected: 1): "
-            << t3.LimitAtOriginAfterDividingBySPower(2)
-            << std::endl;
-  std::cout << std::endl;
-
-
-  // ------------------------------------------------------------
-  // Test 4
-  // T(s) = 0
-  // ------------------------------------------------------------
-  TransferFunction t4({0}, {1});
-
-  std::cout << "Test 4 - Zero Transfer Function" << std::endl;
-  std::cout << "Power 0 (Expected: 0): "
-            << t4.LimitAtOriginAfterDividingBySPower(0)
-            << std::endl;
-  std::cout << "Power 1 (Expected: 0): "
-            << t4.LimitAtOriginAfterDividingBySPower(1)
-            << std::endl;
-  std::cout << std::endl;
-}
-
-void TestTransferFunctionSystemType() {
-  std::cout << "==============================\n";
-  std::cout << "Testing Transfer Function Type\n";
-  std::cout << "==============================\n\n";
-
-  // Test 1: Type 0
-  TransferFunction type_zero({5}, {1, 2});
-  std::cout << "Test 1 - Type 0\n";
-  std::cout << "Expected: 0\n";
-  std::cout << "Actual:   " << type_zero.GetSystemType() << "\n\n";
-
-  // Test 2: Type 1
-  TransferFunction type_one({5}, {1, 2, 0});
-  std::cout << "Test 2 - Type 1\n";
-  std::cout << "Expected: 1\n";
-  std::cout << "Actual:   " << type_one.GetSystemType() << "\n\n";
-
-  // Test 3: Type 2
-  TransferFunction type_two({5}, {1, 2, 0, 0});
-  std::cout << "Test 3 - Type 2\n";
-  std::cout << "Expected: 2\n";
-  std::cout << "Actual:   " << type_two.GetSystemType() << "\n\n";
-
-  // Test 4: Type 3
-  TransferFunction type_three({5}, {1, 2, 0, 0, 0});
-  std::cout << "Test 4 - Type 3\n";
-  std::cout << "Expected: 3\n";
-  std::cout << "Actual:   " << type_three.GetSystemType() << "\n\n";
-
-  // Test 5: Type 1 with additional poles
-  TransferFunction mixed({10}, {1, 6, 11, 6, 0});
-  std::cout << "Test 5 - Type 1 with additional poles\n";
-  std::cout << "Expected: 1\n";
-  std::cout << "Actual:   " << mixed.GetSystemType() << "\n\n";
-
-  // Test 6: Nonconstant numerator
-  TransferFunction numerator({3, 7}, {1, 4, 0});
-  std::cout << "Test 6 - Nonconstant numerator\n";
-  std::cout << "Expected: 1\n";
-  std::cout << "Actual:   " << numerator.GetSystemType() << "\n\n";
-}
 
 void TestFeedbackSystemBasicFunctions() {
   // ============================================================
@@ -1565,10 +1097,218 @@ void TestFeedbackSystemSensitivity() {
             << std::endl;
 }
 
+void TestPerformanceAnalysis() {
+  std::cout << "======================================" << std::endl;
+  std::cout << "Testing Performance Analysis" << std::endl;
+  std::cout << "======================================" << std::endl;
+
+  // ----------------------------------------------------------
+  // Test 1: Positive response with overshoot
+  //
+  // Steady-state value: 10
+  // Maximum response:    12
+  // Overshoot:           2
+  // Percent overshoot:   20%
+  //
+  // 50% target: 5
+  // First reached at t = 0.3
+  //
+  // 10% target: 1, first reached at t = 0.1
+  // 90% target: 9, first reached at t = 0.4
+  // Rise time: 0.4 - 0.1 = 0.3
+  //
+  // 5% settling band: [9.5, 10.5]
+  // Last outside sample: t = 0.6
+  // Settling begins at:  t = 0.7
+  // ----------------------------------------------------------
+  std::vector<double> time_1 = {
+      0.0, 0.1, 0.2, 0.3, 0.4,
+      0.5, 0.6, 0.7, 0.8, 0.9};
+
+  std::vector<double> response_1 = {
+      0.0, 1.2, 3.5, 5.4, 9.1,
+      12.0, 10.8, 10.4, 9.8, 10.0};
+
+  PerformanceAnalysis analysis_1(time_1, response_1);
+
+  std::cout << "Test 1 - Positive Response" << std::endl;
+
+  std::cout << "Expected steady-state value: 10" << std::endl;
+  std::cout << "Actual steady-state value:   "
+            << analysis_1.GetSteadyStateValue()
+            << std::endl;
+
+  std::cout << "Expected overshoot: 2" << std::endl;
+  std::cout << "Actual overshoot:   "
+            << analysis_1.GetOvershoot()
+            << std::endl;
+
+  std::cout << "Expected percent overshoot: 20" << std::endl;
+  std::cout << "Actual percent overshoot:   "
+            << analysis_1.GetPercentOvershoot()
+            << std::endl;
+
+  std::cout << "Expected delay time: 0.3" << std::endl;
+  std::cout << "Actual delay time:   "
+            << analysis_1.GetDelayTime()
+            << std::endl;
+
+  std::cout << "Expected rise time: 0.3" << std::endl;
+  std::cout << "Actual rise time:   "
+            << analysis_1.GetRiseTime()
+            << std::endl;
+
+  std::cout << "Expected settling time with 5% tolerance: 0.7"
+            << std::endl;
+  std::cout << "Actual settling time with 5% tolerance:   "
+            << analysis_1.GetSettlingTime(5.0)
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // ----------------------------------------------------------
+  // Test 2: Negative response with overshoot
+  //
+  // Steady-state value: -10
+  // Minimum response:   -12
+  // Overshoot:          2
+  // Percent overshoot:  20%
+  //
+  // 50% target: -5, first reached at t = 0.3
+  //
+  // 10% target: -1, first reached at t = 0.1
+  // 90% target: -9, first reached at t = 0.4
+  // Rise time: 0.3
+  //
+  // 5% band: [-10.5, -9.5]
+  // Last outside sample: t = 0.6
+  // Settling begins at:  t = 0.7
+  // ----------------------------------------------------------
+  std::vector<double> time_2 = {
+      0.0, 0.1, 0.2, 0.3, 0.4,
+      0.5, 0.6, 0.7, 0.8, 0.9};
+
+  std::vector<double> response_2 = {
+      0.0, -1.2, -3.5, -5.4, -9.1,
+      -12.0, -10.8, -10.4, -9.8, -10.0};
+
+  PerformanceAnalysis analysis_2(time_2, response_2);
+
+  std::cout << "Test 2 - Negative Response" << std::endl;
+
+  std::cout << "Expected steady-state value: -10" << std::endl;
+  std::cout << "Actual steady-state value:   "
+            << analysis_2.GetSteadyStateValue()
+            << std::endl;
+
+  std::cout << "Expected overshoot: 2" << std::endl;
+  std::cout << "Actual overshoot:   "
+            << analysis_2.GetOvershoot()
+            << std::endl;
+
+  std::cout << "Expected percent overshoot: 20" << std::endl;
+  std::cout << "Actual percent overshoot:   "
+            << analysis_2.GetPercentOvershoot()
+            << std::endl;
+
+  std::cout << "Expected delay time: 0.3" << std::endl;
+  std::cout << "Actual delay time:   "
+            << analysis_2.GetDelayTime()
+            << std::endl;
+
+  std::cout << "Expected rise time: 0.3" << std::endl;
+  std::cout << "Actual rise time:   "
+            << analysis_2.GetRiseTime()
+            << std::endl;
+
+  std::cout << "Expected settling time with 5% tolerance: 0.7"
+            << std::endl;
+  std::cout << "Actual settling time with 5% tolerance:   "
+            << analysis_2.GetSettlingTime(5.0)
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // ----------------------------------------------------------
+  // Test 3: Response settled from the beginning
+  // ----------------------------------------------------------
+  std::vector<double> time_3 = {
+      0.0, 0.1, 0.2, 0.3};
+
+  std::vector<double> response_3 = {
+      10.0, 10.2, 9.8, 10.0};
+
+  PerformanceAnalysis analysis_3(time_3, response_3);
+
+  std::cout << "Test 3 - Settled From Beginning" << std::endl;
+  std::cout << "Expected settling time with 5% tolerance: 0"
+            << std::endl;
+  std::cout << "Actual settling time with 5% tolerance:   "
+            << analysis_3.GetSettlingTime(5.0)
+            << std::endl;
+
+  std::cout << std::endl;
+
+  // ----------------------------------------------------------
+  // Test 5: Invalid vector sizes
+  // ----------------------------------------------------------
+  try {
+    PerformanceAnalysis analysis_5(
+        {0.0, 0.1, 0.2},
+        {0.0, 1.0});
+
+    std::cout << "Test 5: FAILED - exception expected"
+              << std::endl;
+  }
+  catch (const std::invalid_argument& exception) {
+    std::cout << "Test 5: PASSED - caught expected exception: "
+              << exception.what()
+              << std::endl;
+  }
+
+  std::cout << std::endl;
+
+
+  // ----------------------------------------------------------
+  // Test 6: Non-increasing time values
+  // ----------------------------------------------------------
+  try {
+    PerformanceAnalysis analysis_6(
+        {0.0, 0.2, 0.1},
+        {0.0, 0.5, 1.0});
+
+    std::cout << "Test 6: FAILED - exception expected"
+              << std::endl;
+  }
+  catch (const std::invalid_argument& exception) {
+    std::cout << "Test 6: PASSED - caught expected exception: "
+              << exception.what()
+              << std::endl;
+  }
+
+  std::cout << std::endl;
+
+
+  // ----------------------------------------------------------
+  // Test 7: Invalid settling tolerance
+  // ----------------------------------------------------------
+  try {
+    analysis_1.GetSettlingTime(0.0);
+
+    std::cout << "Test 7: FAILED - exception expected"
+              << std::endl;
+  }
+  catch (const std::invalid_argument& exception) {
+    std::cout << "Test 7: PASSED - caught expected exception: "
+              << exception.what()
+              << std::endl;
+  }
+}
+
 int main() {
-  //TestErrorConstants();
-  //TestSensitivityAnalysis();
-  TestFeedbackSystemSensitivity();
+  TestPerformanceAnalysis();
 
 
   return 0;
