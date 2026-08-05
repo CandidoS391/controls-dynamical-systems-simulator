@@ -433,6 +433,29 @@ $$
 
 This is how the project calculates sensitivity within the class `SensitivityAnalysis`, where the function `GetNominalTransferFunction()` calculates $T$, and `GetTransferFunctionSensitivity()` calculates $S_k^T$.
 
+# An Overview of Analyzing and Designing Feedback Control Systems
+Moving from the basics, mathematical concepts, and properties from of feedback control systems, this is where focus shifts to designing and analyzing feedback control systems. Whilst the rest of the sections that pertain to the Control System part of the project will focus on specific techniques for designing/analyzing a feedback control system, it is this section that goes over the objectives and methods that motivate the said techniques.
+
+It is also said that all methods that are to be showcased and made in this project are all approximations, if not representations of linear models. Whilst the previous sections evaluate linear models and by extension linear mathematics, in actuality all physical systems are *nonlinear* to some extent, and in fact there's no such thing as a linear model. However as mentioned previously, all methods to analyzing/designing can be represented by linear models over a limited operating range, with most operating within a *linear range*.
+
+## The Objectives and Methods for Analysis
+In terms of the objectives, there's three main objectives for control system analysis; with all three being the determination of the following system characteristics:
+
+1. The degree or extent of system stability
+2. The steady-state performance
+3. The transient response
+
+In terms of the first system characteristic, knowing a system is stable or not is insufficient information for most purposes. Rather, knowing the system's *relative stability*, or how close a system is to being stable. And for the other two characteristics, recall that the complete solution of the differential equations describing a system can be represented into two parts, the *steady-state solution*, or the solution that does not approach zero as time approaches infinity. And the other part is the *transient response*, or the part of the complete solution that does approach zero (or decays) as time approaches infinity.
+
+In terms of methods, the general procedure for analyzing a control system is the following:
+
+1. Determine the equations or transfer function for each component
+2. Choose a model for representing the system (block diagrams or signal flow graphs)
+3. Formulate the system model by appropriately connecting the components (blocks, or nodes/branches)
+4. Determine the system characteristics
+
+One way to for analyzing feedback control systems is to find the direct solution of the system's differential equation, which can be good to find the steady-state and transient responses needed. But at the same time, this approach is cumbersome for for $n^{\text{th}}$ order differential equations (for $n > 2$).
+
 # The RLC Circuit
 So far, the only part of this project that is related to the Electromagnetic section and that is the RLC Circuit.
 
