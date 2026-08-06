@@ -454,7 +454,45 @@ In terms of methods, the general procedure for analyzing a control system is the
 3. Formulate the system model by appropriately connecting the components (blocks, or nodes/branches)
 4. Determine the system characteristics
 
-One way to for analyzing feedback control systems is to find the direct solution of the system's differential equation, which can be good to find the steady-state and transient responses needed. But at the same time, this approach is cumbersome for for $n^{\text{th}}$ order differential equations (for $n > 2$).
+One way to for analyzing feedback control systems is to find the direct solution of the system's differential equation, which can be good to find the steady-state and transient responses needed. But at the same time, this approach is cumbersome for for $n^{\text{th}}$ order differential equations (for $n > 2$). Instead, four graphical methods are used instead, which are more easier and direct to use:
+
+1. The Root-Locus Method
+2. Bode-Plot Representations
+3. Nyquist Diagrams
+4. Nichols Charts
+
+## The Objectives and Methods for Designing
+In terms of objectives, the basic goal of control system design is meeting *performance specifications*. They are the constraints that are put on mathematical functions describing system characteristics. Generally, they take on two forms:
+
+1. Frequency-domain specifications (pertinent quantities expressed as functions of frequency)
+2. Time-domain specifications (in terms of time-response)
+
+The desired system characteristics may be prescribed in either or both of the above forms. And in general, they specify three important properties of dynamic systems:
+
+1. Speed of response
+2. Relative stability
+3. System accuracy or allowable error
+
+### Frequency Domain Specifications
+Frequency domain specifications are usually stated in the following terms
+
+#### Gain Margin
+A margin of relative stability, is defined as the magnitude of the reciprocal of the open-loop transfer function, evaluated at the frequency $\omega_{\pi}$, at which the phase angle is $-180$ degrees. That is:
+
+$$
+\text{gain margin} = \frac{1}{\lVert GH(j\omega_{\pi}) \rVert}
+$$
+
+Where $\arg(GH(j\omega_{\pi})) = -180 \text{degrees} = -\pi \text{radians}$ and $\omega_{pi}$ is called the **phase crossover**
+
+#### Phase Margin
+The phase margin $\phi_{PM}$, a measure of relative stability, is defined as 180 degrees plus the phase angle $\phi_1$ of the open-loop transfer function at unity gain. Or in other words:
+
+$$
+\phi_{PM} = \[180 + \arg(GH(j\omega_1))\] \text{degrees}
+$$
+
+where $\lVert GH(j\omega_1) \rVert = 1$ and $\omega_1$ is called the **gain crossover** frequency. 
 
 # The RLC Circuit
 So far, the only part of this project that is related to the Electromagnetic section and that is the RLC Circuit.
