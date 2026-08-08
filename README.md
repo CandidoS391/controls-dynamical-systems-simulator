@@ -506,7 +506,29 @@ where $\gamma = \arg(\frac{C}{R}(j\omega))$. The average value of $T_d(\omega)$ 
 #### Bandwidth (BW)
 A bandwidth of a system is the range of frequencies (of the input) over which the system will respond sastisfactorily.
 
-The performance of a system is considered satisfactory based on the application and the characteristics of the particular system. Often times, the bandwidth of a system is defined as that range of frequencies over which the magnitude ratio does not differ by more than 3 decibels (-3 dB) from its value at a specified frequency. For many feedback control systems, this frequency is zero. The bandwidth is in this case equal to the cutoff frequency $\omega_{c}$ (in radians per second). 
+The performance of a system is considered satisfactory based on the application and the characteristics of the particular system. Often times, the bandwidth of a system is defined as that range of frequencies over which the magnitude ratio does not differ by more than 3 decibels (-3 dB) from its value at a specified frequency. For many feedback control systems, this frequency is zero. The bandwidth is in this case equal to the cutoff frequency $\omega_{c}$ (in radians per second).
+
+#### Cutoff Rate
+The cutoff rate is the frequency rate at which the magnitude ratio decreases beyond the cutoff frequency $\omega_{c}$. For instance, the cutoff may be specified as 6 db/octave.
+
+#### Resonance Peak
+The resonance peak $M_p$, a measure of relative stability, is the maximum value of the magnitude of the closed-loop frequency response. Or mathematically:
+
+$$
+M_p = \max_{\omega} \lVert \frac{C}{R} (j\omega) \rVert
+$$
+
+#### Resonant Frequency
+The resonant frequency $\omega_{p}$, is the frequency at which $M_p$ occurs.
+
+### Time-Domain Specifications
+Time-domain specifications are defined in terms of the unit-step function, ramp function, and the parabolic function responses. And within each response, there is a steady-state and a transient component. 
+
+The steady-state component, is a measure of the system's accuracy for whenever a specific input is applied. For instance, the error constants $K_p, K_v, K_a$ are figures for steady-state performance. In terms of this project and within the `PerformanceAnalysis` class, the steady-state is being approximated based on the last value of a given response sample 
+
+Meanwhile the transient component is described based on the unit-step function response.
+
+The following are typical specifications for within the time-domain
 
 # The RLC Circuit
 So far, the only part of this project that is related to the Electromagnetic section and that is the RLC Circuit.
