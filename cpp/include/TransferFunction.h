@@ -71,8 +71,11 @@ class TransferFunction {
     size_t GetNumeratorDegree() const;
     size_t GetDenominatorDegree() const;
 
-    // Evaluate the Transfer function
+    // Evaluate the Transfer function at s
     double Evaluate(double s) const;
+
+    // Evaluate the transfer function at a complex number s
+    std::complex<double> Evaluate(const std::complex<double>& s) const;
 
     // Retrieve the Zeros and Poles of the Transfer Function
     std::vector<std::complex<double>> GetZeros() const;

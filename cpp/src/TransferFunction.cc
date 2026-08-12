@@ -269,6 +269,18 @@ double TransferFunction::Evaluate(double s) const {
   return numerator_value / denominator_value;
 }
 
+std::complex<double> TransferFunction::Evaluate(const std::complex<double>& s) const {
+  // Evaluate the numerator and denominator at complex number s
+  std::complex<double> numerator_value = EvaluatePolynomial(numerator, s);
+  std::complex<double> denominator_value = EvaluatePolynomial(denominator, s);
+
+  // If the denominator is approximately zero, handle the singularity case with a throw
+  if (std::abs(denominator_value) < 1e-8)
+    throw std::domain_error("Transfer Function is singular at this value of s");
+
+  return numerator_value / denominator_value;  
+}
+
 std::vector<std::complex<double>> TransferFunction::GetPoles() const {
   return FindRoots(denominator);
 }
