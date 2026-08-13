@@ -6,7 +6,7 @@ void FrequencyResponse::BuildResponse() {
     throw std::invalid_argument("The frequencies vector is empty!");
 
   // Clear out the responses, magnitudes, and phases vectors
-  frequencies.clear(); magnitudes.clear(); phases.clear();
+  responses.clear(); magnitudes.clear(); phases.clear();
 
   for (const auto& omega : frequencies) {
     if (omega < 0)

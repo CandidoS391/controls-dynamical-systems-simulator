@@ -33,11 +33,9 @@ std::complex<double> TransferFunction::EvaluatePolynomial(const std::vector<doub
 
   
   std::complex<double> result(0.0, 0.0);
-  size_t degree = coefficients.size() - 1;
 
   for (const auto& coe : coefficients) {
-    result += coe * std::pow(value, degree);
-    degree--;
+    result = result * value + coe;
   }
 
   return result;
