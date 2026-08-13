@@ -33,3 +33,19 @@ FrequencyResponse::FrequencyResponse(const TransferFunction& user_ts, const std:
   // Use the already stored transfer function and frquencies and call BuildResponse()
   BuildResponse();
 }
+
+const std::vector<double>& FrequencyResponse::GetFrequencies() const {
+  return frequencies;
+}
+
+const std::vector<std::complex<double>>& FrequencyResponse::GetResponses() const {
+  return responses;
+}
+
+const std::vector<double>& FrequencyResponse::GetMagnitudes() const {
+  return magnitudes;
+}
+
+const std::vector<double>& FrequencyResponse::GetPhases() const {
+  return phases;
+}

@@ -17,10 +17,17 @@ class FrequencyResponse {
     std::vector<double> magnitudes;
     std::vector<double> phases;
 
-    // Private helper functions
+    // Private helper function for constructor
     void BuildResponse();
   public:
+    // Constructor
     FrequencyResponse(const TransferFunction& user_ts, const std::vector<double>& user_freq);
+
+    // Getter functions
+    const std::vector<double>& GetFrequencies() const;
+    const std::vector<std::complex<double>>& GetResponses() const;
+    const std::vector<double>& GetMagnitudes() const;
+    const std::vector<double>& GetPhases() const;
 };
 
 #endif
