@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <complex>
 
 #include "StateVector.h"
 #include "DynamicalSystem.h"
@@ -1307,8 +1308,39 @@ void TestPerformanceAnalysis() {
   }
 }
 
+void TestComplexEvaluation() {
+  std::cout << "======================================" << std::endl;
+  std::cout << "Testing Complex Transfer Function Evaluation" << std::endl;
+  std::cout << "======================================" << std::endl;
+
+  // Test 1: Evaluate (s + 1)/(s + 2) at s = j
+  TransferFunction transfer_function({1, 1}, {1, 2});
+  std::complex<double> s(0, 1);
+
+  std::complex<double> result = transfer_function.Evaluate(s);
+
+  std::cout << "Test 1" << std::endl;
+  std::cout << "Expected: (0.6, 0.2)" << std::endl;
+  std::cout << "Actual:   " << result << std::endl;
+
+  std::cout << std::endl;
+
+  // Test 2: Evaluate at the pole s = -2
+  try {
+    std::complex<double> pole(-2, 0);
+
+    transfer_function.Evaluate(pole);
+
+    std::cout << "Test 2: FAILED - exception expected" << std::endl;
+  }
+  catch (const std::domain_error& exception) {
+    std::cout << "Test 2: PASSED - caught expected exception: "
+              << exception.what() << std::endl;
+  }
+}
+
 int main() {
-  TestPerformanceAnalysis();
+  TestComplexEvaluation();
 
 
   return 0;
