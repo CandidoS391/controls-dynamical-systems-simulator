@@ -19,6 +19,8 @@ class FrequencyResponse {
 
     // Private helper function for constructor
     void BuildResponse();
+
+
   public:
     // Constructor
     FrequencyResponse(const TransferFunction& user_ts, const std::vector<double>& user_freq);
@@ -28,6 +30,9 @@ class FrequencyResponse {
     const std::vector<std::complex<double>>& GetResponses() const;
     const std::vector<double>& GetMagnitudes() const;
     const std::vector<double>& GetPhases() const;
+
+    // Frequency sweep generator
+    static std::vector<double> GenerateFrequencySweep(double start_frequency, double end_frequency, size_t num_samples);
 };
 
 #endif

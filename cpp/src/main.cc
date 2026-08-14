@@ -744,9 +744,117 @@ void TestFrequencyResponse() {
   }
 }
 
-int main() {
-  TestFrequencyResponse();
+void TestFrequencySweep() {
+  std::cout << "======================================" << std::endl;
+  std::cout << "Testing Frequency Sweep" << std::endl;
+  std::cout << "======================================" << std::endl;
 
+  // Test 1: Basic frequency sweep
+  std::vector<double> frequencies =
+      FrequencyResponse::GenerateFrequencySweep(0.0, 10.0, 6);
+
+  std::cout << "Test 1" << std::endl;
+  std::cout << "Expected: 0 2 4 6 8 10" << std::endl;
+  std::cout << "Actual:   ";
+
+  for (const auto& frequency : frequencies)
+    std::cout << frequency << " ";
+
+  std::cout << std::endl;
+  std::cout << std::endl;
+
+  // Test 2: Negative starting frequency
+  try {
+    FrequencyResponse::GenerateFrequencySweep(-1.0, 10.0, 6);
+
+    std::cout << "Test 2: FAILED - exception expected"
+              << std::endl;
+  }
+  catch (const std::invalid_argument& exception) {
+    std::cout << "Test 2: PASSED - caught expected exception: "
+              << exception.what()
+              << std::endl;
+  }
+
+  std::cout << std::endl;
+
+  // Test 3: End frequency less than start frequency
+  try {
+    FrequencyResponse::GenerateFrequencySweep(10.0, 5.0, 6);
+
+    std::cout << "Test 3: FAILED - exception expected"
+              << std::endl;
+  }
+  catch (const std::invalid_argument& exception) {
+    std::cout << "Test 3: PASSED - caught expected exception: "
+              << exception.what()
+              << std::endl;
+  }
+
+  std::cout << std::endl;
+
+  // Test 4: Too few samples
+  try {
+    FrequencyResponse::GenerateFrequencySweep(0.0, 10.0, 1);
+
+    std::cout << "Test 4: FAILED - exception expected"
+              << std::endl;
+  }
+  catch (const std::invalid_argument& exception) {
+    std::cout << "Test 4: PASSED - caught expected exception: "
+              << exception.what()
+              << std::endl;
+  }
+}
+
+void ExportFrequencyResponseData() {
+  // Create the transfer function to analyze
+  TransferFunction transfer_function({1}, {1, 1});
+
+  // Generate a frequency sweep
+  std::vector<double> frequencies = FrequencyResponse::GenerateFrequencySweep(0.0, 20.0, 500);
+
+  // Build the FrequencyResponse object
+  FrequencyResponse frequency_response(transfer_function, frequencies);
+
+  // Get:
+  // frequencies
+  // complex responses
+  // magnitudes
+  // phases
+  const std::vector<double>& stored_frequencies = frequency_response.GetFrequencies();
+  const std::vector<std::complex<double>>& responses = frequency_response.GetResponses();
+  const std::vector<double>& magnitudes = frequency_response.GetMagnitudes();
+  const std::vector<double>& phases = frequency_response.GetPhases();
+
+  // Open a CSV file
+  std::ofstream output_file("../output/frequency_response.csv");
+
+  if (!output_file.is_open())
+    throw std::runtime_error("Could not open frequency response output file.");
+
+  // Write the header:
+  // frequency,real,imaginary,magnitude,phase
+  output_file << "frequency,real,imaginary,magnitude,phase" << std::endl;
+
+  // Loop through every frequency-response sample:
+  //   write frequency
+  //   write response real part
+  //   write response imaginary part
+  //   write magnitude
+  //   write phase
+  for (size_t i = 0; i < stored_frequencies.size(); i++) {
+    output_file << stored_frequencies[i] << "," << responses[i].real() << "," << responses[i].imag() << "," << magnitudes[i] << "," << phases[i] << std::endl;
+  }
+
+  // Close the file
+  output_file.close();
+
+  std::cout << "Frequency response data exported successfully." << std::endl;
+}
+
+int main() {
+  ExportFrequencyResponseData();
 
   return 0;
 }
