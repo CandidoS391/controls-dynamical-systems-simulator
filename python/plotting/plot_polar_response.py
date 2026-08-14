@@ -1,6 +1,7 @@
 import csv
 import matplotlib.pyplot as plt
 
+# Read in values from csv file
 def read_frequency_response(filename):
   frequencies = []
   real_values = []
@@ -21,21 +22,30 @@ def plot_polar_response(frequencies, real_values, imaginary_values):
 
   plt.plot(real_values, imaginary_values)
 
-  arrow_index = len(real_values) // 3
+  # ------ Graphing the arrows -------
+  # Starting off by selecting the locations along the curve where the arrows will be placed
+  arrow_indices = [
+    len(real_values) // 50,
+    len(real_values) // 10,
+    len(real_values) // 3
+  ]
 
-  plt.annotate(
-    "",
-    xy=(
-      real_values[arrow_index + 1],
-      imaginary_values[arrow_index + 1]
-    ),
-    xytext=(
-      real_values[arrow_index],
-      imaginary_values[arrow_index]
-    ),
-    arrowprops=dict(arrowstyle="->")
-  )
+  # Plot arrows showing the direction of increasing frequency
+  for arrow_index in arrow_indices:
+    plt.annotate(
+      "",
+      xy=(
+        real_values[arrow_index + 1],
+        imaginary_values[arrow_index + 1]
+      ),
+      xytext=(
+        real_values[arrow_index],
+        imaginary_values[arrow_index]
+      ),
+      arrowprops=dict(arrowstyle="->")
+    )
 
+  # ------ Plotting certain frequencies on the polar plot ------
   # Frequencies meant to be label on the polar plot
   label_frequencies = [
     0.0,
