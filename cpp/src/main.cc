@@ -27,6 +27,7 @@
 #include "SensitivityAnalysis.h"
 #include "PerformanceAnalysis.h"
 #include "FrequencyResponse.h"
+#include "NyquistAnalysis.h"
 
 void SimulateFirstOrderDecayEuler() {
   FirstOrderDecay decay(0.5);
@@ -580,229 +581,57 @@ void ExportPoleZeroData() {
   ofs_2.close();
 }
 
-
-void TestFrequencyResponse() {
+void TestNyquistAnalysis() {
   std::cout << "======================================" << std::endl;
-  std::cout << "Testing Frequency Response" << std::endl;
+  std::cout << "Testing Nyquist Analysis" << std::endl;
   std::cout << "======================================" << std::endl;
 
-  // ----------------------------------------------------------
-  // Test 1
-  //
-  // G(s) = 1 / (s + 1)
-  //
-  // Frequencies:
-  // omega = 0, 1, 2
-  //
-  // At omega = 0:
-  // G(j0) = 1
-  // Magnitude = 1
-  // Phase = 0
-  //
-  // At omega = 1:
-  // G(j) = 1 / (1 + j)
-  //      = 0.5 - 0.5j
-  //
-  // Magnitude = sqrt(0.5)
-  // Phase = -pi / 4
-  //
-  // At omega = 2:
-  // G(2j) = 1 / (1 + 2j)
-  //       = 0.2 - 0.4j
-  //
-  // Magnitude = 1 / sqrt(5)
-  // Phase = -atan(2)
-  // ----------------------------------------------------------
-
+  // Create G(s) = 1 / (s + 1)
   TransferFunction transfer_function({1}, {1, 1});
 
-  std::vector<double> frequencies = {
-      0.0, 1.0, 2.0};
+  // Create Nyquist analysis object
+  NyquistAnalysis nyquist_analysis(transfer_function);
 
-  FrequencyResponse frequency_response(
-      transfer_function,
-      frequencies);
+  // Generate the Nyquist path
+  nyquist_analysis.GenerateNyquistPath(10.0, 6);
 
-  std::vector<std::complex<double>> responses =
-      frequency_response.GetResponses();
+  // Map the Nyquist path through G(s)
+  nyquist_analysis.MapNyquistPath();
 
-  std::vector<double> magnitudes =
-      frequency_response.GetMagnitudes();
+  // Get the generated paths
+  const std::vector<std::complex<double>>& s_path =
+      nyquist_analysis.GetSPath();
 
-  std::vector<double> phases =
-      frequency_response.GetPhases();
+  const std::vector<std::complex<double>>& mapped_path =
+      nyquist_analysis.GetMappedPath();
 
-  std::cout << "Test 1 - G(s) = 1/(s + 1)" << std::endl;
+  std::cout << "Number of s-path points: "
+            << s_path.size()
+            << std::endl;
 
-  std::cout << std::endl;
-  std::cout << "omega = 0" << std::endl;
-  std::cout << "Expected response:  (1,0)" << std::endl;
-  std::cout << "Actual response:    "
-            << responses[0] << std::endl;
-
-  std::cout << "Expected magnitude: 1" << std::endl;
-  std::cout << "Actual magnitude:   "
-            << magnitudes[0] << std::endl;
-
-  std::cout << "Expected phase:     0" << std::endl;
-  std::cout << "Actual phase:       "
-            << phases[0] << std::endl;
-
-
-  std::cout << std::endl;
-  std::cout << "omega = 1" << std::endl;
-  std::cout << "Expected response:  (0.5,-0.5)" << std::endl;
-  std::cout << "Actual response:    "
-            << responses[1] << std::endl;
-
-  std::cout << "Expected magnitude: "
-            << std::sqrt(0.5) << std::endl;
-  std::cout << "Actual magnitude:   "
-            << magnitudes[1] << std::endl;
-
-  std::cout << "Expected phase:     "
-            << -std::atan(1.0) << std::endl;
-  std::cout << "Actual phase:       "
-            << phases[1] << std::endl;
-
-
-  std::cout << std::endl;
-  std::cout << "omega = 2" << std::endl;
-  std::cout << "Expected response:  (0.2,-0.4)" << std::endl;
-  std::cout << "Actual response:    "
-            << responses[2] << std::endl;
-
-  std::cout << "Expected magnitude: "
-            << 1.0 / std::sqrt(5.0) << std::endl;
-  std::cout << "Actual magnitude:   "
-            << magnitudes[2] << std::endl;
-
-  std::cout << "Expected phase:     "
-            << -std::atan(2.0) << std::endl;
-  std::cout << "Actual phase:       "
-            << phases[2] << std::endl;
+  std::cout << "Number of mapped points: "
+            << mapped_path.size()
+            << std::endl;
 
   std::cout << std::endl;
 
+  // Print a few points from the beginning
+  std::cout << "First few mapped points:" << std::endl;
 
-  // ----------------------------------------------------------
-  // Test 2: Getter for frequencies
-  // ----------------------------------------------------------
-
-  std::cout << "Test 2 - Frequency Getter" << std::endl;
-
-  const std::vector<double>& stored_frequencies =
-      frequency_response.GetFrequencies();
-
-  std::cout << "Expected frequencies: 0 1 2" << std::endl;
-  std::cout << "Actual frequencies:   ";
-
-  for (const auto& omega : stored_frequencies)
-    std::cout << omega << " ";
-
-  std::cout << std::endl;
-  std::cout << std::endl;
-
-
-  // ----------------------------------------------------------
-  // Test 3: Negative frequency
-  // ----------------------------------------------------------
-
-  try {
-    FrequencyResponse invalid_response(
-        transfer_function,
-        {0.0, 1.0, -2.0});
-
-    std::cout << "Test 3: FAILED - exception expected"
-              << std::endl;
-  }
-  catch (const std::invalid_argument& exception) {
-    std::cout << "Test 3: PASSED - caught expected exception: "
-              << exception.what()
+  for (size_t i = 0; i < 3 && i < mapped_path.size(); i++) {
+    std::cout << "s = " << s_path[i]
+              << "  ->  G(s) = " << mapped_path[i]
               << std::endl;
   }
 
   std::cout << std::endl;
 
+  // Print a few points from the end
+  std::cout << "Last few mapped points:" << std::endl;
 
-  // ----------------------------------------------------------
-  // Test 4: Empty frequency vector
-  // ----------------------------------------------------------
-
-  try {
-    FrequencyResponse empty_response(
-        transfer_function,
-        {});
-
-    std::cout << "Test 4: FAILED - exception expected"
-              << std::endl;
-  }
-  catch (const std::invalid_argument& exception) {
-    std::cout << "Test 4: PASSED - caught expected exception: "
-              << exception.what()
-              << std::endl;
-  }
-}
-
-void TestFrequencySweep() {
-  std::cout << "======================================" << std::endl;
-  std::cout << "Testing Frequency Sweep" << std::endl;
-  std::cout << "======================================" << std::endl;
-
-  // Test 1: Basic frequency sweep
-  std::vector<double> frequencies =
-      FrequencyResponse::GenerateFrequencySweep(0.0, 10.0, 6);
-
-  std::cout << "Test 1" << std::endl;
-  std::cout << "Expected: 0 2 4 6 8 10" << std::endl;
-  std::cout << "Actual:   ";
-
-  for (const auto& frequency : frequencies)
-    std::cout << frequency << " ";
-
-  std::cout << std::endl;
-  std::cout << std::endl;
-
-  // Test 2: Negative starting frequency
-  try {
-    FrequencyResponse::GenerateFrequencySweep(-1.0, 10.0, 6);
-
-    std::cout << "Test 2: FAILED - exception expected"
-              << std::endl;
-  }
-  catch (const std::invalid_argument& exception) {
-    std::cout << "Test 2: PASSED - caught expected exception: "
-              << exception.what()
-              << std::endl;
-  }
-
-  std::cout << std::endl;
-
-  // Test 3: End frequency less than start frequency
-  try {
-    FrequencyResponse::GenerateFrequencySweep(10.0, 5.0, 6);
-
-    std::cout << "Test 3: FAILED - exception expected"
-              << std::endl;
-  }
-  catch (const std::invalid_argument& exception) {
-    std::cout << "Test 3: PASSED - caught expected exception: "
-              << exception.what()
-              << std::endl;
-  }
-
-  std::cout << std::endl;
-
-  // Test 4: Too few samples
-  try {
-    FrequencyResponse::GenerateFrequencySweep(0.0, 10.0, 1);
-
-    std::cout << "Test 4: FAILED - exception expected"
-              << std::endl;
-  }
-  catch (const std::invalid_argument& exception) {
-    std::cout << "Test 4: PASSED - caught expected exception: "
-              << exception.what()
+  for (size_t i = mapped_path.size() - 3; i < mapped_path.size(); i++) {
+    std::cout << "s = " << s_path[i]
+              << "  ->  G(s) = " << mapped_path[i]
               << std::endl;
   }
 }
@@ -854,7 +683,7 @@ void ExportFrequencyResponseData() {
 }
 
 int main() {
-  ExportFrequencyResponseData();
+  TestNyquistAnalysis();
 
   return 0;
 }
