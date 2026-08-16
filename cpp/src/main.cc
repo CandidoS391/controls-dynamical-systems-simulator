@@ -682,8 +682,53 @@ void ExportFrequencyResponseData() {
   std::cout << "Frequency response data exported successfully." << std::endl;
 }
 
+void ExportNyquistData() {
+  // Create G(s) = 1 / (s + 1)
+  TransferFunction transfer_function({1}, {1, 1});
+
+  // Create the Nyquist analysis
+  NyquistAnalysis nyquist_analysis(transfer_function);
+
+  // Generate and map the Nyquist path
+  nyquist_analysis.GenerateNyquistPath(100.0, 500);
+  nyquist_analysis.MapNyquistPath();
+
+  // Get the original and mapped paths
+  const std::vector<std::complex<double>>& s_path =
+      nyquist_analysis.GetSPath();
+
+  const std::vector<std::complex<double>>& mapped_path =
+      nyquist_analysis.GetMappedPath();
+
+  // Open the CSV file
+  std::ofstream output_file("../output/nyquist_data.csv");
+
+  if (!output_file.is_open())
+    throw std::runtime_error("Could not open Nyquist output file.");
+
+  // Write the CSV header
+  output_file
+      << "s_real,s_imaginary,mapped_real,mapped_imaginary"
+      << std::endl;
+
+  // Write each point and its mapped value
+  for (size_t i = 0; i < s_path.size(); i++) {
+    output_file
+        << s_path[i].real() << ","
+        << s_path[i].imag() << ","
+        << mapped_path[i].real() << ","
+        << mapped_path[i].imag()
+        << std::endl;
+  }
+
+  output_file.close();
+
+  std::cout << "Nyquist data exported successfully."
+            << std::endl;
+}
+
 int main() {
-  TestNyquistAnalysis();
+  ExportNyquistData();
 
   return 0;
 }
