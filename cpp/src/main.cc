@@ -727,8 +727,210 @@ void ExportNyquistData() {
             << std::endl;
 }
 
+void TestNyquistStabilityAnalysis() {
+  std::cout << "======================================" << std::endl;
+  std::cout << "Testing Nyquist Stability Analysis" << std::endl;
+  std::cout << "======================================" << std::endl;
+
+  // --------------------------------------------------
+  // Test 1:
+  // G(s) = 1 / (s + 1)
+  //
+  // Open-loop poles:
+  // s = -1
+  //
+  // Expected:
+  // P0 = 0
+  // N  = 0
+  // Z0 = 0
+  // Stable
+  // --------------------------------------------------
+
+  std::cout << "Test 1: G(s) = 1 / (s + 1)" << std::endl;
+
+  TransferFunction transfer_function_1({1}, {1, 1});
+  NyquistAnalysis nyquist_1(transfer_function_1);
+
+  nyquist_1.GenerateNyquistPath(100.0, 1000);
+  nyquist_1.MapNyquistPath();
+
+  std::cout << "Expected P0: 0" << std::endl;
+  std::cout << "Actual P0:   "
+            << nyquist_1.CountOpenLoopRHPPoles()
+            << std::endl;
+
+  std::cout << "Expected N:  0" << std::endl;
+  std::cout << "Actual N:    "
+            << nyquist_1.CountEncirclements()
+            << std::endl;
+
+  std::cout << "Expected Z0: 0" << std::endl;
+  std::cout << "Actual Z0:   "
+            << nyquist_1.GetClosedLoopRHPPoles()
+            << std::endl;
+
+  std::cout << "Expected stability: Stable" << std::endl;
+  std::cout << "Actual stability:   "
+            << (nyquist_1.IsStable() ? "Stable" : "Unstable")
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 2:
+  // G(s) = 1 / (s - 1)
+  //
+  // Open-loop pole:
+  // s = +1
+  //
+  // Closed-loop characteristic equation:
+  //
+  // 1 + 1/(s - 1) = 0
+  //
+  // gives s = 0.
+  //
+  // This is a boundary/marginal case, so we DON'T
+  // want to use this as our clean unstable test yet.
+  // --------------------------------------------------
+
+
+  // --------------------------------------------------
+  // Test 2:
+  // G(s) = 2 / (s - 1)
+  //
+  // Open-loop pole:
+  // s = +1
+  //
+  // Closed-loop characteristic equation:
+  //
+  // 1 + 2/(s - 1) = 0
+  //
+  // s + 1 = 0
+  //
+  // Closed-loop pole:
+  // s = -1
+  //
+  // Expected:
+  // P0 = 1
+  // N  = -1
+  // Z0 = 0
+  // Stable
+  // --------------------------------------------------
+
+  std::cout << "Test 2: G(s) = 2 / (s - 1)" << std::endl;
+
+  TransferFunction transfer_function_2({2}, {1, -1});
+  NyquistAnalysis nyquist_2(transfer_function_2);
+
+  nyquist_2.GenerateNyquistPath(100.0, 1000);
+  nyquist_2.MapNyquistPath();
+
+  std::cout << "Expected P0: 1" << std::endl;
+  std::cout << "Actual P0:   "
+            << nyquist_2.CountOpenLoopRHPPoles()
+            << std::endl;
+
+  std::cout << "Expected N:  -1" << std::endl;
+  std::cout << "Actual N:    "
+            << nyquist_2.CountEncirclements()
+            << std::endl;
+
+  std::cout << "Expected Z0: 0" << std::endl;
+  std::cout << "Actual Z0:   "
+            << nyquist_2.GetClosedLoopRHPPoles()
+            << std::endl;
+
+  std::cout << "Expected stability: Stable" << std::endl;
+  std::cout << "Actual stability:   "
+            << (nyquist_2.IsStable() ? "Stable" : "Unstable")
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 3:
+  // G(s) = 0.5 / (s - 1)
+  //
+  // Open-loop pole:
+  // s = +1
+  //
+  // Closed-loop characteristic equation:
+  //
+  // 1 + 0.5/(s - 1) = 0
+  //
+  // s - 0.5 = 0
+  //
+  // Closed-loop pole:
+  // s = +0.5
+  //
+  // Expected:
+  // P0 = 1
+  // N  = 0
+  // Z0 = 1
+  // Unstable
+  // --------------------------------------------------
+
+  std::cout << "Test 3: G(s) = 0.5 / (s - 1)" << std::endl;
+
+  TransferFunction transfer_function_3({0.5}, {1, -1});
+  NyquistAnalysis nyquist_3(transfer_function_3);
+
+  nyquist_3.GenerateNyquistPath(100.0, 1000);
+  nyquist_3.MapNyquistPath();
+
+  std::cout << "Expected P0: 1" << std::endl;
+  std::cout << "Actual P0:   "
+            << nyquist_3.CountOpenLoopRHPPoles()
+            << std::endl;
+
+  std::cout << "Expected N:  0" << std::endl;
+  std::cout << "Actual N:    "
+            << nyquist_3.CountEncirclements()
+            << std::endl;
+
+  std::cout << "Expected Z0: 1" << std::endl;
+  std::cout << "Actual Z0:   "
+            << nyquist_3.GetClosedLoopRHPPoles()
+            << std::endl;
+
+  std::cout << "Expected stability: Unstable" << std::endl;
+  std::cout << "Actual stability:   "
+            << (nyquist_3.IsStable() ? "Stable" : "Unstable")
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 4:
+  // Make sure CountEncirclements() rejects an
+  // unmapped Nyquist path.
+  // --------------------------------------------------
+
+  std::cout << "Test 4: Empty mapped path exception" << std::endl;
+
+  try {
+    TransferFunction transfer_function_4({1}, {1, 1});
+    NyquistAnalysis nyquist_4(transfer_function_4);
+
+    nyquist_4.CountEncirclements();
+
+    std::cout << "FAILED - expected an exception."
+              << std::endl;
+  }
+  catch (const std::runtime_error& error) {
+    std::cout << "PASSED - caught expected exception: "
+              << error.what()
+              << std::endl;
+  }
+
+  std::cout << std::endl;
+}
+
 int main() {
-  ExportNyquistData();
+  TestNyquistStabilityAnalysis();
 
   return 0;
 }

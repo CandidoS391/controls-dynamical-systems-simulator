@@ -77,3 +77,87 @@ const std::vector<std::complex<double>>& NyquistAnalysis::GetSPath() const {
 const std::vector<std::complex<double>>& NyquistAnalysis::GetMappedPath() const {
   return mapped_path;
 }
+
+int NyquistAnalysis::CountOpenLoopRHPPoles() const {
+  // Calculate the number of poles of the transfer function
+  std::vector<std::complex<double>> poles = transfer_function.GetPoles();
+  int count = 0;
+
+  // For each pole found, if the real part of the pole > 0, increment count
+  for (const auto& pole: poles) {
+    if (pole.real() > 1e-8)
+      count++;
+  }
+
+  // Return P (the count)
+  return count;
+}
+
+int NyquistAnalysis::CountEncirclements() const {
+  // Throw error if the mapped_path hasn't been made
+  if (mapped_path.empty())
+    throw std::runtime_error("Nyquist path hasn't been mapped.");
+
+  double total_angle_change = 0;
+
+  // Iterate through each pair of mapped points
+  for (size_t i = 0; i < mapped_path.size() - 1; i++) {
+    std::complex<double> current_point = mapped_path[i];
+    std::complex<double> next_point = mapped_path[i + 1];
+
+    // Shift the points by +1
+    std::complex<double> current_shifted = current_point + 1.0;
+    std::complex<double> next_shifted = next_point + 1.0;
+
+    // Check if the path doesn't pass directly through the critical point
+    if (std::abs(current_shifted) < 1e-8 || std::abs(next_shifted) < 1e-8)
+      throw std::domain_error("Shifted point passes directly through the critical point (-1, 0).");
+
+    // Calculate the angles of each shifted point
+    double curr_angle = std::arg(current_shifted);
+    double next_angle = std::arg(next_shifted);
+
+    double angle_change = next_angle - curr_angle;
+
+    // Correct the angle arapping
+    if (angle_change > kPi)
+      angle_change -= 2 * kPi;
+    else if (angle_change < -kPi)
+      angle_change += 2 * kPi;
+
+    total_angle_change += angle_change;
+  }
+
+  // Convert the total angular motion into full revolutions
+  double rotations = total_angle_change / (2 * kPi);
+
+  // Let N be equal to -rotations
+  int N = -static_cast<int>(std::round(rotations));
+
+  return N;
+}
+
+int NyquistAnalysis::GetClosedLoopRHPPoles() const {
+  int p_0 = CountOpenLoopRHPPoles();
+  int n = CountEncirclements();
+
+  // Return Z_0 = n + p_0
+  int z_0 = n + p_0;
+  if (z_0 < 0)
+    throw std::runtime_error("Double check the functions, something is inconsistent with the numerical calculations.");
+
+  return z_0;
+}
+
+bool NyquistAnalysis::IsStable() const {
+  int z_0 = GetClosedLoopRHPPoles();
+
+  if (z_0 == 0)
+    return true;
+
+
+  return false;
+}
+
+
+

@@ -23,8 +23,18 @@ class NyquistAnalysis {
     void GenerateNyquistPath(double max_frequency, size_t num_samples);
     void MapNyquistPath();
 
+    // Getter functions
     const std::vector<std::complex<double>>& GetSPath() const;
     const std::vector<std::complex<double>>& GetMappedPath() const;
+
+    // Count the number of open loop poles for G(S)H(s) at the right hand plane (P)
+    int CountOpenLoopRHPPoles() const;
+    // Count the number of clockwise encirclements around (-1, 0) (N)
+    int CountEncirclements() const;
+    // Calculate the number of closed loop RHP Poles from P and N (Z)
+    int GetClosedLoopRHPPoles() const;
+    // Determine Stability based on if Z <= 0
+    bool IsStable() const;
 };
 
 #endif
