@@ -20,7 +20,7 @@ class NyquistAnalysis {
     NyquistAnalysis(const TransferFunction& user_ts);
 
     // Nyquist path
-    void GenerateNyquistPath(double max_frequency, size_t num_samples);
+    void GenerateNyquistPath(double max_frequency, size_t num_samples, double indentation_radius = 0.0);
     void MapNyquistPath();
 
     // Getter functions

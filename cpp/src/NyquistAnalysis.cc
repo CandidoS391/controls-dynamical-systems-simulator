@@ -6,53 +6,117 @@ NyquistAnalysis::NyquistAnalysis(const TransferFunction& user_ts) : transfer_fun
 
 }
 
-void NyquistAnalysis::GenerateNyquistPath(double max_frequency, size_t num_samples) {
+void NyquistAnalysis::GenerateNyquistPath(double max_frequency, size_t num_samples, double indentation_radius) {
   // If max_frequency is negative, then it's invalid
   if (max_frequency <= 0)
-    throw std::invalid_argument("The max frequency cannot be negative!");
+    throw std::invalid_argument("The max frequency must be greater than 0!");
 
   // If the number of samples is less than 2, then it's invalid
   if (num_samples < 2)
     throw std::invalid_argument("Invalid number of samples");
 
+  // If the indentation radius is NOT greater than 0 or less than the max_frequency, then throw
+  if (indentation_radius < 0)
+    throw std::invalid_argument("The indentation radius cannot be less than 0!");
+
+  if (indentation_radius >= max_frequency)
+    throw std::invalid_argument("The indentiation radius cannot be greater than or equal to the max frequency!");
   
   s_path.clear();
 
-  // ------ Part 1: Computing the positive imaginary axis ------
-  double freq_step = max_frequency / (num_samples - 1);
+  // ------ TYPE 0 PATH (indentiation_radius == 0) ------
+  if (indentation_radius == 0) {
+    // ------ Part 1: Computing the positive imaginary axis ------
+    double freq_step = max_frequency / (num_samples - 1);
 
+    for (size_t i = 0; i < num_samples; i++) {
+      double omega = i * freq_step;
+      
+      // Construct a complex number s and then store it to s_path
+      std::complex<double> comp_s(0.0, omega);
+      s_path.push_back(comp_s);
+    }
+
+    // ------ Part 2: Large right-half-plane semicricle ------
+    double radius = max_frequency;
+
+    // Compute angle theta from +pi/2 to -pi/2
+    double angle_step = kPi / (num_samples - 1);
+
+    for (size_t i = 1; i < num_samples; i++) {
+      double theta = kPi / 2 - i * angle_step;
+      
+      // Build the real and imaginary parts for complex number s from theta
+      double real_part = radius * std::cos(theta);
+      double imaginary_part = radius * std::sin(theta);
+
+      std::complex<double> complex_s(real_part, imaginary_part);
+      s_path.push_back(complex_s);
+    }
+
+    // ------ Part 3: Negative imaginary axis ------
+    // Do the same thing from part 1, only -omega this time
+    for (int i = static_cast<int>(num_samples) - 2; i >= 0; i--) {
+      double omega = i * freq_step;
+      std::complex<double> s(0.0, -omega);
+
+      s_path.push_back(s);
+    }
+
+    // Exit from type 0
+    return;
+  }
+
+  // ------ INDENTED PATH (INDENTATION_RADIUS >= 1) ------
+  // Let rho and R be equal to the indentation radius and the max frequency respectively
+  // Use them to compute the frequency step
+  double rho = indentation_radius, r = max_frequency;
+  double freq_step = (r - rho) / (num_samples - 1);
+
+  // Compute the large angle and small angle steps
+  double angle_step = kPi / (num_samples - 1);
+
+  // ---- Part 1: The Positive Imaginary Axis ----
   for (size_t i = 0; i < num_samples; i++) {
-    double omega = i * freq_step;
+    double omega = rho + i * freq_step;
+
+    // Build the real and imaginary parts of s
+    double real_s = 0.0, imag_s = omega;
     
-    // Construct a complex number s and then store it to s_path
-    std::complex<double> comp_s(0.0, omega);
+    // Build complex number s and then push it onto s_path
+    std::complex<double> comp_s(real_s, imag_s);
     s_path.push_back(comp_s);
   }
 
-  // ------ Part 2: Large right-half-plane semicricle ------
-  double radius = max_frequency;
-
-  // Compute angle theta from +pi/2 to -pi/2
-  double angle_step = kPi / (num_samples - 1);
-
+  // ---- Part 2: Large RHP Semicircle ----
   for (size_t i = 1; i < num_samples; i++) {
     double theta = kPi / 2 - i * angle_step;
-    
-    // Build the real and imaginary parts for complex number s from theta
-    double real_part = radius * std::cos(theta);
-    double imaginary_part = radius * std::sin(theta);
 
-    std::complex<double> complex_s(real_part, imaginary_part);
-    s_path.push_back(complex_s);
+    // Build the real and imaginary parts
+    double real_part = r * std::cos(theta), imag_part = r * std::sin(theta);
+
+    std::complex<double> comp_s(real_part, imag_part);
+    s_path.push_back(comp_s);
   }
 
-  // ------ Part 3: Negative imaginary axis ------
-  // Do the same thing from part 1, only -omega this time
+  // ---- Part 3: Negative Imaginary Axis ----
   for (int i = static_cast<int>(num_samples) - 2; i >= 0; i--) {
-    double omega = i * freq_step;
-    std::complex<double> s(0.0, -omega);
+    double omega = rho + i * freq_step;
 
-    s_path.push_back(s);
+    std::complex<double> comp_s(0.0, -omega);
+    s_path.push_back(comp_s);
+  }
+
+  // ---- Part 4: Small Indentation Around the Origin ----
+  for (size_t i = 1; i < num_samples; i++) {
+    double theta = -kPi / 2 + i * angle_step;
+
+    // Calculate the real and imaginary parts
+    double real_part = rho * std::cos(theta), imag_part = rho * std::sin(theta);
+
+    // Construct s from the real and imaginary parts
+    std::complex<double> comp_s(real_part, imag_part);
+    s_path.push_back(comp_s);
   }
 }
 

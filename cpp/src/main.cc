@@ -29,6 +29,8 @@
 #include "FrequencyResponse.h"
 #include "NyquistAnalysis.h"
 
+const double kPi = 3.14159265358979323846;
+
 void SimulateFirstOrderDecayEuler() {
   FirstOrderDecay decay(0.5);
   EulerIntegration euler;
@@ -929,8 +931,654 @@ void TestNyquistStabilityAnalysis() {
   std::cout << std::endl;
 }
 
+void TestIndentedNyquistPath() {
+  std::cout << "======================================" << std::endl;
+  std::cout << "Testing Indented Nyquist Path" << std::endl;
+  std::cout << "======================================" << std::endl;
+
+  // --------------------------------------------------
+  // Test 1:
+  // Generate an indented contour with rho = 0.01
+  //
+  // We expect:
+  // - no point at s = 0
+  // - first point at approximately +j0.01
+  // - last point at approximately +j0.01
+  // - path is closed
+  // --------------------------------------------------
+
+  TransferFunction transfer_function_1({1}, {1, 1});
+  NyquistAnalysis nyquist_1(transfer_function_1);
+
+  nyquist_1.GenerateNyquistPath(
+      10.0,
+      100,
+      0.01);
+
+  const std::vector<std::complex<double>>& s_path =
+      nyquist_1.GetSPath();
+
+  std::cout << "Test 1 - Indented path geometry" << std::endl;
+
+  std::cout << "Expected first point: approximately (0,0.01)"
+            << std::endl;
+  std::cout << "Actual first point:   "
+            << s_path.front()
+            << std::endl;
+
+  std::cout << "Expected last point: approximately (0,0.01)"
+            << std::endl;
+  std::cout << "Actual last point:   "
+            << s_path.back()
+            << std::endl;
+
+  bool contains_origin = false;
+
+  for (const auto& s : s_path) {
+    if (std::abs(s) < 1e-8) {
+      contains_origin = true;
+      break;
+    }
+  }
+
+  std::cout << "Expected origin in path: No" << std::endl;
+  std::cout << "Actual origin in path:   "
+            << (contains_origin ? "Yes" : "No")
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 2:
+  // Type 1 system
+  //
+  // G(s) = 1 / [s(s + 1)]
+  //
+  // The pole at s = 0 should now be avoided instead
+  // of causing TransferFunction::Evaluate() to throw.
+  // --------------------------------------------------
+
+  std::cout << "Test 2 - Type 1 mapping" << std::endl;
+
+  try {
+    TransferFunction transfer_function_2(
+        {1},
+        {1, 1, 0});
+
+    NyquistAnalysis nyquist_2(transfer_function_2);
+
+    nyquist_2.GenerateNyquistPath(
+        10.0,
+        500,
+        0.01);
+
+    nyquist_2.MapNyquistPath();
+
+    std::cout << "PASSED - Type 1 path mapped without singularity."
+              << std::endl;
+
+    std::cout << "Number of s-path points: "
+              << nyquist_2.GetSPath().size()
+              << std::endl;
+
+    std::cout << "Number of mapped points: "
+              << nyquist_2.GetMappedPath().size()
+              << std::endl;
+  }
+  catch (const std::exception& error) {
+    std::cout << "FAILED - unexpected exception: "
+              << error.what()
+              << std::endl;
+  }
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 3:
+  // Invalid negative indentation radius
+  // --------------------------------------------------
+
+  try {
+    NyquistAnalysis nyquist_3(transfer_function_1);
+
+    nyquist_3.GenerateNyquistPath(
+        10.0,
+        100,
+        -0.01);
+
+    std::cout << "Test 3: FAILED - exception expected"
+              << std::endl;
+  }
+  catch (const std::invalid_argument& error) {
+    std::cout << "Test 3: PASSED - caught expected exception: "
+              << error.what()
+              << std::endl;
+  }
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 4:
+  // Indentation radius cannot be >= max frequency
+  // --------------------------------------------------
+
+  try {
+    NyquistAnalysis nyquist_4(transfer_function_1);
+
+    nyquist_4.GenerateNyquistPath(
+        10.0,
+        100,
+        10.0);
+
+    std::cout << "Test 4: FAILED - exception expected"
+              << std::endl;
+  }
+  catch (const std::invalid_argument& error) {
+    std::cout << "Test 4: PASSED - caught expected exception: "
+              << error.what()
+              << std::endl;
+  }
+
+  std::cout << std::endl;
+}
+
+void TestType1NyquistMapping() {
+  std::cout << "======================================" << std::endl;
+  std::cout << "Testing Type 1 Nyquist Mapping" << std::endl;
+  std::cout << "======================================" << std::endl;
+
+  // G(s) = 1 / [s(s + 1)]
+  TransferFunction transfer_function(
+      {1},
+      {1, 1, 0});
+
+  NyquistAnalysis nyquist(transfer_function);
+
+  size_t num_samples = 500;
+  double indentation_radius = 0.01;
+
+  nyquist.GenerateNyquistPath(
+      10.0,
+      num_samples,
+      indentation_radius);
+
+  nyquist.MapNyquistPath();
+
+  const std::vector<std::complex<double>>& s_path =
+      nyquist.GetSPath();
+
+  const std::vector<std::complex<double>>& mapped_path =
+      nyquist.GetMappedPath();
+
+  // --------------------------------------------------
+  // Test 1:
+  // Make sure the indentation avoids the origin
+  // --------------------------------------------------
+
+  std::cout << "Test 1 - Origin avoidance" << std::endl;
+
+  bool contains_origin = false;
+
+  for (const auto& s : s_path) {
+    if (std::abs(s) < 1e-8) {
+      contains_origin = true;
+      break;
+    }
+  }
+
+  std::cout << "Expected origin in path: No" << std::endl;
+  std::cout << "Actual origin in path:   "
+            << (contains_origin ? "Yes" : "No")
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 2:
+  // Inspect the actual small indentation.
+  //
+  // The indentation is the final num_samples points
+  // of the Nyquist path.
+  // --------------------------------------------------
+
+  std::cout << "Test 2 - Mapped indentation behavior"
+            << std::endl;
+
+  size_t indentation_start =
+      s_path.size() - num_samples;
+
+  size_t indentation_middle =
+      indentation_start + num_samples / 2;
+
+  size_t indentation_end =
+      s_path.size() - 1;
+
+
+  std::cout << "First indentation point:" << std::endl;
+
+  std::cout << "s = "
+            << s_path[indentation_start]
+            << std::endl;
+
+  std::cout << "G(s) = "
+            << mapped_path[indentation_start]
+            << std::endl;
+
+  std::cout << "Magnitude = "
+            << std::abs(mapped_path[indentation_start])
+            << std::endl;
+
+  std::cout << "Phase = "
+            << std::arg(mapped_path[indentation_start])
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  std::cout << "Middle indentation point:" << std::endl;
+
+  std::cout << "s = "
+            << s_path[indentation_middle]
+            << std::endl;
+
+  std::cout << "G(s) = "
+            << mapped_path[indentation_middle]
+            << std::endl;
+
+  std::cout << "Magnitude = "
+            << std::abs(mapped_path[indentation_middle])
+            << std::endl;
+
+  std::cout << "Phase = "
+            << std::arg(mapped_path[indentation_middle])
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  std::cout << "Last indentation point:" << std::endl;
+
+  std::cout << "s = "
+            << s_path[indentation_end]
+            << std::endl;
+
+  std::cout << "G(s) = "
+            << mapped_path[indentation_end]
+            << std::endl;
+
+  std::cout << "Magnitude = "
+            << std::abs(mapped_path[indentation_end])
+            << std::endl;
+
+  std::cout << "Phase = "
+            << std::arg(mapped_path[indentation_end])
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 3:
+  // Nyquist stability values
+  //
+  // Open-loop poles:
+  // s = 0
+  // s = -1
+  //
+  // P0 = 0
+  //
+  // Closed-loop characteristic equation:
+  //
+  // 1 + 1/[s(s+1)] = 0
+  //
+  // s^2 + s + 1 = 0
+  //
+  // Both roots have negative real part.
+  //
+  // Expected:
+  // N  = 0
+  // Z0 = 0
+  // Stable
+  // --------------------------------------------------
+
+  std::cout << "Test 3 - Type 1 Stability" << std::endl;
+
+  std::cout << "Expected P0: 0" << std::endl;
+  std::cout << "Actual P0:   "
+            << nyquist.CountOpenLoopRHPPoles()
+            << std::endl;
+
+  std::cout << "Expected N:  0" << std::endl;
+  std::cout << "Actual N:    "
+            << nyquist.CountEncirclements()
+            << std::endl;
+
+  std::cout << "Expected Z0: 0" << std::endl;
+  std::cout << "Actual Z0:   "
+            << nyquist.GetClosedLoopRHPPoles()
+            << std::endl;
+
+  std::cout << "Expected stability: Stable"
+            << std::endl;
+
+  std::cout << "Actual stability:   "
+            << (nyquist.IsStable()
+                    ? "Stable"
+                    : "Unstable")
+            << std::endl;
+
+  std::cout << std::endl;
+}
+
+void TestType3NyquistMapping() {
+  std::cout << "======================================" << std::endl;
+  std::cout << "Testing Type 3 Nyquist Mapping" << std::endl;
+  std::cout << "======================================" << std::endl;
+
+  // G(s) = 1 / [s^3(s + 1)]
+  TransferFunction transfer_function(
+      {1},
+      {1, 1, 0, 0, 0});
+
+  NyquistAnalysis nyquist(transfer_function);
+
+  size_t num_samples = 1000;
+  double indentation_radius = 0.01;
+
+  nyquist.GenerateNyquistPath(
+      10.0,
+      num_samples,
+      indentation_radius);
+
+  nyquist.MapNyquistPath();
+
+  const std::vector<std::complex<double>>& s_path =
+      nyquist.GetSPath();
+
+  const std::vector<std::complex<double>>& mapped_path =
+      nyquist.GetMappedPath();
+
+
+  // --------------------------------------------------
+  // Test 1:
+  // Make sure the origin is still avoided.
+  // --------------------------------------------------
+
+  std::cout << "Test 1 - Origin avoidance" << std::endl;
+
+  bool contains_origin = false;
+
+  for (const auto& s : s_path) {
+    if (std::abs(s) < 1e-8) {
+      contains_origin = true;
+      break;
+    }
+  }
+
+  std::cout << "Expected origin in path: No" << std::endl;
+  std::cout << "Actual origin in path:   "
+            << (contains_origin ? "Yes" : "No")
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 2:
+  // Inspect several points along the small indentation.
+  //
+  // For a Type 3 system:
+  //
+  // G(s) ~ 1 / s^3
+  //
+  // so a 180-degree indentation in the s-plane
+  // should produce about 540 degrees of mapped rotation.
+  // --------------------------------------------------
+
+  std::cout << "Test 2 - Type 3 indentation mapping"
+            << std::endl;
+
+  size_t indentation_start =
+      s_path.size() - num_samples;
+
+  size_t indentation_quarter =
+      indentation_start + num_samples / 4;
+
+  size_t indentation_middle =
+      indentation_start + num_samples / 2;
+
+  size_t indentation_three_quarter =
+      indentation_start + 3 * num_samples / 4;
+
+  size_t indentation_end =
+      s_path.size() - 1;
+
+
+  std::cout << "First indentation point:" << std::endl;
+  std::cout << "s = "
+            << s_path[indentation_start]
+            << std::endl;
+
+  std::cout << "G(s) = "
+            << mapped_path[indentation_start]
+            << std::endl;
+
+  std::cout << "Magnitude = "
+            << std::abs(mapped_path[indentation_start])
+            << std::endl;
+
+  std::cout << "Phase = "
+            << std::arg(mapped_path[indentation_start])
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  std::cout << "Quarter indentation point:" << std::endl;
+  std::cout << "s = "
+            << s_path[indentation_quarter]
+            << std::endl;
+
+  std::cout << "G(s) = "
+            << mapped_path[indentation_quarter]
+            << std::endl;
+
+  std::cout << "Magnitude = "
+            << std::abs(mapped_path[indentation_quarter])
+            << std::endl;
+
+  std::cout << "Phase = "
+            << std::arg(mapped_path[indentation_quarter])
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  std::cout << "Middle indentation point:" << std::endl;
+  std::cout << "s = "
+            << s_path[indentation_middle]
+            << std::endl;
+
+  std::cout << "G(s) = "
+            << mapped_path[indentation_middle]
+            << std::endl;
+
+  std::cout << "Magnitude = "
+            << std::abs(mapped_path[indentation_middle])
+            << std::endl;
+
+  std::cout << "Phase = "
+            << std::arg(mapped_path[indentation_middle])
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  std::cout << "Three-quarter indentation point:"
+            << std::endl;
+
+  std::cout << "s = "
+            << s_path[indentation_three_quarter]
+            << std::endl;
+
+  std::cout << "G(s) = "
+            << mapped_path[indentation_three_quarter]
+            << std::endl;
+
+  std::cout << "Magnitude = "
+            << std::abs(mapped_path[indentation_three_quarter])
+            << std::endl;
+
+  std::cout << "Phase = "
+            << std::arg(mapped_path[indentation_three_quarter])
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  std::cout << "Last indentation point:" << std::endl;
+  std::cout << "s = "
+            << s_path[indentation_end]
+            << std::endl;
+
+  std::cout << "G(s) = "
+            << mapped_path[indentation_end]
+            << std::endl;
+
+  std::cout << "Magnitude = "
+            << std::abs(mapped_path[indentation_end])
+            << std::endl;
+
+  std::cout << "Phase = "
+            << std::arg(mapped_path[indentation_end])
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 3:
+  // Compute the accumulated angle change along ONLY
+  // the small indentation.
+  //
+  // Expected:
+  // approximately -3*pi radians
+  // = -540 degrees
+  //
+  // Negative mathematical angle means clockwise.
+  // --------------------------------------------------
+
+  double total_angle_change = 0.0;
+
+  for (size_t i = indentation_start;
+       i < indentation_end;
+       i++) {
+
+    double current_angle =
+        std::arg(mapped_path[i]);
+
+    double next_angle =
+        std::arg(mapped_path[i + 1]);
+
+    double angle_change =
+        next_angle - current_angle;
+
+    if (angle_change > kPi)
+      angle_change -= 2 * kPi;
+
+    else if (angle_change < -kPi)
+      angle_change += 2 * kPi;
+
+    total_angle_change += angle_change;
+  }
+
+  std::cout << "Test 3 - Indentation angular rotation"
+            << std::endl;
+
+  std::cout << "Expected angle change: approximately "
+            << -3 * kPi
+            << " radians"
+            << std::endl;
+
+  std::cout << "Actual angle change:   "
+            << total_angle_change
+            << " radians"
+            << std::endl;
+
+  std::cout << "Expected rotations: approximately -1.5"
+            << std::endl;
+
+  std::cout << "Actual rotations:   "
+            << total_angle_change / (2 * kPi)
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 4:
+  // Full Nyquist stability analysis.
+  //
+  // Open-loop poles:
+  //
+  // s = 0  (multiplicity 3)
+  // s = -1
+  //
+  // No poles are strictly in the RHP:
+  //
+  // P0 = 0
+  //
+  // Closed-loop characteristic equation:
+  //
+  // s^4 + s^3 + 1 = 0
+  //
+  // This has two RHP roots.
+  //
+  // Therefore:
+  // Z0 = 2
+  //
+  // Since Z0 = N + P0:
+  //
+  // N = 2
+  //
+  // Expected system: Unstable
+  // --------------------------------------------------
+
+  std::cout << "Test 4 - Type 3 Stability" << std::endl;
+
+  std::cout << "Expected P0: 0" << std::endl;
+  std::cout << "Actual P0:   "
+            << nyquist.CountOpenLoopRHPPoles()
+            << std::endl;
+
+  std::cout << "Expected N:  2" << std::endl;
+  std::cout << "Actual N:    "
+            << nyquist.CountEncirclements()
+            << std::endl;
+
+  std::cout << "Expected Z0: 2" << std::endl;
+  std::cout << "Actual Z0:   "
+            << nyquist.GetClosedLoopRHPPoles()
+            << std::endl;
+
+  std::cout << "Expected stability: Unstable"
+            << std::endl;
+
+  std::cout << "Actual stability:   "
+            << (nyquist.IsStable()
+                    ? "Stable"
+                    : "Unstable")
+            << std::endl;
+
+  std::cout << std::endl;
+}
+
 int main() {
-  TestNyquistStabilityAnalysis();
+  TestType3NyquistMapping();
 
   return 0;
 }
