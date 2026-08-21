@@ -10,10 +10,10 @@ Below are the main oscillators being studied using this numerical simulator:
 defined as:
 
 $$
-\ddot{x} + kx = 0
+\frac{\mathrm{d}x}{\mathrm{d}t} + kx = 0
 $$
 
-For $x(t)$ is the position at time $t$, $\dot{x}(t)$ represents the velocity, and $\ddot{x}(t)$ is the acceleration at that time. Meanwhile $k$ represents the stiffness or restoring force coefficient of the oscillator. 
+For $x(t)$ is the position at time $t$, $x'(t)$ represents the velocity, and $x''(t)$ is the acceleration at that time. Meanwhile $k$ represents the stiffness or restoring force coefficient of the oscillator. 
 
 Here, the harmonic oscillator represents an ideal spring-mass system with energy being lost. As total energy remains constant, that leads in itself to a constant amplitude, which ultimately leads to the oscillator to continue oscillating forever.
 
@@ -23,7 +23,7 @@ This type of oscillator applies to various physical systems like a mass attached
 defined as:
 
 $$
-\ddot{x} + c\dot{x} + kx = 0
+\frac{\mathrm{d}^2 x}{\mathrm{d}t^2} + c\frac{\mathrm{d}x}{\mathrm{d}t} + kx = 0
 $$
 
 Here with constants $c$ and $k$ representing the damping and stiffness coefficient respectively, now this oscillator represents a spring-mass system with some friction or resistance added on. With this friction applied, it causes the oscillator to lose energy and amplitude, causing motion to settle to equilibrium as $t \to \infty$, for $t$ denotes time.
@@ -34,7 +34,7 @@ As within the real-world, most phyiscal systems experience some form of damping 
 defined as:
 
 $$
-\ddot{x} + c\dot{x} + kx = A\sin{\omega t}
+\frac{\mathrm{d}^2 x}{dt^2} + c\frac{\mathrm{d}x}{\mathrm{d}t} + kx = A\sin{\omega t}
 $$
 
 For $A$ is the forcing amplitude, and $\omega$ is the forcing angular frequency.
