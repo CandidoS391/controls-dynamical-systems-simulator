@@ -477,16 +477,43 @@ For meeting these performance specifications, there is a need for appropriate co
 
 And in terms of the actual design scheme, those same methods mentioned in analysis can also be used in designing control systems via design-by-analysis.
 
+# Nyquist Analysis and Design
+Moving onto the actual methods for designing and analyzing feedback control systems, this is the first method that we will be diving into, and that is the method of Nyquist analysis/design. This method is a graphical procedure for finding absolute and relative stability of closed-loop systems, using a parametric plot of systems transfer function $GH(S)$, for $s = j\omega$, or in other words, the transfer function is a frequency response function. Once a feedback system is in canonical form, the Nyquist method tends to be the more reliable method compared to the other methods that were previously mentioned.
+
+## Plotting Complex Functions of a Complex Variable
+Before getting into the actual method, we need to understand what a Nyquist plot is, and before that a polar plot, and even before that, how can a complex function related to a complex variable can be graphed. For a complex function of a comple variable (i.e: $P(s)$, for $s = \sigma + j\omega$), this function cannot be plotted on a single set of coordinates, unlike a real function of a real variable. Instead, it depends on two parts: the real part of $s$, and the imaginary part of $s$.
+
+To account for this, $P(s)$ needs to be plotted onto *two* graphs; the first is a graph of $j\omega$ versus $\sigma$ called the $s$-plane, and the second is between the imaginary part of $P(s)$, versus the real part of $P(s)$, which describes the $P(s)$-plane. Between the two graphs, there exists a correspondence between points plotted, in which one point from one plane can be transformed or mapped into points of the other plane by the function $P$. For the purposes of the Nyquist method, only a very specific locus of points plotted in the $s$-plane are mapped into the $P(s)$-plane, with this locus being called a **Nyquist Path**.
+
+For the case when $\sigma = 0$, and $s =j\omega$, the $s$-plane degenerates into a line and $P(j\omega)$ can be represented in a likelise named $P(j\omega)$-plane, with $\omega$ acting as a parameter. From here, *polar plots* can be constructed from this line in the $s$-plane (more on polar plots in a bit).
+
+### Terms and Definitions Related to Nyquist Method
+The following are terms that will be used for the rest of this main section.
+
+If the derivative of $P$ at a $s_0$, defined by the limit definition:
+
+$$
+\frac{\mathrm{d}P}{\mathrm{d}S} \equiv \lim_{s \to s_0} \left\{ \frac{P(s) - P(s_0)}{s - s_0} \right\}
+$$
+
+exists at all points in a region of the $s$-plane, then $P$ is considered **analytic** in that region. In this case, all practical physical systems are analytic in the finite $s$-plane, except at the poles of $P(s)$.
+
+If there exists a point at which $P(s)$ isn't analytic, then that point is considered a **singular point** or is the **singularity** of $P(s)$. For instance, the aforementioned poles of $P(s)$ are considered the singularity of $P(s)$.
+
+A **closed contour** in a complex plane is a continuous curve that begins and ends at the same point.
+
+
+
 # The RLC Circuit
 So far, the only part of this project that is related to the Electromagnetic section and that is the RLC Circuit.
 
 An series RLC circuit is a fundamental electrical engineering system that is consists of a resistor $R$, an inductor $L$, and a capacitor $C$; and is governed by this differential equation:
 
 $$
-L\frac{d^2q}{dt^2} + R\frac{dq}{dt} + \frac{1}{C}q = V(t)
+L\frac{\mathrm{d}^2q}{\mathrm{d}t^2} + R\frac{\mathrm{d}q}{\mathrm{d}t} + \frac{1}{C}q = V(t)
 $$
 
-for $q(t)$ is the electrical charge stored on the capacitor, $\frac{dq}{dt}$ is the circuit current, and $V(t)$ is the applied input voltage.
+for $q(t)$ is the electrical charge stored on the capacitor, $\frac{\mathrm{d}q}{\mathrm{d}t}$ is the circuit current, and $V(t)$ is the applied input voltage.
 
 Here, It is similar to the mechanical oscillator implemented via the forced oscillator in this project. So therefore with the existing numerical framework, the simulator can generate the circuit's step response and phase portrait the same way as a mechanical oscillator can be generated via both Euler's and RK4 Integration.
 
