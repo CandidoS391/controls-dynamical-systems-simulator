@@ -35,6 +35,16 @@ class NyquistAnalysis {
     int GetClosedLoopRHPPoles() const;
     // Determine Stability based on if Z <= 0
     bool IsStable() const;
+
+    // ---- CALCULATING RELATIVE STABILITY ----
+    // Calculate the phase crossover frequency
+    double GetPhaseCrossoverFrequency(double max_frequency, size_t num_samples) const;
+    // Calculate the gain crossover frequency
+    double GetGainCrossoverFrequency(double max_frequency, size_t num_samples) const;
+    // Calculate the gain margin
+    double GetGainMargin(double max_frequency, size_t num_samples) const;
+    // Calculate the phase margin
+    double GetPhaseMargin(double max_frequency, size_t num_samples) const;
 };
 
 #endif

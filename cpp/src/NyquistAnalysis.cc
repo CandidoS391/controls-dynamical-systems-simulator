@@ -223,5 +223,55 @@ bool NyquistAnalysis::IsStable() const {
   return false;
 }
 
+double NyquistAnalysis::GetPhaseCrossoverFrequency(double max_frequency, size_t num_samples) const {
+  // Validate the inputs
+  if (max_frequency <= 0)
+    throw std::invalid_argument("The maximum frequency must be greater than 0.");
 
+  if (num_samples <= 2)
+    throw std::invalid_argument("The number of samnples must be greater than 2.");
+
+  // Set up the frequency sweep
+  double freq_step = max_frequency / (num_samples - 1);
+
+  // Evaluate the first usable frequency
+  double prev_omega = 0.0;
+  std::complex<double> prev_s(0.0, prev_omega);
+  std::complex<double> prev_response = transfer_function.Evaluate(prev_s);
+
+  // Evaluate the remaining frequencies
+  for (size_t i = 0; i < num_samples; i++) {
+    // Get the current frequency
+    double curr_omega = i * freq_step;
+    std::complex<double> curr_s(0.0, curr_omega);
+    std::complex<double> curr_response = transfer_function.Evaluate(curr_s);
+
+    // Check for the imaginary-axis sign change
+    double prev_imag = prev_response.imag();
+    double curr_imag = curr_response.imag();
+
+    // Here, compare the signs between the previous imaginary part and the current imaginary part
+    // This means that a real-axis crossing has a occured between the two frequencies
+    if (std::signbit(prev_imag) != std::signbit(curr_imag)) {
+      // Interpolate between the two frequencies based on their imaginary components
+      double fraction = -prev_imag / (curr_imag - prev_imag);
+      double crossover_omega = prev_omega + fraction * (curr_omega - prev_omega);
+
+      // Evaluate at the estimated crossover
+      std::complex<double> crossover_s(0, crossover_omega);
+      std::complex<double> crossover_response = transfer_function.Evaluate(crossover_s);
+
+      // Evaluate the negative real axis
+      if (crossover_response.real() < 0)
+        return crossover_omega;
+    }
+
+    // Advance to the next frequency
+    prev_omega = curr_omega;
+    prev_response = curr_response;
+  }
+
+  // If there's no crossover found, then throw
+  throw std::runtime_error("Phase crossover was not found.");
+}
 
