@@ -232,23 +232,31 @@ double NyquistAnalysis::GetPhaseCrossoverFrequency(double max_frequency, size_t 
     throw std::invalid_argument("The number of samnples must be greater than 2.");
 
   // Set up the frequency sweep
-  double freq_step = max_frequency / (num_samples - 1);
+  double min_frequency = 1e-6;
+  if (max_frequency <= min_frequency)
+    throw std::invalid_argument("The max frequency passed in should not be less than or equal to 1e-8.");
+  
+  double freq_step = (max_frequency - min_frequency) / (num_samples - 1);
 
   // Evaluate the first usable frequency
-  double prev_omega = 0.0;
+  double prev_omega = min_frequency;
   std::complex<double> prev_s(0.0, prev_omega);
   std::complex<double> prev_response = transfer_function.Evaluate(prev_s);
 
   // Evaluate the remaining frequencies
-  for (size_t i = 0; i < num_samples; i++) {
+  for (size_t i = 1; i < num_samples; i++) {
     // Get the current frequency
-    double curr_omega = i * freq_step;
+    double curr_omega = min_frequency + i * freq_step;
     std::complex<double> curr_s(0.0, curr_omega);
     std::complex<double> curr_response = transfer_function.Evaluate(curr_s);
 
     // Check for the imaginary-axis sign change
     double prev_imag = prev_response.imag();
     double curr_imag = curr_response.imag();
+
+    // Tolerance check to check if the crossover frequency has already been hit
+    if (std::abs(curr_imag) < 1e-8 && curr_response.real() < 0)
+      return curr_omega;
 
     // Here, compare the signs between the previous imaginary part and the current imaginary part
     // This means that a real-axis crossing has a occured between the two frequencies
