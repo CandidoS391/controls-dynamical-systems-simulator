@@ -255,7 +255,7 @@ double NyquistAnalysis::GetPhaseCrossoverFrequency(double max_frequency, size_t 
     double curr_imag = curr_response.imag();
 
     // Tolerance check to check if the crossover frequency has already been hit
-    if (std::abs(curr_imag) < 1e-8 && curr_response.real() < 0)
+    if (curr_imag == 0.0 && curr_response.real() < 0)
       return curr_omega;
 
     // Here, compare the signs between the previous imaginary part and the current imaginary part

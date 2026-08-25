@@ -29,7 +29,7 @@
 #include "FrequencyResponse.h"
 #include "NyquistAnalysis.h"
 
-const double kPi = 3.14159265358979323846;
+//const double kPi = 3.14159265358979323846;
 
 void SimulateFirstOrderDecayEuler() {
   FirstOrderDecay decay(0.5);
@@ -583,61 +583,6 @@ void ExportPoleZeroData() {
   ofs_2.close();
 }
 
-void TestNyquistAnalysis() {
-  std::cout << "======================================" << std::endl;
-  std::cout << "Testing Nyquist Analysis" << std::endl;
-  std::cout << "======================================" << std::endl;
-
-  // Create G(s) = 1 / (s + 1)
-  TransferFunction transfer_function({1}, {1, 1});
-
-  // Create Nyquist analysis object
-  NyquistAnalysis nyquist_analysis(transfer_function);
-
-  // Generate the Nyquist path
-  nyquist_analysis.GenerateNyquistPath(10.0, 6);
-
-  // Map the Nyquist path through G(s)
-  nyquist_analysis.MapNyquistPath();
-
-  // Get the generated paths
-  const std::vector<std::complex<double>>& s_path =
-      nyquist_analysis.GetSPath();
-
-  const std::vector<std::complex<double>>& mapped_path =
-      nyquist_analysis.GetMappedPath();
-
-  std::cout << "Number of s-path points: "
-            << s_path.size()
-            << std::endl;
-
-  std::cout << "Number of mapped points: "
-            << mapped_path.size()
-            << std::endl;
-
-  std::cout << std::endl;
-
-  // Print a few points from the beginning
-  std::cout << "First few mapped points:" << std::endl;
-
-  for (size_t i = 0; i < 3 && i < mapped_path.size(); i++) {
-    std::cout << "s = " << s_path[i]
-              << "  ->  G(s) = " << mapped_path[i]
-              << std::endl;
-  }
-
-  std::cout << std::endl;
-
-  // Print a few points from the end
-  std::cout << "Last few mapped points:" << std::endl;
-
-  for (size_t i = mapped_path.size() - 3; i < mapped_path.size(); i++) {
-    std::cout << "s = " << s_path[i]
-              << "  ->  G(s) = " << mapped_path[i]
-              << std::endl;
-  }
-}
-
 void ExportFrequencyResponseData() {
   // Create the transfer function to analyze
   TransferFunction transfer_function({1}, {1, 1});
@@ -729,51 +674,54 @@ void ExportNyquistData() {
             << std::endl;
 }
 
-void TestNyquistStabilityAnalysis() {
+void TestPhaseCrossoverFrequency() {
   std::cout << "======================================" << std::endl;
-  std::cout << "Testing Nyquist Stability Analysis" << std::endl;
+  std::cout << "Testing Phase Crossover Frequency" << std::endl;
   std::cout << "======================================" << std::endl;
 
   // --------------------------------------------------
   // Test 1:
-  // G(s) = 1 / (s + 1)
   //
-  // Open-loop poles:
-  // s = -1
+  // G(s) = 1 / [(s + 1)(s + 2)(s + 3)]
   //
-  // Expected:
-  // P0 = 0
-  // N  = 0
-  // Z0 = 0
-  // Stable
+  // Denominator at s = jw:
+  //
+  // (jw + 1)(jw + 2)(jw + 3)
+  //
+  // Imaginary part becomes zero when:
+  //
+  // w(11 - w^2) = 0
+  //
+  // Ignoring w = 0:
+  //
+  // w_pc = sqrt(11)
+  //      ≈ 3.31662 rad/s
+  //
+  // At this frequency, the denominator lies on the
+  // negative real axis, so G(jw) has phase -180 deg.
   // --------------------------------------------------
 
-  std::cout << "Test 1: G(s) = 1 / (s + 1)" << std::endl;
+  std::cout << "Test 1 - Type 0 system" << std::endl;
 
-  TransferFunction transfer_function_1({1}, {1, 1});
+  TransferFunction transfer_function_1(
+      {1},
+      {1, 6, 11, 6});
+
   NyquistAnalysis nyquist_1(transfer_function_1);
 
-  nyquist_1.GenerateNyquistPath(100.0, 1000);
-  nyquist_1.MapNyquistPath();
+  double expected_omega_1 = std::sqrt(11.0);
 
-  std::cout << "Expected P0: 0" << std::endl;
-  std::cout << "Actual P0:   "
-            << nyquist_1.CountOpenLoopRHPPoles()
+  double actual_omega_1 =
+      nyquist_1.GetPhaseCrossoverFrequency(
+          10.0,
+          10001);
+
+  std::cout << "Expected phase crossover frequency: "
+            << expected_omega_1
             << std::endl;
 
-  std::cout << "Expected N:  0" << std::endl;
-  std::cout << "Actual N:    "
-            << nyquist_1.CountEncirclements()
-            << std::endl;
-
-  std::cout << "Expected Z0: 0" << std::endl;
-  std::cout << "Actual Z0:   "
-            << nyquist_1.GetClosedLoopRHPPoles()
-            << std::endl;
-
-  std::cout << "Expected stability: Stable" << std::endl;
-  std::cout << "Actual stability:   "
-            << (nyquist_1.IsStable() ? "Stable" : "Unstable")
+  std::cout << "Actual phase crossover frequency:   "
+            << actual_omega_1
             << std::endl;
 
   std::cout << std::endl;
@@ -781,71 +729,44 @@ void TestNyquistStabilityAnalysis() {
 
   // --------------------------------------------------
   // Test 2:
-  // G(s) = 1 / (s - 1)
   //
-  // Open-loop pole:
-  // s = +1
+  // G(s) = 1 / [s(s + 1)(s + 2)]
   //
-  // Closed-loop characteristic equation:
+  // This is a Type 1 system.
   //
-  // 1 + 1/(s - 1) = 0
+  // The function must NOT evaluate exactly at w = 0.
   //
-  // gives s = 0.
+  // At s = jw, the denominator has imaginary part:
   //
-  // This is a boundary/marginal case, so we DON'T
-  // want to use this as our clean unstable test yet.
+  // w(2 - w^2)
+  //
+  // Therefore:
+  //
+  // w_pc = sqrt(2)
+  //      ≈ 1.41421 rad/s
   // --------------------------------------------------
 
+  std::cout << "Test 2 - Type 1 system" << std::endl;
 
-  // --------------------------------------------------
-  // Test 2:
-  // G(s) = 2 / (s - 1)
-  //
-  // Open-loop pole:
-  // s = +1
-  //
-  // Closed-loop characteristic equation:
-  //
-  // 1 + 2/(s - 1) = 0
-  //
-  // s + 1 = 0
-  //
-  // Closed-loop pole:
-  // s = -1
-  //
-  // Expected:
-  // P0 = 1
-  // N  = -1
-  // Z0 = 0
-  // Stable
-  // --------------------------------------------------
+  TransferFunction transfer_function_2(
+      {1},
+      {1, 3, 2, 0});
 
-  std::cout << "Test 2: G(s) = 2 / (s - 1)" << std::endl;
-
-  TransferFunction transfer_function_2({2}, {1, -1});
   NyquistAnalysis nyquist_2(transfer_function_2);
 
-  nyquist_2.GenerateNyquistPath(100.0, 1000);
-  nyquist_2.MapNyquistPath();
+  double expected_omega_2 = std::sqrt(2.0);
 
-  std::cout << "Expected P0: 1" << std::endl;
-  std::cout << "Actual P0:   "
-            << nyquist_2.CountOpenLoopRHPPoles()
+  double actual_omega_2 =
+      nyquist_2.GetPhaseCrossoverFrequency(
+          10.0,
+          10001);
+
+  std::cout << "Expected phase crossover frequency: "
+            << expected_omega_2
             << std::endl;
 
-  std::cout << "Expected N:  -1" << std::endl;
-  std::cout << "Actual N:    "
-            << nyquist_2.CountEncirclements()
-            << std::endl;
-
-  std::cout << "Expected Z0: 0" << std::endl;
-  std::cout << "Actual Z0:   "
-            << nyquist_2.GetClosedLoopRHPPoles()
-            << std::endl;
-
-  std::cout << "Expected stability: Stable" << std::endl;
-  std::cout << "Actual stability:   "
-            << (nyquist_2.IsStable() ? "Stable" : "Unstable")
+  std::cout << "Actual phase crossover frequency:   "
+            << actual_omega_2
             << std::endl;
 
   std::cout << std::endl;
@@ -853,73 +774,29 @@ void TestNyquistStabilityAnalysis() {
 
   // --------------------------------------------------
   // Test 3:
-  // G(s) = 0.5 / (s - 1)
   //
-  // Open-loop pole:
-  // s = +1
+  // G(s) = 1 / (s + 1)
   //
-  // Closed-loop characteristic equation:
+  // Its phase approaches -90 degrees, so it never
+  // reaches -180 degrees.
   //
-  // 1 + 0.5/(s - 1) = 0
-  //
-  // s - 0.5 = 0
-  //
-  // Closed-loop pole:
-  // s = +0.5
-  //
-  // Expected:
-  // P0 = 1
-  // N  = 0
-  // Z0 = 1
-  // Unstable
+  // Therefore no phase crossover frequency exists.
   // --------------------------------------------------
 
-  std::cout << "Test 3: G(s) = 0.5 / (s - 1)" << std::endl;
-
-  TransferFunction transfer_function_3({0.5}, {1, -1});
-  NyquistAnalysis nyquist_3(transfer_function_3);
-
-  nyquist_3.GenerateNyquistPath(100.0, 1000);
-  nyquist_3.MapNyquistPath();
-
-  std::cout << "Expected P0: 1" << std::endl;
-  std::cout << "Actual P0:   "
-            << nyquist_3.CountOpenLoopRHPPoles()
-            << std::endl;
-
-  std::cout << "Expected N:  0" << std::endl;
-  std::cout << "Actual N:    "
-            << nyquist_3.CountEncirclements()
-            << std::endl;
-
-  std::cout << "Expected Z0: 1" << std::endl;
-  std::cout << "Actual Z0:   "
-            << nyquist_3.GetClosedLoopRHPPoles()
-            << std::endl;
-
-  std::cout << "Expected stability: Unstable" << std::endl;
-  std::cout << "Actual stability:   "
-            << (nyquist_3.IsStable() ? "Stable" : "Unstable")
-            << std::endl;
-
-  std::cout << std::endl;
-
-
-  // --------------------------------------------------
-  // Test 4:
-  // Make sure CountEncirclements() rejects an
-  // unmapped Nyquist path.
-  // --------------------------------------------------
-
-  std::cout << "Test 4: Empty mapped path exception" << std::endl;
+  std::cout << "Test 3 - No phase crossover" << std::endl;
 
   try {
-    TransferFunction transfer_function_4({1}, {1, 1});
-    NyquistAnalysis nyquist_4(transfer_function_4);
+    TransferFunction transfer_function_3(
+        {1},
+        {1, 1});
 
-    nyquist_4.CountEncirclements();
+    NyquistAnalysis nyquist_3(transfer_function_3);
 
-    std::cout << "FAILED - expected an exception."
+    nyquist_3.GetPhaseCrossoverFrequency(
+        100.0,
+        10001);
+
+    std::cout << "FAILED - exception expected."
               << std::endl;
   }
   catch (const std::runtime_error& error) {
@@ -929,656 +806,62 @@ void TestNyquistStabilityAnalysis() {
   }
 
   std::cout << std::endl;
-}
-
-void TestIndentedNyquistPath() {
-  std::cout << "======================================" << std::endl;
-  std::cout << "Testing Indented Nyquist Path" << std::endl;
-  std::cout << "======================================" << std::endl;
-
-  // --------------------------------------------------
-  // Test 1:
-  // Generate an indented contour with rho = 0.01
-  //
-  // We expect:
-  // - no point at s = 0
-  // - first point at approximately +j0.01
-  // - last point at approximately +j0.01
-  // - path is closed
-  // --------------------------------------------------
-
-  TransferFunction transfer_function_1({1}, {1, 1});
-  NyquistAnalysis nyquist_1(transfer_function_1);
-
-  nyquist_1.GenerateNyquistPath(
-      10.0,
-      100,
-      0.01);
-
-  const std::vector<std::complex<double>>& s_path =
-      nyquist_1.GetSPath();
-
-  std::cout << "Test 1 - Indented path geometry" << std::endl;
-
-  std::cout << "Expected first point: approximately (0,0.01)"
-            << std::endl;
-  std::cout << "Actual first point:   "
-            << s_path.front()
-            << std::endl;
-
-  std::cout << "Expected last point: approximately (0,0.01)"
-            << std::endl;
-  std::cout << "Actual last point:   "
-            << s_path.back()
-            << std::endl;
-
-  bool contains_origin = false;
-
-  for (const auto& s : s_path) {
-    if (std::abs(s) < 1e-8) {
-      contains_origin = true;
-      break;
-    }
-  }
-
-  std::cout << "Expected origin in path: No" << std::endl;
-  std::cout << "Actual origin in path:   "
-            << (contains_origin ? "Yes" : "No")
-            << std::endl;
-
-  std::cout << std::endl;
-
-
-  // --------------------------------------------------
-  // Test 2:
-  // Type 1 system
-  //
-  // G(s) = 1 / [s(s + 1)]
-  //
-  // The pole at s = 0 should now be avoided instead
-  // of causing TransferFunction::Evaluate() to throw.
-  // --------------------------------------------------
-
-  std::cout << "Test 2 - Type 1 mapping" << std::endl;
-
-  try {
-    TransferFunction transfer_function_2(
-        {1},
-        {1, 1, 0});
-
-    NyquistAnalysis nyquist_2(transfer_function_2);
-
-    nyquist_2.GenerateNyquistPath(
-        10.0,
-        500,
-        0.01);
-
-    nyquist_2.MapNyquistPath();
-
-    std::cout << "PASSED - Type 1 path mapped without singularity."
-              << std::endl;
-
-    std::cout << "Number of s-path points: "
-              << nyquist_2.GetSPath().size()
-              << std::endl;
-
-    std::cout << "Number of mapped points: "
-              << nyquist_2.GetMappedPath().size()
-              << std::endl;
-  }
-  catch (const std::exception& error) {
-    std::cout << "FAILED - unexpected exception: "
-              << error.what()
-              << std::endl;
-  }
-
-  std::cout << std::endl;
-
-
-  // --------------------------------------------------
-  // Test 3:
-  // Invalid negative indentation radius
-  // --------------------------------------------------
-
-  try {
-    NyquistAnalysis nyquist_3(transfer_function_1);
-
-    nyquist_3.GenerateNyquistPath(
-        10.0,
-        100,
-        -0.01);
-
-    std::cout << "Test 3: FAILED - exception expected"
-              << std::endl;
-  }
-  catch (const std::invalid_argument& error) {
-    std::cout << "Test 3: PASSED - caught expected exception: "
-              << error.what()
-              << std::endl;
-  }
-
-  std::cout << std::endl;
 
 
   // --------------------------------------------------
   // Test 4:
-  // Indentation radius cannot be >= max frequency
+  // Invalid maximum frequency
   // --------------------------------------------------
+
+  std::cout << "Test 4 - Invalid maximum frequency" << std::endl;
 
   try {
     NyquistAnalysis nyquist_4(transfer_function_1);
 
-    nyquist_4.GenerateNyquistPath(
-        10.0,
-        100,
-        10.0);
+    nyquist_4.GetPhaseCrossoverFrequency(
+        0.0,
+        100);
 
-    std::cout << "Test 4: FAILED - exception expected"
+    std::cout << "FAILED - exception expected."
               << std::endl;
   }
   catch (const std::invalid_argument& error) {
-    std::cout << "Test 4: PASSED - caught expected exception: "
+    std::cout << "PASSED - caught expected exception: "
               << error.what()
               << std::endl;
   }
 
   std::cout << std::endl;
-}
 
-void TestType1NyquistMapping() {
-  std::cout << "======================================" << std::endl;
-  std::cout << "Testing Type 1 Nyquist Mapping" << std::endl;
-  std::cout << "======================================" << std::endl;
-
-  // G(s) = 1 / [s(s + 1)]
-  TransferFunction transfer_function(
-      {1},
-      {1, 1, 0});
-
-  NyquistAnalysis nyquist(transfer_function);
-
-  size_t num_samples = 500;
-  double indentation_radius = 0.01;
-
-  nyquist.GenerateNyquistPath(
-      10.0,
-      num_samples,
-      indentation_radius);
-
-  nyquist.MapNyquistPath();
-
-  const std::vector<std::complex<double>>& s_path =
-      nyquist.GetSPath();
-
-  const std::vector<std::complex<double>>& mapped_path =
-      nyquist.GetMappedPath();
 
   // --------------------------------------------------
-  // Test 1:
-  // Make sure the indentation avoids the origin
+  // Test 5:
+  // Too few frequency samples
   // --------------------------------------------------
 
-  std::cout << "Test 1 - Origin avoidance" << std::endl;
+  std::cout << "Test 5 - Too few samples" << std::endl;
 
-  bool contains_origin = false;
+  try {
+    NyquistAnalysis nyquist_5(transfer_function_1);
 
-  for (const auto& s : s_path) {
-    if (std::abs(s) < 1e-8) {
-      contains_origin = true;
-      break;
-    }
+    nyquist_5.GetPhaseCrossoverFrequency(
+        10.0,
+        2);
+
+    std::cout << "FAILED - exception expected."
+              << std::endl;
   }
-
-  std::cout << "Expected origin in path: No" << std::endl;
-  std::cout << "Actual origin in path:   "
-            << (contains_origin ? "Yes" : "No")
-            << std::endl;
-
-  std::cout << std::endl;
-
-
-  // --------------------------------------------------
-  // Test 2:
-  // Inspect the actual small indentation.
-  //
-  // The indentation is the final num_samples points
-  // of the Nyquist path.
-  // --------------------------------------------------
-
-  std::cout << "Test 2 - Mapped indentation behavior"
-            << std::endl;
-
-  size_t indentation_start =
-      s_path.size() - num_samples;
-
-  size_t indentation_middle =
-      indentation_start + num_samples / 2;
-
-  size_t indentation_end =
-      s_path.size() - 1;
-
-
-  std::cout << "First indentation point:" << std::endl;
-
-  std::cout << "s = "
-            << s_path[indentation_start]
-            << std::endl;
-
-  std::cout << "G(s) = "
-            << mapped_path[indentation_start]
-            << std::endl;
-
-  std::cout << "Magnitude = "
-            << std::abs(mapped_path[indentation_start])
-            << std::endl;
-
-  std::cout << "Phase = "
-            << std::arg(mapped_path[indentation_start])
-            << std::endl;
-
-  std::cout << std::endl;
-
-
-  std::cout << "Middle indentation point:" << std::endl;
-
-  std::cout << "s = "
-            << s_path[indentation_middle]
-            << std::endl;
-
-  std::cout << "G(s) = "
-            << mapped_path[indentation_middle]
-            << std::endl;
-
-  std::cout << "Magnitude = "
-            << std::abs(mapped_path[indentation_middle])
-            << std::endl;
-
-  std::cout << "Phase = "
-            << std::arg(mapped_path[indentation_middle])
-            << std::endl;
-
-  std::cout << std::endl;
-
-
-  std::cout << "Last indentation point:" << std::endl;
-
-  std::cout << "s = "
-            << s_path[indentation_end]
-            << std::endl;
-
-  std::cout << "G(s) = "
-            << mapped_path[indentation_end]
-            << std::endl;
-
-  std::cout << "Magnitude = "
-            << std::abs(mapped_path[indentation_end])
-            << std::endl;
-
-  std::cout << "Phase = "
-            << std::arg(mapped_path[indentation_end])
-            << std::endl;
-
-  std::cout << std::endl;
-
-
-  // --------------------------------------------------
-  // Test 3:
-  // Nyquist stability values
-  //
-  // Open-loop poles:
-  // s = 0
-  // s = -1
-  //
-  // P0 = 0
-  //
-  // Closed-loop characteristic equation:
-  //
-  // 1 + 1/[s(s+1)] = 0
-  //
-  // s^2 + s + 1 = 0
-  //
-  // Both roots have negative real part.
-  //
-  // Expected:
-  // N  = 0
-  // Z0 = 0
-  // Stable
-  // --------------------------------------------------
-
-  std::cout << "Test 3 - Type 1 Stability" << std::endl;
-
-  std::cout << "Expected P0: 0" << std::endl;
-  std::cout << "Actual P0:   "
-            << nyquist.CountOpenLoopRHPPoles()
-            << std::endl;
-
-  std::cout << "Expected N:  0" << std::endl;
-  std::cout << "Actual N:    "
-            << nyquist.CountEncirclements()
-            << std::endl;
-
-  std::cout << "Expected Z0: 0" << std::endl;
-  std::cout << "Actual Z0:   "
-            << nyquist.GetClosedLoopRHPPoles()
-            << std::endl;
-
-  std::cout << "Expected stability: Stable"
-            << std::endl;
-
-  std::cout << "Actual stability:   "
-            << (nyquist.IsStable()
-                    ? "Stable"
-                    : "Unstable")
-            << std::endl;
-
-  std::cout << std::endl;
-}
-
-void TestType3NyquistMapping() {
-  std::cout << "======================================" << std::endl;
-  std::cout << "Testing Type 3 Nyquist Mapping" << std::endl;
-  std::cout << "======================================" << std::endl;
-
-  // G(s) = 1 / [s^3(s + 1)]
-  TransferFunction transfer_function(
-      {1},
-      {1, 1, 0, 0, 0});
-
-  NyquistAnalysis nyquist(transfer_function);
-
-  size_t num_samples = 1000;
-  double indentation_radius = 0.01;
-
-  nyquist.GenerateNyquistPath(
-      10.0,
-      num_samples,
-      indentation_radius);
-
-  nyquist.MapNyquistPath();
-
-  const std::vector<std::complex<double>>& s_path =
-      nyquist.GetSPath();
-
-  const std::vector<std::complex<double>>& mapped_path =
-      nyquist.GetMappedPath();
-
-
-  // --------------------------------------------------
-  // Test 1:
-  // Make sure the origin is still avoided.
-  // --------------------------------------------------
-
-  std::cout << "Test 1 - Origin avoidance" << std::endl;
-
-  bool contains_origin = false;
-
-  for (const auto& s : s_path) {
-    if (std::abs(s) < 1e-8) {
-      contains_origin = true;
-      break;
-    }
+  catch (const std::invalid_argument& error) {
+    std::cout << "PASSED - caught expected exception: "
+              << error.what()
+              << std::endl;
   }
-
-  std::cout << "Expected origin in path: No" << std::endl;
-  std::cout << "Actual origin in path:   "
-            << (contains_origin ? "Yes" : "No")
-            << std::endl;
-
-  std::cout << std::endl;
-
-
-  // --------------------------------------------------
-  // Test 2:
-  // Inspect several points along the small indentation.
-  //
-  // For a Type 3 system:
-  //
-  // G(s) ~ 1 / s^3
-  //
-  // so a 180-degree indentation in the s-plane
-  // should produce about 540 degrees of mapped rotation.
-  // --------------------------------------------------
-
-  std::cout << "Test 2 - Type 3 indentation mapping"
-            << std::endl;
-
-  size_t indentation_start =
-      s_path.size() - num_samples;
-
-  size_t indentation_quarter =
-      indentation_start + num_samples / 4;
-
-  size_t indentation_middle =
-      indentation_start + num_samples / 2;
-
-  size_t indentation_three_quarter =
-      indentation_start + 3 * num_samples / 4;
-
-  size_t indentation_end =
-      s_path.size() - 1;
-
-
-  std::cout << "First indentation point:" << std::endl;
-  std::cout << "s = "
-            << s_path[indentation_start]
-            << std::endl;
-
-  std::cout << "G(s) = "
-            << mapped_path[indentation_start]
-            << std::endl;
-
-  std::cout << "Magnitude = "
-            << std::abs(mapped_path[indentation_start])
-            << std::endl;
-
-  std::cout << "Phase = "
-            << std::arg(mapped_path[indentation_start])
-            << std::endl;
-
-  std::cout << std::endl;
-
-
-  std::cout << "Quarter indentation point:" << std::endl;
-  std::cout << "s = "
-            << s_path[indentation_quarter]
-            << std::endl;
-
-  std::cout << "G(s) = "
-            << mapped_path[indentation_quarter]
-            << std::endl;
-
-  std::cout << "Magnitude = "
-            << std::abs(mapped_path[indentation_quarter])
-            << std::endl;
-
-  std::cout << "Phase = "
-            << std::arg(mapped_path[indentation_quarter])
-            << std::endl;
-
-  std::cout << std::endl;
-
-
-  std::cout << "Middle indentation point:" << std::endl;
-  std::cout << "s = "
-            << s_path[indentation_middle]
-            << std::endl;
-
-  std::cout << "G(s) = "
-            << mapped_path[indentation_middle]
-            << std::endl;
-
-  std::cout << "Magnitude = "
-            << std::abs(mapped_path[indentation_middle])
-            << std::endl;
-
-  std::cout << "Phase = "
-            << std::arg(mapped_path[indentation_middle])
-            << std::endl;
-
-  std::cout << std::endl;
-
-
-  std::cout << "Three-quarter indentation point:"
-            << std::endl;
-
-  std::cout << "s = "
-            << s_path[indentation_three_quarter]
-            << std::endl;
-
-  std::cout << "G(s) = "
-            << mapped_path[indentation_three_quarter]
-            << std::endl;
-
-  std::cout << "Magnitude = "
-            << std::abs(mapped_path[indentation_three_quarter])
-            << std::endl;
-
-  std::cout << "Phase = "
-            << std::arg(mapped_path[indentation_three_quarter])
-            << std::endl;
-
-  std::cout << std::endl;
-
-
-  std::cout << "Last indentation point:" << std::endl;
-  std::cout << "s = "
-            << s_path[indentation_end]
-            << std::endl;
-
-  std::cout << "G(s) = "
-            << mapped_path[indentation_end]
-            << std::endl;
-
-  std::cout << "Magnitude = "
-            << std::abs(mapped_path[indentation_end])
-            << std::endl;
-
-  std::cout << "Phase = "
-            << std::arg(mapped_path[indentation_end])
-            << std::endl;
-
-  std::cout << std::endl;
-
-
-  // --------------------------------------------------
-  // Test 3:
-  // Compute the accumulated angle change along ONLY
-  // the small indentation.
-  //
-  // Expected:
-  // approximately -3*pi radians
-  // = -540 degrees
-  //
-  // Negative mathematical angle means clockwise.
-  // --------------------------------------------------
-
-  double total_angle_change = 0.0;
-
-  for (size_t i = indentation_start;
-       i < indentation_end;
-       i++) {
-
-    double current_angle =
-        std::arg(mapped_path[i]);
-
-    double next_angle =
-        std::arg(mapped_path[i + 1]);
-
-    double angle_change =
-        next_angle - current_angle;
-
-    if (angle_change > kPi)
-      angle_change -= 2 * kPi;
-
-    else if (angle_change < -kPi)
-      angle_change += 2 * kPi;
-
-    total_angle_change += angle_change;
-  }
-
-  std::cout << "Test 3 - Indentation angular rotation"
-            << std::endl;
-
-  std::cout << "Expected angle change: approximately "
-            << -3 * kPi
-            << " radians"
-            << std::endl;
-
-  std::cout << "Actual angle change:   "
-            << total_angle_change
-            << " radians"
-            << std::endl;
-
-  std::cout << "Expected rotations: approximately -1.5"
-            << std::endl;
-
-  std::cout << "Actual rotations:   "
-            << total_angle_change / (2 * kPi)
-            << std::endl;
-
-  std::cout << std::endl;
-
-
-  // --------------------------------------------------
-  // Test 4:
-  // Full Nyquist stability analysis.
-  //
-  // Open-loop poles:
-  //
-  // s = 0  (multiplicity 3)
-  // s = -1
-  //
-  // No poles are strictly in the RHP:
-  //
-  // P0 = 0
-  //
-  // Closed-loop characteristic equation:
-  //
-  // s^4 + s^3 + 1 = 0
-  //
-  // This has two RHP roots.
-  //
-  // Therefore:
-  // Z0 = 2
-  //
-  // Since Z0 = N + P0:
-  //
-  // N = 2
-  //
-  // Expected system: Unstable
-  // --------------------------------------------------
-
-  std::cout << "Test 4 - Type 3 Stability" << std::endl;
-
-  std::cout << "Expected P0: 0" << std::endl;
-  std::cout << "Actual P0:   "
-            << nyquist.CountOpenLoopRHPPoles()
-            << std::endl;
-
-  std::cout << "Expected N:  2" << std::endl;
-  std::cout << "Actual N:    "
-            << nyquist.CountEncirclements()
-            << std::endl;
-
-  std::cout << "Expected Z0: 2" << std::endl;
-  std::cout << "Actual Z0:   "
-            << nyquist.GetClosedLoopRHPPoles()
-            << std::endl;
-
-  std::cout << "Expected stability: Unstable"
-            << std::endl;
-
-  std::cout << "Actual stability:   "
-            << (nyquist.IsStable()
-                    ? "Stable"
-                    : "Unstable")
-            << std::endl;
 
   std::cout << std::endl;
 }
 
 int main() {
-  TestType3NyquistMapping();
+  TestPhaseCrossoverFrequency();
 
   return 0;
 }
