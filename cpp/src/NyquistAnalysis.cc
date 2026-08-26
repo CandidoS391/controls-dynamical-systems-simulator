@@ -283,3 +283,26 @@ double NyquistAnalysis::GetPhaseCrossoverFrequency(double max_frequency, size_t 
   throw std::runtime_error("Phase crossover was not found.");
 }
 
+double NyquistAnalysis::GetGainMargin(double max_frequency, size_t num_samples) const {
+  // Validate the inputs
+  if (max_frequency <= 0)
+    throw std::invalid_argument("The maximum frequency must be greater than 0.");
+
+  if (num_samples <= 2)
+    throw std::invalid_argument("The number of samples must be greater than 2.");
+
+  // Calculate the phase crossover frequency
+  double omega_pc = GetGainCrossoverFrequency(max_frequency, num_samples);
+  std::complex<double> s_pc(0.0, omega_pc);
+  std::complex<double> response = transfer_function.Evaluate(s_pc);
+
+  // Calculate the magnitude
+  double magnitude = std::abs(response);
+  if (magnitude < 1e-8)
+    throw std::domain_error("Calculated magnitude is approximately close to zero.");
+
+  // Calculate the margin as 1 / magnitude, then return
+  double gain_margin = 1 / magnitude;
+  return gain_margin;
+}
+
