@@ -224,7 +224,7 @@ bool NyquistAnalysis::IsStable() const {
 }
 
 double NyquistAnalysis::GetPhaseCrossoverFrequency(double max_frequency, size_t num_samples) const {
-  // Validate the inputs
+  // Validate the inputs (max_frequency > 0, num_samples > 2)
   if (max_frequency <= 0)
     throw std::invalid_argument("The maximum frequency must be greater than 0.");
 
@@ -281,6 +281,57 @@ double NyquistAnalysis::GetPhaseCrossoverFrequency(double max_frequency, size_t 
 
   // If there's no crossover found, then throw
   throw std::runtime_error("Phase crossover was not found.");
+}
+
+double NyquistAnalysis::GetGainCrossoverFrequency(double max_frequency, size_t num_samples) const {
+  // Validate the inputs (max_frequency > 0, num_samples > 2)
+  if (max_frequency <= 0)
+    throw std::invalid_argument("The maximum frequency must be greater than 0.");
+
+  if (num_samples <= 2)
+    throw std::invalid_argument("The number of samples must be greater than 2.");
+
+  // Set up the minimum frequency
+  double min_frequency = 1e-8;
+  if (max_frequency <= min_frequency)
+    throw std::invalid_argument("The max frequency passed in should not be less than or equal to 1e-8");
+
+  // Using the minimum frequency, set up the frequency_step
+  double freq_step = (max_frequency - min_frequency) / (num_samples - 1);
+  
+  // Evaluate the first usuable frequency (i.e get the omega, complex s, response and difference)
+  double prev_omega = min_frequency;
+  std::complex<double> prev_s(0.0, prev_omega);
+  std::complex<double> prev_response = transfer_function.Evaluate(prev_s);
+  double prev_difference = std::abs(prev_response) - 1;
+
+  // Evaluate the remaining frequencies
+  for (size_t i = 1; i < num_samples; i++) {
+    double curr_omega = min_frequency + i *freq_step;
+    std::complex<double> curr_s(0.0, curr_omega);
+    std::complex<double> curr_response = transfer_function.Evaluate(curr_s);
+
+    // Evaluate the difference, where if the difference is equal to 0, return omega
+    double curr_difference = std::abs(curr_response) - 1;
+    if (curr_difference == 0)
+      return curr_omega;
+
+    // If the previous difference and the current difference have differing signs, interpolate between
+    // The two frequencies and return the estimated crossover frequency
+    if (std::signbit(prev_difference) != std::signbit(curr_difference)) {
+      double fraction = -prev_difference / (curr_difference - prev_difference);
+      double crossover_omega = prev_omega + fraction * (curr_omega - prev_omega);
+      
+      return crossover_omega;
+    }
+
+    // Advance to the next frequency
+    prev_omega = curr_omega;
+    prev_difference = curr_difference;
+  }
+
+  // If there's no found crossover frequency, throw
+  throw std::runtime_error("Gain crossover was not found.");
 }
 
 double NyquistAnalysis::GetGainMargin(double max_frequency, size_t num_samples) const {

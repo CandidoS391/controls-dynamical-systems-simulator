@@ -674,55 +674,44 @@ void ExportNyquistData() {
             << std::endl;
 }
 
-void TestPhaseCrossoverFrequency() {
+void TestGainCrossoverFrequency() {
   std::cout << "======================================" << std::endl;
-  std::cout << "Testing Phase Crossover Frequency" << std::endl;
+  std::cout << "Testing Gain Crossover Frequency" << std::endl;
   std::cout << "======================================" << std::endl;
 
   // --------------------------------------------------
   // Test 1:
   //
-  // G(s) = 1 / [(s + 1)(s + 2)(s + 3)]
+  // G(s) = 2 / (s + 1)
   //
-  // Denominator at s = jw:
+  // |G(jw)| = 2 / sqrt(1 + w^2)
   //
-  // (jw + 1)(jw + 2)(jw + 3)
+  // Setting |G(jw)| = 1:
   //
-  // Imaginary part becomes zero when:
-  //
-  // w(11 - w^2) = 0
-  //
-  // Ignoring w = 0:
-  //
-  // w_pc = sqrt(11)
-  //      ≈ 3.31662 rad/s
-  //
-  // At this frequency, the denominator lies on the
-  // negative real axis, so G(jw) has phase -180 deg.
+  // w_gc = sqrt(3)
+  //      ≈ 1.73205 rad/s
   // --------------------------------------------------
 
   std::cout << "Test 1 - Type 0 system" << std::endl;
 
   TransferFunction transfer_function_1(
-      {1},
-      {1, 6, 11, 6});
+      {2},
+      {1, 1});
 
   NyquistAnalysis nyquist_1(transfer_function_1);
 
-  double expected_omega_1 = std::sqrt(11.0);
+  double expected_omega_1 = std::sqrt(3.0);
 
   double actual_omega_1 =
-      nyquist_1.GetPhaseCrossoverFrequency(
+      nyquist_1.GetGainCrossoverFrequency(
           10.0,
           10001);
 
-  std::cout << "Expected phase crossover frequency: "
-            << expected_omega_1
-            << std::endl;
+  std::cout << "Expected gain crossover frequency: "
+            << expected_omega_1 << std::endl;
 
-  std::cout << "Actual phase crossover frequency:   "
-            << actual_omega_1
-            << std::endl;
+  std::cout << "Actual gain crossover frequency:   "
+            << actual_omega_1 << std::endl;
 
   std::cout << std::endl;
 
@@ -730,44 +719,38 @@ void TestPhaseCrossoverFrequency() {
   // --------------------------------------------------
   // Test 2:
   //
-  // G(s) = 1 / [s(s + 1)(s + 2)]
+  // G(s) = 2 / [s(s + 1)]
   //
-  // This is a Type 1 system.
+  // |G(jw)| = 2 / [w sqrt(1 + w^2)]
   //
-  // The function must NOT evaluate exactly at w = 0.
+  // Setting |G(jw)| = 1:
   //
-  // At s = jw, the denominator has imaginary part:
+  // w^4 + w^2 - 4 = 0
   //
-  // w(2 - w^2)
-  //
-  // Therefore:
-  //
-  // w_pc = sqrt(2)
-  //      ≈ 1.41421 rad/s
+  // w_gc = sqrt((-1 + sqrt(17)) / 2)
   // --------------------------------------------------
 
   std::cout << "Test 2 - Type 1 system" << std::endl;
 
   TransferFunction transfer_function_2(
-      {1},
-      {1, 3, 2, 0});
+      {2},
+      {1, 1, 0});
 
   NyquistAnalysis nyquist_2(transfer_function_2);
 
-  double expected_omega_2 = std::sqrt(2.0);
+  double expected_omega_2 =
+      std::sqrt((-1.0 + std::sqrt(17.0)) / 2.0);
 
   double actual_omega_2 =
-      nyquist_2.GetPhaseCrossoverFrequency(
+      nyquist_2.GetGainCrossoverFrequency(
           10.0,
           10001);
 
-  std::cout << "Expected phase crossover frequency: "
-            << expected_omega_2
-            << std::endl;
+  std::cout << "Expected gain crossover frequency: "
+            << expected_omega_2 << std::endl;
 
-  std::cout << "Actual phase crossover frequency:   "
-            << actual_omega_2
-            << std::endl;
+  std::cout << "Actual gain crossover frequency:   "
+            << actual_omega_2 << std::endl;
 
   std::cout << std::endl;
 
@@ -775,194 +758,25 @@ void TestPhaseCrossoverFrequency() {
   // --------------------------------------------------
   // Test 3:
   //
-  // G(s) = 1 / (s + 1)
+  // G(s) = 0.5 / (s + 1)
   //
-  // Its phase approaches -90 degrees, so it never
-  // reaches -180 degrees.
+  // At w = 0:
+  // |G(0)| = 0.5
   //
-  // Therefore no phase crossover frequency exists.
+  // Its magnitude decreases as frequency increases,
+  // so it never reaches 1.
   // --------------------------------------------------
 
-  std::cout << "Test 3 - No phase crossover" << std::endl;
+  std::cout << "Test 3 - No gain crossover" << std::endl;
 
   try {
     TransferFunction transfer_function_3(
-        {1},
+        {0.5},
         {1, 1});
 
     NyquistAnalysis nyquist_3(transfer_function_3);
 
-    nyquist_3.GetPhaseCrossoverFrequency(
-        100.0,
-        10001);
-
-    std::cout << "FAILED - exception expected."
-              << std::endl;
-  }
-  catch (const std::runtime_error& error) {
-    std::cout << "PASSED - caught expected exception: "
-              << error.what()
-              << std::endl;
-  }
-
-  std::cout << std::endl;
-
-
-  // --------------------------------------------------
-  // Test 4:
-  // Invalid maximum frequency
-  // --------------------------------------------------
-
-  std::cout << "Test 4 - Invalid maximum frequency" << std::endl;
-
-  try {
-    NyquistAnalysis nyquist_4(transfer_function_1);
-
-    nyquist_4.GetPhaseCrossoverFrequency(
-        0.0,
-        100);
-
-    std::cout << "FAILED - exception expected."
-              << std::endl;
-  }
-  catch (const std::invalid_argument& error) {
-    std::cout << "PASSED - caught expected exception: "
-              << error.what()
-              << std::endl;
-  }
-
-  std::cout << std::endl;
-
-
-  // --------------------------------------------------
-  // Test 5:
-  // Too few frequency samples
-  // --------------------------------------------------
-
-  std::cout << "Test 5 - Too few samples" << std::endl;
-
-  try {
-    NyquistAnalysis nyquist_5(transfer_function_1);
-
-    nyquist_5.GetPhaseCrossoverFrequency(
-        10.0,
-        2);
-
-    std::cout << "FAILED - exception expected."
-              << std::endl;
-  }
-  catch (const std::invalid_argument& error) {
-    std::cout << "PASSED - caught expected exception: "
-              << error.what()
-              << std::endl;
-  }
-
-  std::cout << std::endl;
-}
-
-void TestGainMargin() {
-  std::cout << "======================================" << std::endl;
-  std::cout << "Testing Gain Margin" << std::endl;
-  std::cout << "======================================" << std::endl;
-
-  // --------------------------------------------------
-  // Test 1:
-  //
-  // G(s) = 1 / [(s + 1)(s + 2)(s + 3)]
-  //
-  // omega_pc = sqrt(11)
-  //
-  // |G(j omega_pc)| = 1 / 60
-  //
-  // Therefore:
-  // GM = 60
-  // --------------------------------------------------
-
-  std::cout << "Test 1 - Type 0 system" << std::endl;
-
-  TransferFunction transfer_function_1(
-      {1},
-      {1, 6, 11, 6});
-
-  NyquistAnalysis nyquist_1(transfer_function_1);
-
-  double expected_gain_margin_1 = 60.0;
-
-  double actual_gain_margin_1 =
-      nyquist_1.GetGainMargin(
-          10.0,
-          10001);
-
-  std::cout << "Expected gain margin: "
-            << expected_gain_margin_1
-            << std::endl;
-
-  std::cout << "Actual gain margin:   "
-            << actual_gain_margin_1
-            << std::endl;
-
-  std::cout << std::endl;
-
-
-  // --------------------------------------------------
-  // Test 2:
-  //
-  // G(s) = 1 / [s(s + 1)(s + 2)]
-  //
-  // omega_pc = sqrt(2)
-  //
-  // |G(j omega_pc)| = 1 / 6
-  //
-  // Therefore:
-  // GM = 6
-  // --------------------------------------------------
-
-  std::cout << "Test 2 - Type 1 system" << std::endl;
-
-  TransferFunction transfer_function_2(
-      {1},
-      {1, 3, 2, 0});
-
-  NyquistAnalysis nyquist_2(transfer_function_2);
-
-  double expected_gain_margin_2 = 6.0;
-
-  double actual_gain_margin_2 =
-      nyquist_2.GetGainMargin(
-          10.0,
-          10001);
-
-  std::cout << "Expected gain margin: "
-            << expected_gain_margin_2
-            << std::endl;
-
-  std::cout << "Actual gain margin:   "
-            << actual_gain_margin_2
-            << std::endl;
-
-  std::cout << std::endl;
-
-
-  // --------------------------------------------------
-  // Test 3:
-  //
-  // G(s) = 1 / (s + 1)
-  //
-  // There is no finite phase crossover frequency,
-  // so GetGainMargin() should propagate the exception
-  // from GetPhaseCrossoverFrequency().
-  // --------------------------------------------------
-
-  std::cout << "Test 3 - No phase crossover" << std::endl;
-
-  try {
-    TransferFunction transfer_function_3(
-        {1},
-        {1, 1});
-
-    NyquistAnalysis nyquist_3(transfer_function_3);
-
-    nyquist_3.GetGainMargin(
+    nyquist_3.GetGainCrossoverFrequency(
         100.0,
         10001);
 
@@ -989,7 +803,7 @@ void TestGainMargin() {
   try {
     NyquistAnalysis nyquist_4(transfer_function_1);
 
-    nyquist_4.GetGainMargin(
+    nyquist_4.GetGainCrossoverFrequency(
         0.0,
         100);
 
@@ -1015,7 +829,7 @@ void TestGainMargin() {
   try {
     NyquistAnalysis nyquist_5(transfer_function_1);
 
-    nyquist_5.GetGainMargin(
+    nyquist_5.GetGainCrossoverFrequency(
         10.0,
         2);
 
@@ -1032,7 +846,7 @@ void TestGainMargin() {
 }
 
 int main() {
-  TestGainMargin();
+  TestGainCrossoverFrequency();
 
   return 0;
 }
