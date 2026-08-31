@@ -860,8 +860,179 @@ void TestPhaseCrossoverFrequency() {
   std::cout << std::endl;
 }
 
+void TestGainMargin() {
+  std::cout << "======================================" << std::endl;
+  std::cout << "Testing Gain Margin" << std::endl;
+  std::cout << "======================================" << std::endl;
+
+  // --------------------------------------------------
+  // Test 1:
+  //
+  // G(s) = 1 / [(s + 1)(s + 2)(s + 3)]
+  //
+  // omega_pc = sqrt(11)
+  //
+  // |G(j omega_pc)| = 1 / 60
+  //
+  // Therefore:
+  // GM = 60
+  // --------------------------------------------------
+
+  std::cout << "Test 1 - Type 0 system" << std::endl;
+
+  TransferFunction transfer_function_1(
+      {1},
+      {1, 6, 11, 6});
+
+  NyquistAnalysis nyquist_1(transfer_function_1);
+
+  double expected_gain_margin_1 = 60.0;
+
+  double actual_gain_margin_1 =
+      nyquist_1.GetGainMargin(
+          10.0,
+          10001);
+
+  std::cout << "Expected gain margin: "
+            << expected_gain_margin_1
+            << std::endl;
+
+  std::cout << "Actual gain margin:   "
+            << actual_gain_margin_1
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 2:
+  //
+  // G(s) = 1 / [s(s + 1)(s + 2)]
+  //
+  // omega_pc = sqrt(2)
+  //
+  // |G(j omega_pc)| = 1 / 6
+  //
+  // Therefore:
+  // GM = 6
+  // --------------------------------------------------
+
+  std::cout << "Test 2 - Type 1 system" << std::endl;
+
+  TransferFunction transfer_function_2(
+      {1},
+      {1, 3, 2, 0});
+
+  NyquistAnalysis nyquist_2(transfer_function_2);
+
+  double expected_gain_margin_2 = 6.0;
+
+  double actual_gain_margin_2 =
+      nyquist_2.GetGainMargin(
+          10.0,
+          10001);
+
+  std::cout << "Expected gain margin: "
+            << expected_gain_margin_2
+            << std::endl;
+
+  std::cout << "Actual gain margin:   "
+            << actual_gain_margin_2
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 3:
+  //
+  // G(s) = 1 / (s + 1)
+  //
+  // There is no finite phase crossover frequency,
+  // so GetGainMargin() should propagate the exception
+  // from GetPhaseCrossoverFrequency().
+  // --------------------------------------------------
+
+  std::cout << "Test 3 - No phase crossover" << std::endl;
+
+  try {
+    TransferFunction transfer_function_3(
+        {1},
+        {1, 1});
+
+    NyquistAnalysis nyquist_3(transfer_function_3);
+
+    nyquist_3.GetGainMargin(
+        100.0,
+        10001);
+
+    std::cout << "FAILED - exception expected."
+              << std::endl;
+  }
+  catch (const std::runtime_error& error) {
+    std::cout << "PASSED - caught expected exception: "
+              << error.what()
+              << std::endl;
+  }
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 4:
+  // Invalid maximum frequency
+  // --------------------------------------------------
+
+  std::cout << "Test 4 - Invalid maximum frequency"
+            << std::endl;
+
+  try {
+    NyquistAnalysis nyquist_4(transfer_function_1);
+
+    nyquist_4.GetGainMargin(
+        0.0,
+        100);
+
+    std::cout << "FAILED - exception expected."
+              << std::endl;
+  }
+  catch (const std::invalid_argument& error) {
+    std::cout << "PASSED - caught expected exception: "
+              << error.what()
+              << std::endl;
+  }
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 5:
+  // Too few samples
+  // --------------------------------------------------
+
+  std::cout << "Test 5 - Too few samples" << std::endl;
+
+  try {
+    NyquistAnalysis nyquist_5(transfer_function_1);
+
+    nyquist_5.GetGainMargin(
+        10.0,
+        2);
+
+    std::cout << "FAILED - exception expected."
+              << std::endl;
+  }
+  catch (const std::invalid_argument& error) {
+    std::cout << "PASSED - caught expected exception: "
+              << error.what()
+              << std::endl;
+  }
+
+  std::cout << std::endl;
+}
+
 int main() {
-  TestPhaseCrossoverFrequency();
+  TestGainMargin();
 
   return 0;
 }

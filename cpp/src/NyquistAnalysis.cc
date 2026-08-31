@@ -292,7 +292,7 @@ double NyquistAnalysis::GetGainMargin(double max_frequency, size_t num_samples) 
     throw std::invalid_argument("The number of samples must be greater than 2.");
 
   // Calculate the phase crossover frequency
-  double omega_pc = GetGainCrossoverFrequency(max_frequency, num_samples);
+  double omega_pc = GetPhaseCrossoverFrequency(max_frequency, num_samples);
   std::complex<double> s_pc(0.0, omega_pc);
   std::complex<double> response = transfer_function.Evaluate(s_pc);
 
