@@ -631,7 +631,7 @@ void ExportFrequencyResponseData() {
 
 void ExportNyquistData() {
   // Create G(s) = 1 / (s + 1)
-  TransferFunction transfer_function({1}, {1, 1});
+  TransferFunction transfer_function({1}, {1, 6, 11, 6});
 
   // Create the Nyquist analysis
   NyquistAnalysis nyquist_analysis(transfer_function);
@@ -646,6 +646,14 @@ void ExportNyquistData() {
 
   const std::vector<std::complex<double>>& mapped_path =
       nyquist_analysis.GetMappedPath();
+
+  // Calculate the phase margins
+  double omega_pc = nyquist_analysis.GetPhaseCrossoverFrequency(100.0, 500);
+  double gain_margin = nyquist_analysis.GetGainMargin(100.0, 500);
+
+  // Evaluate the mapped point with omega_pc
+  std::complex<double> s_pc(0.0, omega_pc);
+  std::complex<double> response_pc = transfer_function.Evaluate(s_pc);
 
   // Open the CSV file
   std::ofstream output_file("../output/nyquist_data.csv");
@@ -669,6 +677,28 @@ void ExportNyquistData() {
   }
 
   output_file.close();
+
+  // Metrics for phase margins
+  std::ofstream metrics_file("../output/nyquist_metrics.csv");
+
+  if (!metrics_file.is_open())
+    throw std::runtime_error("Could not open Nyquist metrics output file.");
+
+  metrics_file
+    << "phase_crossover_frequency,"
+    << "phase_crossover_real,"
+    << "phase_crossover_imaginary,"
+    << "gain_margin"
+    << std::endl;
+
+  metrics_file
+    << omega_pc << ","
+    << response_pc.real() << ","
+    << response_pc.imag() << ","
+    << gain_margin
+    << std::endl;
+
+  metrics_file.close();
 
   std::cout << "Nyquist data exported successfully."
             << std::endl;
@@ -1044,6 +1074,7 @@ void TestPhaseMargin() {
 }
 
 int main() {
-  TestPhaseMargin();
+  ExportNyquistData();
+  
   return 0;
 }
