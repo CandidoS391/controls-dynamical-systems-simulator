@@ -29,7 +29,7 @@
 #include "FrequencyResponse.h"
 #include "NyquistAnalysis.h"
 
-//const double kPi = 3.14159265358979323846;
+const double kPi = 3.14159265358979323846;
 
 void SimulateFirstOrderDecayEuler() {
   FirstOrderDecay decay(0.5);
@@ -845,8 +845,205 @@ void TestGainCrossoverFrequency() {
   std::cout << std::endl;
 }
 
-int main() {
-  TestGainCrossoverFrequency();
+void TestPhaseMargin() {
+  std::cout << "======================================" << std::endl;
+  std::cout << "Testing Phase Margin" << std::endl;
+  std::cout << "======================================" << std::endl;
 
+  // --------------------------------------------------
+  // Test 1:
+  //
+  // G(s) = 2 / (s + 1)
+  //
+  // omega_gc = sqrt(3)
+  //
+  // phase at omega_gc = -60 degrees
+  //
+  // PM = 180 - 60 = 120 degrees
+  // --------------------------------------------------
+
+  std::cout << "Test 1 - Positive phase margin" << std::endl;
+
+  TransferFunction transfer_function_1(
+      {2},
+      {1, 1});
+
+  NyquistAnalysis nyquist_1(transfer_function_1);
+
+  double expected_phase_margin_1 = 120.0;
+
+  double actual_phase_margin_1 =
+      nyquist_1.GetPhaseMargin(
+          10.0,
+          10001);
+
+  std::cout << "Expected phase margin: "
+            << expected_phase_margin_1
+            << std::endl;
+
+  std::cout << "Actual phase margin:   "
+            << actual_phase_margin_1
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 2:
+  //
+  // G(s) = 10 / [s(s + 1)^3]
+  //
+  // This system reaches its gain crossover after its
+  // continuous phase has passed -180 degrees.
+  //
+  // std::arg() therefore reports the equivalent
+  // positive wrapped phase. GetPhaseMargin() should
+  // subtract 360 degrees before calculating PM.
+  // --------------------------------------------------
+
+  std::cout << "Test 2 - Wrapped phase / negative margin"
+            << std::endl;
+
+  TransferFunction transfer_function_2(
+      {10},
+      {1, 3, 3, 1, 0});
+
+  NyquistAnalysis nyquist_2(transfer_function_2);
+
+  double omega_gc_2 =
+      nyquist_2.GetGainCrossoverFrequency(
+          10.0,
+          100001);
+
+  std::complex<double> response_2 =
+      transfer_function_2.Evaluate(
+          std::complex<double>(0.0, omega_gc_2));
+
+  double wrapped_phase_2 =
+      std::arg(response_2) * 180.0 / kPi;
+
+  double expected_unwrapped_phase_2 =
+      wrapped_phase_2;
+
+  if (expected_unwrapped_phase_2 > 0)
+    expected_unwrapped_phase_2 -= 360.0;
+
+  double expected_phase_margin_2 =
+      180.0 + expected_unwrapped_phase_2;
+
+  double actual_phase_margin_2 =
+      nyquist_2.GetPhaseMargin(
+          10.0,
+          100001);
+
+  std::cout << "Gain crossover frequency: "
+            << omega_gc_2
+            << std::endl;
+
+  std::cout << "Wrapped phase from std::arg: "
+            << wrapped_phase_2
+            << " degrees"
+            << std::endl;
+
+  std::cout << "Expected phase margin: "
+            << expected_phase_margin_2
+            << std::endl;
+
+  std::cout << "Actual phase margin:   "
+            << actual_phase_margin_2
+            << std::endl;
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 3:
+  //
+  // G(s) = 0.5 / (s + 1)
+  //
+  // No gain crossover exists, so phase margin cannot
+  // be calculated.
+  // --------------------------------------------------
+
+  std::cout << "Test 3 - No gain crossover" << std::endl;
+
+  try {
+    TransferFunction transfer_function_3(
+        {0.5},
+        {1, 1});
+
+    NyquistAnalysis nyquist_3(transfer_function_3);
+
+    nyquist_3.GetPhaseMargin(
+        100.0,
+        10001);
+
+    std::cout << "FAILED - exception expected."
+              << std::endl;
+  }
+  catch (const std::runtime_error& error) {
+    std::cout << "PASSED - caught expected exception: "
+              << error.what()
+              << std::endl;
+  }
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 4:
+  // Invalid maximum frequency
+  // --------------------------------------------------
+
+  std::cout << "Test 4 - Invalid maximum frequency"
+            << std::endl;
+
+  try {
+    NyquistAnalysis nyquist_4(transfer_function_1);
+
+    nyquist_4.GetPhaseMargin(
+        0.0,
+        100);
+
+    std::cout << "FAILED - exception expected."
+              << std::endl;
+  }
+  catch (const std::invalid_argument& error) {
+    std::cout << "PASSED - caught expected exception: "
+              << error.what()
+              << std::endl;
+  }
+
+  std::cout << std::endl;
+
+
+  // --------------------------------------------------
+  // Test 5:
+  // Too few samples
+  // --------------------------------------------------
+
+  std::cout << "Test 5 - Too few samples" << std::endl;
+
+  try {
+    NyquistAnalysis nyquist_5(transfer_function_1);
+
+    nyquist_5.GetPhaseMargin(
+        10.0,
+        2);
+
+    std::cout << "FAILED - exception expected."
+              << std::endl;
+  }
+  catch (const std::invalid_argument& error) {
+    std::cout << "PASSED - caught expected exception: "
+              << error.what()
+              << std::endl;
+  }
+
+  std::cout << std::endl;
+}
+
+int main() {
+  TestPhaseMargin();
   return 0;
 }

@@ -321,7 +321,7 @@ double NyquistAnalysis::GetGainCrossoverFrequency(double max_frequency, size_t n
     if (std::signbit(prev_difference) != std::signbit(curr_difference)) {
       double fraction = -prev_difference / (curr_difference - prev_difference);
       double crossover_omega = prev_omega + fraction * (curr_omega - prev_omega);
-      
+
       return crossover_omega;
     }
 
@@ -357,3 +357,28 @@ double NyquistAnalysis::GetGainMargin(double max_frequency, size_t num_samples) 
   return gain_margin;
 }
 
+double NyquistAnalysis::GetPhaseMargin(double max_frequency, size_t num_samples) const {
+  // Valdidate the inputs
+  if (max_frequency <= 0)
+    throw std::invalid_argument("The maximum frequency must be greater than 0.");
+
+  if (num_samples <= 2)
+    throw std::invalid_argument("The number of samples must be greater than 2.");
+
+  // Calculate the gain crossover frequency, complex s, and response
+  double omega_gc = GetGainCrossoverFrequency(max_frequency, num_samples);
+  std::complex<double> s_gc(0.0, omega_gc);
+  std::complex<double> response_gc = transfer_function.Evaluate(s_gc);
+
+  // Calculate the phase in degrees
+  double phase_gc = std::arg(response_gc) * 180.0 / kPi;
+  // Apply a correction rule for the phase, as std::arg wraps the angle if its greater than 180 degree.
+  // In short, if std::arg gives a positive angle, it will interpret it as being wrapped around -180 degrees.
+  // And so thus subtract 360 from it.
+  if (phase_gc > 0)
+    phase_gc -= 360.0;
+
+  double phase_margin = 180.0 + phase_gc;
+
+  return phase_margin;
+}
