@@ -29,7 +29,7 @@
 #include "FrequencyResponse.h"
 #include "NyquistAnalysis.h"
 
-const double kPi = 3.14159265358979323846;
+//const double kPi = 3.14159265358979323846;
 
 void SimulateFirstOrderDecayEuler() {
   FirstOrderDecay decay(0.5);
@@ -631,7 +631,7 @@ void ExportFrequencyResponseData() {
 
 void ExportNyquistData() {
   // Create G(s) = 1 / (s + 1)
-  TransferFunction transfer_function({1}, {1, 6, 11, 6});
+  TransferFunction transfer_function({10}, {1, 6, 11, 6});
 
   // Create the Nyquist analysis
   NyquistAnalysis nyquist_analysis(transfer_function);
@@ -651,9 +651,17 @@ void ExportNyquistData() {
   double omega_pc = nyquist_analysis.GetPhaseCrossoverFrequency(100.0, 500);
   double gain_margin = nyquist_analysis.GetGainMargin(100.0, 500);
 
-  // Evaluate the mapped point with omega_pc
+  // Evaluate the mapped point at the phase-crossover frequency
   std::complex<double> s_pc(0.0, omega_pc);
   std::complex<double> response_pc = transfer_function.Evaluate(s_pc);
+
+  // Calculate the gain margins
+  double omega_gc = nyquist_analysis.GetGainCrossoverFrequency(100.0, 500);
+  double phase_margin = nyquist_analysis.GetPhaseMargin(100.0, 500);
+
+  // Evaluate the mapped point at the gain-crossover frequency
+  std::complex<double> s_gc(0.0, omega_gc);
+  std::complex<double> response_gc = transfer_function.Evaluate(s_gc);
 
   // Open the CSV file
   std::ofstream output_file("../output/nyquist_data.csv");
@@ -688,14 +696,22 @@ void ExportNyquistData() {
     << "phase_crossover_frequency,"
     << "phase_crossover_real,"
     << "phase_crossover_imaginary,"
-    << "gain_margin"
+    << "gain_margin,"
+    << "gain_crossover_frequency,"
+    << "gain_crossover_real,"
+    << "gain_crossover_imaginary,"
+    << "phase_margin"
     << std::endl;
 
   metrics_file
     << omega_pc << ","
     << response_pc.real() << ","
     << response_pc.imag() << ","
-    << gain_margin
+    << gain_margin << ","
+    << omega_gc << ","
+    << response_gc.real() << ","
+    << response_gc.imag() << ","
+    << phase_margin
     << std::endl;
 
   metrics_file.close();

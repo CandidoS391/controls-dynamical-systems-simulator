@@ -38,15 +38,31 @@ def read_nyquist_metrics(filename):
     gain_margin = float(
       row["gain_margin"]
     )
+    gain_crossover_frequency = float(
+      row["gain_crossover_frequency"]
+    )
+    gain_crossover_real = float(
+      row["gain_crossover_real"]
+    )
+    gain_crossover_imaginary = float(
+     row["gain_crossover_imaginary"] 
+    )
+    phase_margin = float(
+      row["phase_margin"]
+    )
 
   return (
     phase_crossover_frequency,
     phase_crossover_real,
     phase_crossover_imaginary,
-    gain_margin
+    gain_margin,
+    gain_crossover_frequency,
+    gain_crossover_real,
+    gain_crossover_imaginary,
+    phase_margin
   )
 
-def plot_nyquist(s_real_values, s_imaginary_values, mapped_real_values, mapped_imaginary_values, phase_crossover_frequency, phase_crossover_real, phase_crossover_imaginary, gain_margin):
+def plot_nyquist(s_real_values, s_imaginary_values, mapped_real_values, mapped_imaginary_values, phase_crossover_frequency, phase_crossover_real, phase_crossover_imaginary, gain_margin, gain_crossover_frequency, gain_crossover_real, gain_crossover_imaginary, phase_margin):
   plt.figure()
 
   plt.plot(mapped_real_values, mapped_imaginary_values)
@@ -229,16 +245,11 @@ def plot_nyquist(s_real_values, s_imaginary_values, mapped_real_values, mapped_i
 def main():
   s_real_values, s_imaginary_values, mapped_real_values, mapped_imaginary_values = read_nyquist_analysis("output/nyquist_data.csv")
 
-  phase_crossover_frequency, phase_crossover_real, phase_crossover_imaginary, gain_margin = read_nyquist_metrics(
+  phase_crossover_frequency, phase_crossover_real, phase_crossover_imaginary, gain_margin, gain_crossover_frequency, gain_crossover_real, gain_crossover_imaginary, phase_margin = read_nyquist_metrics(
   "output/nyquist_metrics.csv"
   )
 
-  # Test if the data was successfully exported
-  phase_crossover_frequency, phase_crossover_real, phase_crossover_imaginary, gain_margin = read_nyquist_metrics(
-  "output/nyquist_metrics.csv"
-  )
-
-  plot_nyquist(s_real_values, s_imaginary_values, mapped_real_values, mapped_imaginary_values, phase_crossover_frequency, phase_crossover_real, phase_crossover_imaginary, gain_margin)
+  plot_nyquist(s_real_values, s_imaginary_values, mapped_real_values, mapped_imaginary_values, phase_crossover_frequency, phase_crossover_real, phase_crossover_imaginary, gain_margin, gain_crossover_frequency, gain_crossover_real, gain_crossover_imaginary, phase_margin)
 
 if __name__ == "__main__":
   main()
