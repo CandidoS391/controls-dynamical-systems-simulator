@@ -211,10 +211,31 @@ def plot_nyquist(s_real_values, s_imaginary_values, mapped_real_values, mapped_i
     zorder=6
   )
 
+  # Mark the gain-crossover point
+  plt.scatter(
+    gain_crossover_real,
+    gain_crossover_imaginary,
+    zorder=6
+  )
+
   # Draw the gain-margin indicator
   plt.plot(
     [phase_crossover_real, -1.0],
     [phase_crossover_imaginary, 0.0],
+    linestyle="--"
+  )
+
+  # Draw the radius to the gain-crossover point
+  plt.plot(
+    [0.0, gain_crossover_real],
+    [0.0, gain_crossover_imaginary],
+    linestyle="--"
+  )
+
+  # Draw the negative real-axis reference
+  plt.plot(
+    [0.0, -1.0],
+    [0.0, 0.0],
     linestyle="--"
   )
 
@@ -224,6 +245,16 @@ def plot_nyquist(s_real_values, s_imaginary_values, mapped_real_values, mapped_i
     f"$\\omega_{{pc}}$ = {phase_crossover_frequency:.2f}",
     (phase_crossover_real, phase_crossover_imaginary),
     xytext=(-75, 55),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="->")
+  )
+
+  # Annotate the actual numerical phase margin
+  plt.annotate(
+    f"PM = {phase_margin:.2f}°\n"
+    f"$\\omega_{{gc}}$ = {gain_crossover_frequency:.2f}",
+    (gain_crossover_real, gain_crossover_imaginary),
+    xytext=(55, 25),
     textcoords="offset points",
     arrowprops=dict(arrowstyle="->")
   )
