@@ -239,6 +239,59 @@ def plot_nyquist(s_real_values, s_imaginary_values, mapped_real_values, mapped_i
     linestyle="--"
   )
 
+  # ---- Phase Margin Arc ----
+  arc_radius = 0.20
+  num_arc_points = 100
+
+  gain_crossover_angle = math.atan2(
+    gain_crossover_imaginary,
+    gain_crossover_real
+  )
+
+  arc_angles = [
+    -math.pi + i * (
+      gain_crossover_angle + math.pi
+    ) / (num_arc_points - 1)
+    for i in range(num_arc_points)
+  ]
+
+  arc_real = [
+    arc_radius * math.cos(angle)
+    for angle in arc_angles
+  ]
+
+  arc_imaginary = [
+    arc_radius * math.sin(angle)
+    for angle in arc_angles
+  ]
+
+  plt.plot(
+    arc_real,
+    arc_imaginary
+  )
+
+  # Reference for the crossover angle
+  reference_real = -arc_radius
+
+  crossover_ray_real = (
+    arc_radius * math.cos(gain_crossover_angle)
+  )
+  crossover_ray_imaginary = (
+    arc_radius * math.sin(gain_crossover_angle)
+  )
+
+  plt.plot(
+    [0.0, reference_real],
+    [0.0, 0.0],
+    linestyle="--"
+  )
+
+  plt.plot(
+    [0.0, crossover_ray_real],
+    [0.0, crossover_ray_imaginary],
+    linestyle="--"
+  )
+
   # Annotate the actual numerical gain margin
   plt.annotate(
     f"GM = {gain_margin:.2f}\n"
@@ -258,6 +311,8 @@ def plot_nyquist(s_real_values, s_imaginary_values, mapped_real_values, mapped_i
     textcoords="offset points",
     arrowprops=dict(arrowstyle="->")
   )
+
+
 
   # Plot formatting
   plt.xlabel("Re")
