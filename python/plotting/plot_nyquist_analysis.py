@@ -62,6 +62,100 @@ def read_nyquist_metrics(filename):
     phase_margin
   )
 
+def calculate_m_values(mapped_real_values, mapped_imaginary_values):
+  # Verify that the mapped arrays have the same length
+  if len(mapped_real_values) != len(mapped_imaginary_values):
+    raise ValueError("Mapped real and imaginary values must have the same length.")
+  
+  m_values = []
+
+  for i in range(len(mapped_real_values)):
+    # Construct L from the mapped real and imaginary values
+    L = complex(mapped_real_values[i], mapped_imaginary_values[i])
+
+    # Check whether the denominator (1 + L) is too close to zero
+    denominator = 1 + L
+    if abs(denominator) < 1e-8:
+      continue
+
+    # Calculate the closed loop, and by extension M
+    closed_loop = L / denominator
+    M = abs(closed_loop)
+
+    if math.isfinite(M):
+      m_values.append(M)
+
+  return m_values
+
+# Get the m range based on the m values
+def get_m_range(m_values):
+  # Verify that the m_values list is not empty
+  if len(m_values) == 0:
+    raise ValueError("M values cannot be empty.")
+
+  # Find the minimum and maximum values present, then return it
+  min_m = min(m_values)
+  max_m = max(m_values)
+
+  return min_m, max_m
+
+# Generate M level circles
+def generate_m_levels(min_m, max_m, num_levels):
+  # Validate the inputs
+  if num_levels < 2:
+    raise ValueError("There must be at least than 2 M-levels to be graphed.")
+
+  if min_m < 0:
+    raise ValueError("The minimum of M cannot be negative.")
+
+  if max_m <= min_m:
+    raise ValueError("The maximum of M must be greater than the minimum of M.")
+
+  # Calculate the spacing between the M levels
+  linear_step = (max_m - min_m) / (num_levels - 1)
+
+  m_levels = []
+
+  # For each level, calculate the M value representing that level
+  for i in range(num_levels):
+    M = min_m + i * linear_step
+    m_levels.append(M)
+
+  return m_levels
+
+# Calculate the M circle
+def calculate_m_circle(M):
+  # Validiate passed in M
+  if M < 0:
+    raise ValueError("M cannot be negative.")
+
+  # Calculate the denominator used by the M-circle
+  denominator = (M ** 2) - 1
+
+  # Special case if M = 1
+  if abs(denominator) < 1e-8:
+    return {
+      "type": "line",
+      "x": -0.5 
+    }
+
+  # Calculate the x-coordinate of the circle's center
+  center_x = -(M ** 2) / denominator
+
+  # All M-circle centers lie on the real axis
+  center_y = 0
+
+  # calculate the radius
+  radius = M / abs(denominator)
+
+  # return the circle geometry
+  return {
+    "type": "circle",
+    "center_x": center_x,
+    "center_y": center_y,
+    "radius": radius
+  }
+
 def plot_nyquist(s_real_values, s_imaginary_values, mapped_real_values, mapped_imaginary_values, phase_crossover_frequency, phase_crossover_real, phase_crossover_imaginary, gain_margin, gain_crossover_frequency, gain_crossover_real, gain_crossover_imaginary, phase_margin):
   plt.figure()
 
@@ -334,6 +428,13 @@ def main():
   phase_crossover_frequency, phase_crossover_real, phase_crossover_imaginary, gain_margin, gain_crossover_frequency, gain_crossover_real, gain_crossover_imaginary, phase_margin = read_nyquist_metrics(
   "output/nyquist_metrics.csv"
   )
+
+  # Debugging m_values
+  m_values = calculate_m_values(mapped_real_values, mapped_imaginary_values)
+
+  print(len(m_values))
+  print(min(m_values))
+  print(max(m_values))
 
   plot_nyquist(s_real_values, s_imaginary_values, mapped_real_values, mapped_imaginary_values, phase_crossover_frequency, phase_crossover_real, phase_crossover_imaginary, gain_margin, gain_crossover_frequency, gain_crossover_real, gain_crossover_imaginary, phase_margin)
 
