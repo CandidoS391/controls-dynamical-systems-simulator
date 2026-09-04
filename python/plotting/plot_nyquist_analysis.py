@@ -156,9 +156,47 @@ def calculate_m_circle(M):
     "radius": radius
   }
 
-def plot_nyquist(s_real_values, s_imaginary_values, mapped_real_values, mapped_imaginary_values, phase_crossover_frequency, phase_crossover_real, phase_crossover_imaginary, gain_margin, gain_crossover_frequency, gain_crossover_real, gain_crossover_imaginary, phase_margin):
-  plt.figure()
+# Generate the points needed for the M circle
+def generate_m_circle_points(geometry, num_points):
+  # Validate the number of points
+  if num_points < 2:
+    raise ValueError("The number of points must be at least 2.")
 
+  # Determine what kind of M-contour was passed in
+  if geometry["type"] == "line":
+    # M = 1 is not a cricle, therefore circular points must not be generated
+    return "The geometry is NOT a circle, it's a line."
+
+  if geometry["type"] != "circle":
+    raise ValueError("Invalid geometric type (Line or Circle).")
+
+  # Extract the circle geometry
+  center_x = geometry["center_x"]
+  center_y = geometry["center_y"]
+  radius = geometry["radius"]
+
+  # Create empty coordinate lists
+  x_values = []
+  y_values = []
+
+  # Generate points from 0 to 2pi
+  for i in range(num_points):
+    # Convert the current index into an angle
+    # num_points - 1 ensures the final point reaches exactly 2pi
+    theta = i * (2 * math.pi) / (num_points - 1)
+
+    # Parameterize the circle
+    x = center_x + radius * math.cos(theta)
+    y = center_y + radius * math.sin(theta)
+
+    # Store this point
+    x_values.append(x)
+    y_values.append(y)
+
+  # Return coordinates for Matplotlib
+  return x_values, y_values
+
+def plot_nyquist(s_real_values, s_imaginary_values, mapped_real_values, mapped_imaginary_values, phase_crossover_frequency, phase_crossover_real, phase_crossover_imaginary, gain_margin, gain_crossover_frequency, gain_crossover_real, gain_crossover_imaginary, phase_margin):
   plt.plot(mapped_real_values, mapped_imaginary_values)
 
   # ---- Plotting the direction arrows
@@ -418,25 +456,119 @@ def plot_nyquist(s_real_values, s_imaginary_values, mapped_real_values, mapped_i
 
   plt.grid(True)
 
-  plt.savefig("output/nyquist_plot.png")
+
+def plot_m_circles(m_levels, num_points):
+  # Validate the inputs
+  if len(m_levels) == 0:
+    raise ValueError("There is no m-levels passed in.")
+
+  if num_points < 2:
+    raise ValueError("The number of points must be at least 2 or greater.")
+
+  # Loop through each m-level
+  for m in m_levels:
+    # Determine whether or not the M-level is a circle or a line
+    geometry = calculate_m_circle(m)
+
+    # Special case: M = 1
+    if geometry["type"] == "line":
+      plt.axvline(
+        x = geometry["x"]
+      )
+      continue
+
+    # Ordinary M-circle case
+    if geometry["type"] == "circle":
+      x_values, y_values = generate_m_circle_points(
+        geometry,
+        num_points
+      )
+      plt.plot(
+        x_values,
+        y_values
+      )
+      continue
+
+    # Defensive case in case an invalid geometric type is catched
+    raise ValueError("There exists an invalid geometric type.")
+
+
+
+def main():
+  # Read Nyquist path data
+  (
+    s_real_values,
+    s_imaginary_values,
+    mapped_real_values,
+    mapped_imaginary_values
+  ) = read_nyquist_analysis(
+    "output/nyquist_data.csv"
+  )
+
+  # Read Nyquist relative-stability metrics
+  (
+    phase_crossover_frequency,
+    phase_crossover_real,
+    phase_crossover_imaginary,
+    gain_margin,
+    gain_crossover_frequency,
+    gain_crossover_real,
+    gain_crossover_imaginary,
+    phase_margin
+  ) = read_nyquist_metrics(
+    "output/nyquist_metrics.csv"
+  )
+
+  # Calculate M values from the mapped Nyquist response
+  m_values = calculate_m_values(
+    mapped_real_values,
+    mapped_imaginary_values
+  )
+
+  # Find the observed M range
+  min_m, max_m = get_m_range(
+    m_values
+  )
+
+  # Automatically generate the M levels
+  m_levels = generate_m_levels(
+    min_m,
+    max_m,
+    5
+  )
+
+  # Create one shared matplotlib figure
+  plt.figure()
+
+  # Plot Nyquist Response
+  plot_nyquist(
+    s_real_values,
+    s_imaginary_values,
+    mapped_real_values,
+    mapped_imaginary_values,
+    phase_crossover_frequency,
+    phase_crossover_real,
+    phase_crossover_imaginary,
+    gain_margin,
+    gain_crossover_frequency,
+    gain_crossover_real,
+    gain_crossover_imaginary,
+    phase_margin
+  )
+
+  # Overlay the M circles on the same figure
+  plot_m_circles(
+    m_levels,
+    200
+  )
+
+  # Save and display only after every overlay
+  plt.savefig(
+    "output/nyquist_plot.png"
+  )
 
   plt.show()
 
-def main():
-  s_real_values, s_imaginary_values, mapped_real_values, mapped_imaginary_values = read_nyquist_analysis("output/nyquist_data.csv")
-
-  phase_crossover_frequency, phase_crossover_real, phase_crossover_imaginary, gain_margin, gain_crossover_frequency, gain_crossover_real, gain_crossover_imaginary, phase_margin = read_nyquist_metrics(
-  "output/nyquist_metrics.csv"
-  )
-
-  # Debugging m_values
-  m_values = calculate_m_values(mapped_real_values, mapped_imaginary_values)
-
-  print(len(m_values))
-  print(min(m_values))
-  print(max(m_values))
-
-  plot_nyquist(s_real_values, s_imaginary_values, mapped_real_values, mapped_imaginary_values, phase_crossover_frequency, phase_crossover_real, phase_crossover_imaginary, gain_margin, gain_crossover_frequency, gain_crossover_real, gain_crossover_imaginary, phase_margin)
 
 if __name__ == "__main__":
   main()
