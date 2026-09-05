@@ -733,10 +733,6 @@ def main():
     10.0
   )
 
-  # For debugging purposes
-  print("N range:", min_n, max_n)
-  print("Generated N levels:", n_levels)
-
   # ----- Figure 1: Zoomed Nyquist analysis -----
   plt.figure()
 
@@ -774,7 +770,7 @@ def main():
   plt.ylim(y_limits)
 
   plt.savefig(
-    "output/nyquist_plot.png"
+    "output/nyquist_plot_with_labels.png"
   )
 
   plt.show()
@@ -799,7 +795,12 @@ def main():
   plt.axhline(y=0)
   plt.axvline(x=0)
 
-  # Overlay the N circles
+  # Overlay the M and N circles
+  plot_m_circles(
+    m_levels,
+    200
+  )
+
   plot_n_circles(
     n_levels,
     200
@@ -807,11 +808,11 @@ def main():
 
   plt.xlabel("Re")
   plt.ylabel("Im")
-  plt.title("Nyquist Plot with N-Circles")
+  plt.title("Nyquist Plot")
   plt.grid()
 
   plt.savefig(
-    "output/nyquist_n_circles.png"
+    "output/nyquist_plot_without_labels.png"
   )
 
   plt.show()
