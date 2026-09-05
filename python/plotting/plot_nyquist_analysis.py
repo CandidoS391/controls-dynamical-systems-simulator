@@ -328,6 +328,8 @@ def generate_n_circle_points(geometry, num_points):
 
   return x_values, y_values
 
+# ---------- Plotting the Nyquist, the M circle, and the N circle ----------
+
 def plot_nyquist(s_real_values, s_imaginary_values, mapped_real_values, mapped_imaginary_values, phase_crossover_frequency, phase_crossover_real, phase_crossover_imaginary, gain_margin, gain_crossover_frequency, gain_crossover_real, gain_crossover_imaginary, phase_margin):
   plt.plot(mapped_real_values, mapped_imaginary_values)
 
@@ -624,7 +626,36 @@ def plot_m_circles(m_levels, num_points):
     # Defensive case in case an invalid geometric type is catched
     raise ValueError("There exists an invalid geometric type.")
 
+def plot_n_circles(n_levels, num_points):
+  # Validate the inputs
+  if len(n_levels) == 0:
+    raise ValueError("There is no n-levels passed in.")
 
+  if num_points < 2:
+    raise ValueError("The number of points must be at least 2.")
+
+  # Iterate through each n_level
+  for N in n_levels:
+    # Obtain the geometry via calculate_n_circle
+    geometry = calculate_n_circle(N)
+
+    '''
+    The special case here, compared to m circles is that at N = 1, it is the REAL AXIS,
+    unlike at M = 1, at which the geometry was a vertical line.
+    '''
+    if geometry["type"] == "line":
+      plt.axhline(
+        y = geometry["y"]
+      )
+      continue
+
+    if geometry["type"] == "circle":
+      x_values, y_values = generate_n_circle_points(geometry, num_points)
+      plt.plot(x_values, y_values)
+      continue
+
+    # If the geometry is not either a line or a cricle, raise a value error
+    raise ValueError("Invalid geometric type.")
 
 def main():
   # Read Nyquist path data
@@ -651,6 +682,7 @@ def main():
     "output/nyquist_metrics.csv"
   )
 
+  # ----- Obtaining and plotting M values -----
   # Calculate M values from the mapped Nyquist response
   m_values = calculate_m_values(
     mapped_real_values,
@@ -669,10 +701,26 @@ def main():
     5
   )
 
-  # Create one shared matplotlib figure
+  # ----- Obtaining and plotting M values -----
+  # Calculate N values
+  n_values = calculate_n_values(
+    mapped_real_values,
+    mapped_imaginary_values
+  )
+
+  # Determined observed N range
+  min_n, max_n = get_n_range(n_values)
+
+  # Generate desired N levels
+  n_levels = generate_n_levels(
+    min_n,
+    max_n,
+    5
+  )
+
+  # ----- Figure 1: Zoomed Nyquist analysis -----
   plt.figure()
 
-  # Plot Nyquist Response
   plot_nyquist(
     s_real_values,
     s_imaginary_values,
@@ -688,19 +736,66 @@ def main():
     phase_margin
   )
 
-  # Overlay the M circles on the same figure
+  # Preserve the normal Nyquist viewing window
+  x_limits = plt.xlim()
+  y_limits = plt.ylim()
+
   plot_m_circles(
     m_levels,
     200
   )
 
-  # Save and display only after every overlay
+  plot_n_circles(
+    n_levels,
+    200
+  )
+
+  # Restore the zoomed Nyquist view
+  plt.xlim(x_limits)
+  plt.ylim(y_limits)
+
   plt.savefig(
     "output/nyquist_plot.png"
   )
 
   plt.show()
 
+  # ----- Figure 2: Full N-cricle geometry -----
+  plt.figure()
+
+  # Plot the basic Nyquist response
+  plt.plot(
+    mapped_real_values,
+    mapped_imaginary_values
+  )
+
+  # Mark the critical point
+  plt.scatter(-1, 0)
+  plt.annotate(
+    "(-1, 0)",
+    (-1, 0)
+  )
+
+  # Draw the real and imaginary axes
+  plt.axhline(y=0)
+  plt.axvline(x=0)
+
+  # Overlay the N circles
+  plot_n_circles(
+    n_levels,
+    200
+  )
+
+  plt.xlabel("Re")
+  plt.ylabel("Im")
+  plt.title("Nyquist Plot with N-Circles")
+  plt.grid()
+
+  plt.savefig(
+    "output/nyquist_n_circles.png"
+  )
+
+  plt.show()
 
 if __name__ == "__main__":
   main()
