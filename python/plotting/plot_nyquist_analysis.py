@@ -277,12 +277,16 @@ def get_n_range(n_values):
   return min_n, max_n
 
 # Generate the n levels
-def generate_n_levels(min_n, max_n, num_levels):
+def generate_n_levels(min_n, max_n, num_levels, min_abs_phase):
+  # Validate the inputs
   if num_levels < 2:
     raise ValueError("The number of levels must be at least 2.")
 
   if max_n <= min_n:
     raise ValueError("The max of n must be greater than the min of n.")
+
+  if min_abs_phase < 0:
+    raise ValueError("The minimum absolute value phase must be at least 0 or above.")
 
   # Calculate the spacing between min and max n
   linear_step = (max_n - min_n) / (num_levels - 1)
@@ -291,7 +295,17 @@ def generate_n_levels(min_n, max_n, num_levels):
   # Iterate num_levels times to calculate the N value representing that level
   for i in range(num_levels):
     N = min_n + i * linear_step
+    N_radians = math.radians(N)
+
+    # Skip phase levels too close to 0 degrees
+    if abs(math.sin(N_radians)) < math.sin(math.radians(min_abs_phase)):
+      continue
+
     n_levels.append(N)
+
+  # Check that n_levels aren't empty
+  if len(n_levels) == 0:
+    raise ValueError("There are no n_levels generated.")
 
   return n_levels
 
@@ -715,8 +729,13 @@ def main():
   n_levels = generate_n_levels(
     min_n,
     max_n,
-    5
+    9,
+    10.0
   )
+
+  # For debugging purposes
+  print("N range:", min_n, max_n)
+  print("Generated N levels:", n_levels)
 
   # ----- Figure 1: Zoomed Nyquist analysis -----
   plt.figure()
