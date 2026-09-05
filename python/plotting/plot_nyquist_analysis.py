@@ -62,10 +62,12 @@ def read_nyquist_metrics(filename):
     phase_margin
   )
 
+# ------ Calculating M-Values ------
+
 def calculate_m_values(mapped_real_values, mapped_imaginary_values):
   # Verify that the mapped arrays have the same length
   if len(mapped_real_values) != len(mapped_imaginary_values):
-    raise ValueError("Mapped real and imaginary values must have the same length.")
+    raise ValueError("The list of mapped real and imaginary values must have the same length.")
   
   m_values = []
 
@@ -194,6 +196,136 @@ def generate_m_circle_points(geometry, num_points):
     y_values.append(y)
 
   # Return coordinates for Matplotlib
+  return x_values, y_values
+
+# ------ Calculating N-Points ------
+# Calculate n values based on the mapped real/imaginary values
+def calculate_n_values(mapped_real_values, mapped_imaginary_values):
+  # Verify that the list of mapped_real_values and mapped_imaginary_values are the same length
+  if len(mapped_real_values) != len(mapped_imaginary_values):
+    raise ValueError("The list of mapped real and imaginary values must have the same length.")
+
+  n_values = []
+
+  # Iterate through the list
+  for i in range(len(mapped_real_values)):
+    L = complex(mapped_real_values[i], mapped_imaginary_values[i])
+
+    # Calculate the denominator, and then check if its approximately close to 0.
+    denominator = 1 + L
+    if abs(denominator) < 1e-8:
+      continue
+
+    # Calculate the closed_loop, and by extension M
+    closed_loop = L / denominator
+    N = math.atan2(closed_loop.imag, closed_loop.real)
+    N = math.degrees(N)
+
+    # If N is a finite value, then append it to n_values
+    if math.isfinite(N):
+      n_values.append(N)
+
+  return n_values
+
+# Calculate the n-circle based on n_values
+def calculate_n_circle(N):
+  # Convert N values from radians to degrees for python trig
+  N_radians = math.radians(N)
+
+  # Calcualte sin(N)
+  sin_n = math.sin(N_radians)
+
+  '''
+  Special case: if sin(N) approximates to 0, this means that the finite circle formula breaks down.
+  This usually occurs at 0 degrees, at both positive and negative 180 degrees, etc.
+  The constant-phase contour degenerates to the real axis.
+  '''
+  if abs(sin_n) < 1e-8:
+    return {
+      "type": "line",
+      "y": 0.0
+    }
+
+  # Calculate the fixed x-coordinate of the center
+  center_x = -0.5
+
+  # Calculate cot(N) for cot(N) = cos(N) / sin(N)
+  cot_n = math.cos(N_radians) / sin_n
+
+  # Calculate vertical coordinate of center
+  center_y = 0.5 * cot_n
+
+  # Calculate circle radius
+  radius = 1.0 / (2.0 * abs(sin_n))
+
+  # Return the geometry
+  return {
+    "type": "circle",
+    "center_x": center_x,
+    "center_y": center_y,
+    "radius": radius
+  }
+
+# Calculate the range that N operates
+def get_n_range(n_values):
+  if len(n_values) == 0:
+    raise ValueError("The list of n_values is empty.")
+
+  min_n = min(n_values)
+  max_n = max(n_values)
+
+  return min_n, max_n
+
+# Generate the n levels
+def generate_n_levels(min_n, max_n, num_levels):
+  if num_levels < 2:
+    raise ValueError("The number of levels must be at least 2.")
+
+  if max_n <= min_n:
+    raise ValueError("The max of n must be greater than the min of n.")
+
+  # Calculate the spacing between min and max n
+  linear_step = (max_n - min_n) / (num_levels - 1)
+  n_levels = []
+
+  # Iterate num_levels times to calculate the N value representing that level
+  for i in range(num_levels):
+    N = min_n + i * linear_step
+    n_levels.append(N)
+
+  return n_levels
+
+# Generate the points needed for the n circle
+def generate_n_circle_points(geometry, num_points):
+  # Verify the inputs
+  if num_points < 2:
+    raise ValueError("The number of points must be at least 2.")
+
+  # Special N-circle case
+  if geometry["type"] == "line":
+    return "The geometry is NOT a circle, it is a line."
+
+  # If the geometric type is neither a line or a circle, raise an error
+  if geometry["type"] != "circle":
+    raise ValueError("Invalid geometric type.")
+
+  # Gather all data from the geometry dictionary
+  center_x = geometry["center_x"]
+  center_y = geometry["center_y"]
+  radius = geometry["radius"]
+
+  x_values = []
+  y_values = []
+
+
+  for i in range(num_points):
+    theta = i * (2 * math.pi) / (num_points - 1)
+    x = center_x + radius * math.cos(theta)
+    y = center_y + radius * math.sin(theta)
+
+    x_values.append(x)
+    y_values.append(y)
+
   return x_values, y_values
 
 def plot_nyquist(s_real_values, s_imaginary_values, mapped_real_values, mapped_imaginary_values, phase_crossover_frequency, phase_crossover_real, phase_crossover_imaginary, gain_margin, gain_crossover_frequency, gain_crossover_real, gain_crossover_imaginary, phase_margin):
