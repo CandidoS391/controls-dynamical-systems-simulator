@@ -48,3 +48,51 @@ double NyquistDesign::CalculateResonantPeak(double gain, double max_frequency, s
 
   return resonant_peak;
 }
+
+double NyquistDesign::FindGainForResonantPeak(double desired_peak, double min_gain, double max_gain, double max_frequency, size_t num_samples, double tolerance, size_t max_iterations) const {
+  // Validate the basic inputs
+  if (desired_peak <= 0)
+    throw std::invalid_argument("The desired peak must be greater than 0.");
+
+  if (min_gain <= 0)
+    throw std::invalid_argument("The minimum gain must be greater than 0.");
+
+  if (max_gain <= min_gain)
+    throw std::invalid_argument("The max gain passed in must be greater than the minimum gain.");
+
+  if (tolerance <= 0)
+   throw std::invalid_argument("The tolerance must be greater than 0.");
+
+  if (max_iterations == 0)
+    throw std::invalid_argument("The maximum iterations must not equal 0.");
+
+  // Evaluate both ends of the gain interval
+  double min_peak = CalculateResonantPeak(min_gain, max_frequency, num_samples);
+  double max_peak = CalculateResonantPeak(max_gain, max_frequency, num_samples);
+
+  // Verify that the desired peak is bracketed
+  if (desired_peak < min_peak || desired_peak > max_peak)
+    throw std::runtime_error("The desired peak in not within the min and max peaks.");
+
+  // Begin the bisection
+  double lower_gain = min_gain, upper_gain = max_gain;
+
+  for (size_t i = 0; i < max_iterations; i++) {
+    double candidate_gain = (lower_gain + upper_gain) / 2;
+    double candidate_peak = CalculateResonantPeak(candidate_gain, max_frequency, num_samples);
+    double error = candidate_peak - desired_peak;
+
+    // Determine if the desired resonant peak has been reached
+    if (std::abs(error) < tolerance)
+      return candidate_gain;
+
+    // If the M_p increases as K increases
+    if (candidate_peak < desired_peak)
+      lower_gain = candidate_gain;
+    else
+      upper_gain = candidate_gain;
+  }
+
+  // If convergence was not reached, throw
+  throw std::runtime_error("Bisection method diverged.");
+}

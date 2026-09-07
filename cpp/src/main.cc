@@ -771,6 +771,57 @@ void TestNyquistDesign() {
             << actual_peak_2 << std::endl;
 
   std::cout << std::endl;
+
+  // Test 3: Find gain for desired resonant peak
+  //
+  // For G(s) = 1 / (s + 1),
+  // Mp = K / (1 + K)
+  //
+  // Desired Mp = 0.75 gives K = 3
+  std::cout << "Test 3 - Find gain for Mp = 0.75" << std::endl;
+
+  double expected_gain = 3.0;
+
+  double actual_gain =
+      nyquist_design.FindGainForResonantPeak(
+          0.75,     // Desired resonant peak
+          1.0,      // Minimum gain
+          5.0,      // Maximum gain
+          100.0,    // Maximum frequency
+          10001,    // Number of samples
+          1e-6,     // Tolerance
+          100);     // Maximum iterations
+
+  std::cout << "Expected gain: "
+            << expected_gain << std::endl;
+
+  std::cout << "Actual gain:   "
+            << actual_gain << std::endl;
+
+  std::cout << std::endl;
+
+  // Test 4: Bisection requiring multiple iterations
+  std::cout << "Test 4 - Find gain for Mp = 0.6" << std::endl;
+
+  double expected_gain_2 = 1.5;
+
+  double actual_gain_2 =
+      nyquist_design.FindGainForResonantPeak(
+          0.6,
+          1.0,
+          5.0,
+          100.0,
+          10001,
+          1e-6,
+          100);
+
+  std::cout << "Expected gain: "
+            << expected_gain_2 << std::endl;
+
+  std::cout << "Actual gain:   "
+            << actual_gain_2 << std::endl;
+
+  std::cout << std::endl;
 }
 
 int main() {
