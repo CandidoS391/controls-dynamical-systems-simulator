@@ -28,6 +28,7 @@
 #include "PerformanceAnalysis.h"
 #include "FrequencyResponse.h"
 #include "NyquistAnalysis.h"
+#include "NyquistDesign.h"
 
 //const double kPi = 3.14159265358979323846;
 
@@ -720,8 +721,60 @@ void ExportNyquistData() {
             << std::endl;
 }
 
+void TestNyquistDesign() {
+  std::cout << "======================================" << std::endl;
+  std::cout << "Testing Nyquist Design" << std::endl;
+  std::cout << "======================================" << std::endl;
+
+  // G(s) = 1 / (s + 1)
+  TransferFunction transfer_function({1}, {1, 1});
+  NyquistDesign nyquist_design(transfer_function);
+
+  // Test 1: K = 1
+  //
+  // T(s) = 1 / (s + 2)
+  // Mp = 1 / 2 = 0.5
+  std::cout << "Test 1 - Gain K = 1" << std::endl;
+
+  double expected_peak_1 = 0.5;
+  double actual_peak_1 =
+      nyquist_design.CalculateResonantPeak(
+          1.0,
+          100.0,
+          10001);
+
+  std::cout << "Expected resonant peak: "
+            << expected_peak_1 << std::endl;
+
+  std::cout << "Actual resonant peak:   "
+            << actual_peak_1 << std::endl;
+
+  std::cout << std::endl;
+
+  // Test 2: K = 3
+  //
+  // T(s) = 3 / (s + 4)
+  // Mp = 3 / 4 = 0.75
+  std::cout << "Test 2 - Gain K = 3" << std::endl;
+
+  double expected_peak_2 = 0.75;
+  double actual_peak_2 =
+      nyquist_design.CalculateResonantPeak(
+          3.0,
+          100.0,
+          10001);
+
+  std::cout << "Expected resonant peak: "
+            << expected_peak_2 << std::endl;
+
+  std::cout << "Actual resonant peak:   "
+            << actual_peak_2 << std::endl;
+
+  std::cout << std::endl;
+}
+
 int main() {
-  ExportNyquistData();
+  TestNyquistDesign();
 
   return 0;
 }

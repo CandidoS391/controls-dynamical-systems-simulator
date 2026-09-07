@@ -24,7 +24,8 @@ simulation: src/main.cc \
 	src/SensitivityAnalysis.cc \
 	src/PerformanceAnalysis.cc \
 	src/FrequencyResponse.cc \
-	src/NyquistAnalysis.cc
+	src/NyquistAnalysis.cc \
+	src/NyquistDesign.cc
 	$(CXX) $(CXXFLAGS) \
 	src/main.cc \
 	src/StateVector.cc \
@@ -48,6 +49,7 @@ simulation: src/main.cc \
 	src/PerformanceAnalysis.cc \
 	src/FrequencyResponse.cc \
 	src/NyquistAnalysis.cc \
+	src/NyquistDesign.cc \
 	-o simulation
 
 run: simulation
