@@ -1,7 +1,19 @@
-This is a current work-in-process project for the summer of 2026, in which using dynamical systems, Euler and RK4 Integration, oscillators,controls-oriented systems, and electromagnetic signals and waves are simulated numerically using an Object-Oriented design language in C++ and visually displayed using Python/matplotlib.
+This is a current work-in-process project for the summer of 2026, in which using dynamical systems, Euler and RK4 Integration; the mathematics of feedback control systems - including dynamical systems, oscillators, transfer functions, etc - are simulated numerically using an Object-Oriented design language in C++ and visually displayed using Python/matplotlib.
+
+# What is a Control System?
+On a high level, a **control system** is an arrangement of physical parts, that command or regulate each other or other systems, whether its directly, or otherwise. Within engineering and other applied sciences, control systems are those systems whose main job is to regulate or command itself whether its actively or dynamically.
+
+Within the theory of control systems, there's two categories a system can be classified, an open loop in which the control action is independent of the output of the system, and a closed-loop system, in which the control action is dependent. Open-loop systems have an ability to perform accurately based on the established input-output relation and are able to remain stable while instability is present, whereas closed-loop systems rely on the control's own actions to determine regulation, and thus are more conmmonly called *feedback control systems.*
+
+In terms of representation, control systems and their physical components are represented via three ways:
+
+- Differential equations and other mathematical relations
+- Block Diagrams
+- Signal Flow Graphs
+
+With each representation being implemented in this project.
 
 # Dynamical Systems and Oscillators
-
 Using Euler's and RK4 Integration, Ordinary Differential Equations are solved numerically and produce the behvaior of dynamical systems that are shown through time-domain plots and phase portraits.
 
 Below are the main oscillators being studied using this numerical simulator:
