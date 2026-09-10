@@ -530,15 +530,4 @@ for $q(t)$ is the electrical charge stored on the capacitor, $\frac{\mathrm{d}q}
 Here, It is similar to the mechanical oscillator implemented via the forced oscillator in this project. So therefore with the existing numerical framework, the simulator can generate the circuit's step response and phase portrait the same way as a mechanical oscillator can be generated via both Euler's and RK4 Integration.
 
 # The Future of this Project
-As this project is in work-in-progress, more things will be added on. Eventually this project will also be able to do:
-
-- Transfer Function Models (WIP)
-- Block Diagram Simulation
-- Signal Flow Graph Analysis
-- Bode Plot Generation
-- Root Locus Analysis
-- Nyquis Analysis
-- RLC Circuit Models (WIP)
-- Electromagnetic Wave Simulations
-
-As such, keep an eye out for new additions as they are being added on!
+This project is mean't to be a part of a set of other engineering simulations/modeling projects, including a thermodynamics calculator/modeling project, a vector mechanics project, and an electromagentic fields and waves project, just to name a few. As such stay tuned to these developments.
