@@ -512,9 +512,9 @@ exists at all points in a region of the $s$-plane, then $P$ is considered **anal
 
 If there exists a point at which $P(s)$ isn't analytic, then that point is considered a **singular point** or is the **singularity** of $P(s)$. For instance, the aforementioned poles of $P(s)$ are considered the singularity of $P(s)$.
 
-A **closed contour** in a complex plane is a continuous curve that begins and ends at the same point.
+A **closed contour** in a complex plane is a continuous curve that begins and ends at the same point. Using that definition of a closed contour, all points to the right of said contour, depending on the prescribed direction, are said to be *enclosed* by said contour. And speaking of prescribed directions, a contour can either follow a *clockwise (CW)* direction - which in other words a positive direction - or a *counter-clockwise (CCW)* direction - which is a negative direction.
 
-
+Using where the contour is going, we can say that the contour in the $P(s)$-plane makes $n$ **positive encirclements** through the origin if there exists a line drawn from the origin to a point on the curve that rotates in a clockwise direction through $360n$ degrees going around the closed path. In an inverse way of thinking, if the path is traversed in a counter-clockwise direction, a **negative encirclement** is obtained. In total, **the total number of encirclements** $\mathbb{N_0}$ is equal to $\text{CW} - \text{CCW}$ encirclements.
 
 # The RLC Circuit
 So far, the only part of this project that is related to the Electromagnetic section and that is the RLC Circuit.
