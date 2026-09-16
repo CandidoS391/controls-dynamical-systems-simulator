@@ -506,9 +506,9 @@ If the derivative of $P$ at a $s_0$, defined by the limit definition:
 
 $$
 \frac{dP}{dS} \equiv \lim_{s \to s_0}
-\left\{
+\left(
 \frac{P(s) - P(s_0)}{s - s_0}
-\right\}
+\right)
 $$
 
 exists at all points in a region of the $s$-plane, then $P$ is considered **analytic** in that region. In this case, all practical physical systems are analytic in the finite $s$-plane, except at the poles of $P(s)$.
