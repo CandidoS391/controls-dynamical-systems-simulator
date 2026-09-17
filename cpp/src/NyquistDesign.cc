@@ -96,3 +96,35 @@ double NyquistDesign::FindGainForResonantPeak(double desired_peak, double min_ga
   // If convergence was not reached, throw
   throw std::runtime_error("Bisection method diverged.");
 }
+
+std::complex<double> NyquistDesign::CalculateLeadCompensatedResponse(double omega, double compensator_gain, double zero, double pole) const {
+  // Validate all inputs
+  if (omega < 0)
+    throw std::invalid_argument("The passed in omega must be non-negative.");
+
+  if (compensator_gain <= 0)
+    throw std::invalid_argument("The passed in compensator gain must be greater than 0.");
+
+  if (zero <= 0)
+    throw std::invalid_argument("The passed in zero must be greater than 0.");
+
+  if (pole <= 0)
+    throw std::invalid_argument("The passed in pole must be greater than 0.");
+
+  if (pole <= zero)
+    throw std::invalid_argument("The passed in pole must be greater than the passed in zero.");
+
+  // Construct s = j * omega
+  std::complex<double> s(0, omega);
+
+  // Evaluate the original plant
+  std::complex<double> plant_response = transfer_function.Evaluate(s);
+
+  // Evaluate the lead compensator
+  std::complex<double> compenstator_response = compensator_gain * (s + zero) / (s + pole);
+
+  // Apply the compensator to the plant
+  std::complex<double> compensated_response = compenstator_response * plant_response;
+
+  return compensated_response;
+}
