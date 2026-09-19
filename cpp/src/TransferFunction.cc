@@ -8,17 +8,20 @@
 const double kPi = 3.14159265358979323846;
 
 TransferFunction::TransferFunction(const std::vector<double>& num, const std::vector<double>& den) : numerator(RemoveLeadingZeros(num)), denominator(RemoveLeadingZeros(den)) {
+  // Ensure the denominator doesn't represent the zero polynomial.
   if (denominator.size() == 1 && std::abs(denominator[0]) < 1e-12)
     throw std::invalid_argument("Invalid denominator");
 }
 
 double TransferFunction::EvaluatePolynomial(const std::vector<double>& coefficients, double s) const {
+  // Treat an empty coefficient vector as the zero polynomial
   if (coefficients.empty())
     return 0;
   
   double result = 0;
   size_t degree = coefficients.size() - 1;
 
+  // Evaluate each polynomail term at the real value s
   for (double coe : coefficients) {
     result += coe * std::pow(s, degree);
     degree--;
@@ -28,12 +31,14 @@ double TransferFunction::EvaluatePolynomial(const std::vector<double>& coefficie
 }
 
 std::complex<double> TransferFunction::EvaluatePolynomial(const std::vector<double>& coefficients, const std::complex<double>& value) const {
+  // Treat an empty coefficient vector as the zero polynomial
   if (coefficients.empty())
     return std::complex<double>(0.0, 0.0);
 
   
   std::complex<double> result(0.0, 0.0);
 
+  // Evaluate the polynomial at a complex value s
   for (const auto& coe : coefficients) {
     result = result * value + coe;
   }
@@ -42,6 +47,7 @@ std::complex<double> TransferFunction::EvaluatePolynomial(const std::vector<doub
 }
 
 size_t TransferFunction::Degree(const std::vector<double>& coefficients) const {
+  // The zero or empty polynomial is treated as degree zero
   if(coefficients.size() == 0)
     return 0;
   
@@ -51,21 +57,25 @@ size_t TransferFunction::Degree(const std::vector<double>& coefficients) const {
 std::vector<double> TransferFunction::RemoveLeadingZeros(const std::vector<double>& coefficients) {
   constexpr double k_zero_tolerance = 1e-12;
 
+  // Represent an empty polynomial as the zero polynomial.
   if (coefficients.empty())
     return {0.0};
 
   size_t first_nonzero = 0;
 
+  // Find the first coefficient that is nonzero
   while (first_nonzero < coefficients.size() - 1 && std::abs(coefficients[first_nonzero]) < k_zero_tolerance) {
     first_nonzero++;
   }
 
+  // Return the polynomial beginning at its first significant coeficient.
   return std::vector<double>(coefficients.begin() + first_nonzero, coefficients.end());
 }
 
 size_t TransferFunction::CountTrailingZeros(const std::vector<double>& coefficients) const {
   size_t count = 0;
 
+  // Count consecutive zero coefficients beginning with the constant term
   for (size_t i = coefficients.size(); i-- > 0;) {
     if (std::abs(coefficients[i]) < 1e-8)
       count++;
@@ -80,6 +90,8 @@ std::vector<PoleGroup> TransferFunction::GroupPoles(const std::vector<std::compl
   double tolerance = 1e-5;
 
   std::vector<PoleGroup> groups;
+
+  // Group numerically equivalent poles and record their multiplicities.
   for (const auto& pole : poles) {
     bool found_group = false;
 
@@ -92,6 +104,7 @@ std::vector<PoleGroup> TransferFunction::GroupPoles(const std::vector<std::compl
       }
     }
 
+    // Create a new group when the pole does not match an existing group
     if (found_group == false) {
       PoleGroup new_group;
       new_group.pole = pole;
@@ -104,6 +117,7 @@ std::vector<PoleGroup> TransferFunction::GroupPoles(const std::vector<std::compl
 }
 
 std::vector<double> TransferFunction::DividePolynomialByLinearFactor(const std::vector<double>& coefficients, double pole) const {
+  // A constant polynomial cannot be divided into a lower-degree polynomial
   if (coefficients.size() <= 1)
     throw std::invalid_argument("Invalid number of passed in coefficients.");
   
@@ -112,11 +126,13 @@ std::vector<double> TransferFunction::DividePolynomialByLinearFactor(const std::
   double current_value = coefficients[0];
   quotient.push_back(current_value);
 
+  // Perform synthetic division using the supplied pole
   for (size_t i = 1; i < coefficients.size() - 1; i++) {
     current_value = coefficients[i] + pole * current_value;
     quotient.push_back(current_value);
   }
 
+  // Verify that the supplied pole is actually a root of the polynomial
   double remainder = coefficients[coefficients.size() - 1] + pole * current_value;
   if (std::abs(remainder) > tolerance) {
     throw std::runtime_error("Pole is not a root");
@@ -126,37 +142,46 @@ std::vector<double> TransferFunction::DividePolynomialByLinearFactor(const std::
 }
 
 std::vector<std::complex<double>> TransferFunction::FindRoots(const std::vector<double>& coefficients) const {
+  // Remove leading zeros before determining the polynomial degree
   std::vector<double> cleaned = RemoveLeadingZeros(coefficients);
 
+  // A constant polynomial has no finite roots
   if (Degree(cleaned) == 0)
     return {};
 
+  // Solve a first-degree polynomial directly
   if (Degree(cleaned) == 1) {
     // a = coefficient[0], b = coefficient[1]
     double root = -cleaned[1] / cleaned[0]; // For now assume that coefficients[0] != 0
     return {std::complex<double>(root, 0.0)};
   }
 
+  // solve a second-degree polynomial using the quadratic forumula
   if (Degree(cleaned) == 2) {
     // a = coefficient[0], b = coefficient[1], c = coefficient[2]
     double discriminant = std::pow(cleaned[1], 2) - (4 * cleaned[0] * cleaned[2]);
 
+    // Handle two real roots
     if (discriminant >= 0) {
       double root_1 = (-cleaned[1] + std::sqrt(discriminant)) / (2 * cleaned[0]);
       double root_2 = (-cleaned[1] - std::sqrt(discriminant)) / (2 * cleaned[0]);
       return {std::complex<double>(root_1, 0.0), std::complex<double>(root_2, 0.0)};
     } else {
+      // Handle a complex-conjugate pair
       double real_part = -cleaned[1] / (2 * cleaned[0]);
       double imag_part = std::sqrt(-discriminant) / std::abs(2 * cleaned[0]);
       return {std::complex<double>(real_part, imag_part), std::complex<double>(real_part, -imag_part)};
     }
   }
 
+  // Use the numerical root solver for higher-roots
   return FindRootsNumerically(cleaned);
 }
 
 std::vector<std::complex<double>> TransferFunction::GenerateInitialGuesses(const std::vector<double>& coefficients) const {
   size_t degree = Degree(coefficients);
+
+  // Initial guesses are only needed for nonconstant polynomials
   if (degree <= 0) {
     throw std::invalid_argument("Polynomial degrees must be greater than 0");
   }
@@ -165,20 +190,21 @@ std::vector<std::complex<double>> TransferFunction::GenerateInitialGuesses(const
 
   double leading_coefficient = normalized[0];
 
-  // Normalize the vector
+  // Normalize the polynomial so that it's leading coefficient is one
   for (auto& coefficient : normalized) {
     coefficient /= leading_coefficient;
   }
 
   double radius = 1.0;
 
+  // Estimate a radius containing the polynomial roots
   for (size_t i = 1; i < normalized.size(); i++) {
     radius = std::max(radius, 1 + std::abs(normalized[i]));
   }
 
   std::vector<std::complex<double>> guesses;
   
-
+  // Distribute initial guesses around a circle
   for (size_t k = 0; k < degree; k++) {
     double angle = (2 * kPi * k) / degree + (kPi / (2 * degree));
     double real_part = radius * std::cos(angle);
@@ -192,14 +218,19 @@ std::vector<std::complex<double>> TransferFunction::GenerateInitialGuesses(const
 
 std::vector<std::complex<double>> TransferFunction::FindRootsNumerically(const std::vector<double>& coefficients) const {
   size_t degree = Degree(coefficients);
+
+  // Numerical root finding requires a nonconstant polynomial
   if (degree <= 0) {
     throw std::invalid_argument("Polynomial degrees must be greater than 0");
   }
+
+  // Generate the initial root guesses for the Durand-Kerner iterator
   std::vector<std::complex<double>> roots = GenerateInitialGuesses(coefficients);
 
   double tolerance = 1e-10;
   size_t max_iterations = 1000;
 
+  // Iteratively update every root estimate until convergence
   for (size_t iteration = 0; iteration < max_iterations; iteration++) {
     std::vector<std::complex<double>> updated_roots;
     double max_change = 0;
@@ -208,6 +239,7 @@ std::vector<std::complex<double>> TransferFunction::FindRootsNumerically(const s
       std::complex<double> numerator(EvaluatePolynomial(coefficients, curr_root));
       std::complex<double> denominator(1.0, 0.0);
 
+      // Construct the product of differences from all over root estimates.
       for (size_t j = 0; j < roots.size(); j++) {
         if (i == j)
           continue;
@@ -216,6 +248,7 @@ std::vector<std::complex<double>> TransferFunction::FindRootsNumerically(const s
         denominator = denominator * difference;
       }
 
+      // Apply one Durand-kerner update
       std::complex<double> new_root = curr_root - (numerator / denominator);
       double change = std::abs(new_root - curr_root);
       max_change = std::max(max_change, change);
@@ -223,6 +256,7 @@ std::vector<std::complex<double>> TransferFunction::FindRootsNumerically(const s
     }
     roots = updated_roots;
 
+    // Stop once every root changes by less than the convergence tolerates
     if (max_change < tolerance)
       break;
   }
