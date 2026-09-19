@@ -1,0 +1,7 @@
+{
+  "system": {
+    "name": "Basic Transfer Function",
+    "numerator": [1.0],
+    "denominator": [1.0, 3.0, 2.0]
+  }
+}
