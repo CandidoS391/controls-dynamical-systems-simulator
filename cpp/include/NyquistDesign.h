@@ -21,6 +21,8 @@ class NyquistDesign {
     double FindGainForResonantPeak(double desired_peak, double min_gain, double max_gain, double max_frequency, size_t num_samples, double tolerance, size_t max_iterations) const;
     // Calculate the lead compensated response
     std::complex<double> CalculateLeadCompensatedResponse(double omega, double compensator_gain, double zero, double pole) const;
+    // Calculat the lag compensated response
+    std::complex<double> CalculateLagCompensatedResponse(double omega, double compensator_gain, double zero, double pole) const;
 };
 
 #endif

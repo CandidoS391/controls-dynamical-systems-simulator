@@ -730,23 +730,23 @@ void TestNyquistDesign() {
   TransferFunction transfer_function({1}, {1, 1});
   NyquistDesign nyquist_design(transfer_function);
 
-  // Test 5: Lead compensated response
-  std::cout << "Test 5 - Lead Compensated Response" << std::endl;
+  // Test 6: Lag compensated response
+  std::cout << "Test 6 - Lag Compensated Response" << std::endl;
 
-  // G(s) = 1 / (s + 1)
-  TransferFunction lead_transfer_function({1}, {1, 1});
-  NyquistDesign lead_design(lead_transfer_function);
+  // G(s) = 1 / (s + 2)
+  TransferFunction lag_transfer_function({1}, {1, 2});
+  NyquistDesign lag_design(lag_transfer_function);
 
-  // Gc(s) = (s + 1) / (s + 2)
+  // Gc(s) = (s + 2) / (s + 1)
   // Evaluate at omega = 1
   std::complex<double> actual_response =
-      lead_design.CalculateLeadCompensatedResponse(
+      lag_design.CalculateLagCompensatedResponse(
           1.0,
           1.0,
-          1.0,
-          2.0);
+          2.0,
+          1.0);
 
-  std::complex<double> expected_response(0.4, -0.2);
+  std::complex<double> expected_response(0.5, -0.5);
 
   std::cout << "Expected response: "
             << expected_response << std::endl;

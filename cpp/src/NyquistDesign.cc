@@ -128,3 +128,35 @@ std::complex<double> NyquistDesign::CalculateLeadCompensatedResponse(double omeg
 
   return compensated_response;
 }
+
+std::complex<double> NyquistDesign::CalculateLagCompensatedResponse(double omega, double compensator_gain, double zero, double pole) const {
+  // Validate the inputs
+  if (omega < 0)
+    throw std::invalid_argument("The passed in omega must be non-negative.");
+
+  if (compensator_gain <= 0)
+    throw std::invalid_argument("The passed in compensator gain must be greater than 0.");
+
+  if (zero <= 0)
+    throw std::invalid_argument("The passed in zero must be greater than 0.");
+
+  if (pole <= 0)
+    throw std::invalid_argument("The passed in pole must be greater than 0.");
+
+  if (zero <= pole)
+    throw std::invalid_argument("The passed in zero must be greater than the passed in pole.");
+
+  // Construct complex s
+  std::complex<double> s(0, omega);
+
+  // Evaluate the original plant
+  std::complex<double> plant_response = transfer_function.Evaluate(s);
+
+  // Evaluate the lag compensator response
+  std::complex<double> compensator_response = compensator_gain * (s + zero) / (s + pole);
+
+  // Apply the compensator to the plant and return it
+  std::complex<double> compensated_response = compensator_response * plant_response;
+
+  return compensated_response;
+}
