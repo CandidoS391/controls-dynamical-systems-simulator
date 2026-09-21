@@ -160,3 +160,50 @@ std::complex<double> NyquistDesign::CalculateLagCompensatedResponse(double omega
 
   return compensated_response;
 }
+
+std::complex<double> NyquistDesign::CalculateLagLeadCompensatedResponse(double omega, double compensator_gain, double lead_zero, double lead_pole, double lag_zero, double lag_pole) const {
+  // ----- Verify all Arguments -----
+  // Validate omega is positive, and compensator gain is greater than 0
+  if (omega < 0)
+    throw std::invalid_argument("The passed in omega must be positive.");
+
+  if (compensator_gain <= 0)
+    throw std::invalid_argument("The passed in compensator gain must be greater than 0.");
+
+  // Validate that the lead_zero and lead_pole are greater than 0, and that lead_pole is greater than the lead_zero
+  if (lead_zero <= 0)
+    throw std::invalid_argument("The passed in lead_zero must be greater than 0.");
+
+  if (lead_pole <= 0)
+    throw std::invalid_argument("The passed in lead_pole must be greater than 0.");
+
+  if (lead_pole <= lead_zero)
+    throw std::invalid_argument("The passed in lead_pole must be greater than the passed in lead_zero");
+
+  // Repeat the process for lag_zero/lag_pole, only that lag_zero must be greater than lag_pole
+  if (lag_zero <= 0)
+    throw std::invalid_argument("The passed in lead_zero must be greater than 0.");
+
+  if (lag_pole <= 0)
+    throw std::invalid_argument("The passed in lead_pole must be greater than 0.");
+
+  if (lag_zero <= lag_pole)
+    throw std::invalid_argument("The passed in lead_pole must be greater than the passed in lead_zero");
+    
+  // Build the complex variable s
+  std::complex<double> s(0, omega);
+
+  // Evaluate the original plant
+  std::complex<double> plant_response = transfer_function.Evaluate(s);
+
+  // Evaluate the lag and lead response
+  std::complex<double> lead_response = (s + lead_zero) / (s + lead_pole);
+  std::complex<double> lag_response = (s + lag_zero) / (s + lag_pole);
+
+  // Evaluate the compensator response
+  std::complex<double> compensator_response = compensator_gain * lead_response * lag_response;
+
+  // Evaluate the compensated response and then return it
+  std::complex<double> compensated_response = compensator_response * plant_response;
+  return compensated_response;
+}
