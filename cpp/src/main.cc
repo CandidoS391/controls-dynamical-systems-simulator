@@ -761,9 +761,54 @@ void TestNyquistDesign() {
   std::cout << std::endl;
 }
 
+void ExportLeadNyquistDesign() {
+  // Define the original plant
+  TransferFunction plant({10}, {1, 6, 11, 6});
+
+  // Construct the NyquistDesign object
+  NyquistDesign design(plant);
+
+  // Create the lead compensator
+  double compensator_gain = 1.0, lead_zero = 1.0, lead_pole = 5.0;
+
+  // Define the frequency sampling
+  double max_frequency = 100.0;
+  int num_samples = 10000;
+  double freq_step = max_frequency / (num_samples - 1);
+
+  // Open the CSV file
+  std::ofstream output_file("../output/nyquist_lead_design.csv");
+  if (!output_file.is_open())
+    throw std::runtime_error("Could not open Nyquist lead design output file.");
+
+  // Write to the CSV file the column names
+  output_file << "frequency," << "original_real," << "original_imaginary," << "compensated_real," << "compensated_imaginary" << std::endl;
+
+  // Sweep through the frequencies
+  for (int i = 0; i < num_samples; i++) {
+    // Determine the current angular frequency
+    double omega = i * freq_step;
+
+    // Construct complex variable s
+    std::complex<double> s(0.0, omega);
+
+    // Evaluate the uncompensated plant
+    std::complex<double> original_response = plant.Evaluate(s);
+
+    // Evaluate the lead-compensated plant
+    std::complex<double> compensated_response = design.CalculateLeadCompensatedResponse(omega, compensator_gain, lead_zero, lead_pole);
+
+    // Write the frequency sample to the CSV
+    output_file << omega << "," << original_response.real() << "," << original_response.imag() << "," << compensated_response.real() << "," << compensated_response.imag() << std::endl;
+  }
+
+  // Close the file and return a success
+  output_file.close();
+  std::cout << "Lead Nyquist design data exported successfully.";
+}
 
 int main() {
-  TestNyquistDesign();
+  ExportLeadNyquistDesign();
   
   return 0;
 }
