@@ -807,8 +807,53 @@ void ExportLeadNyquistDesign() {
   std::cout << "Lead Nyquist design data exported successfully.";
 }
 
+void ExportLagNyquistDesign() {
+  // Define the original plant
+  TransferFunction plant({10}, {1, 6, 11, 6});
+
+  // Construct NyquistDesign using the original plant
+  NyquistDesign design(plant);
+
+  // Define the lag compensator
+  double compensator_gain = 1.0, lag_zero = 1.0;
+  double lag_pole = 0.2;
+
+  // Define the frequency sampling
+  double max_frequency = 100.0;
+  int num_samples = 10000;
+  double freq_step = max_frequency / (num_samples - 1);
+
+  // Open the lag CSV
+  std::ofstream output_file("../output/nyquist_lag_design.csv");
+  if (!output_file.is_open())
+    throw std::runtime_error("Could not open Nyquist lag design output file.");
+
+  // Write to the CSV the column names
+  output_file << "frequency," << "original_real," << "original_imaginary," << "compensated_real," << "compensated_imaginary" << std::endl;
+
+  // Sweep from omega = 0 to omega = 100
+  for (int i = 0; i < num_samples; i++) {
+    double omega = i * freq_step;
+
+    // Complex complex variable s
+    std::complex<double> s(0, omega);
+
+    // Evaluate the original transfer function
+    std::complex<double> original_response = plant.Evaluate(s);
+
+    // Evaluate the lag compensated transfer function
+    std::complex<double> compensated_response = design.CalculateLagCompensatedResponse(omega, compensator_gain, lag_zero, lag_pole);
+
+    // Export the corresponding points
+    output_file << omega << "," << original_response.real() << "," << original_response.imag() << "," << compensated_response.real() << "," << compensated_response.imag() << std::endl;
+  }
+
+  output_file.close();
+  std::cout << "Lag Nyquist design data exported successfully.";
+}
+
 int main() {
-  ExportLeadNyquistDesign();
+  ExportLagNyquistDesign();
   
   return 0;
 }
