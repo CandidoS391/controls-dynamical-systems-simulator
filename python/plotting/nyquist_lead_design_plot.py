@@ -221,20 +221,22 @@ def plot_lead_design(frequencies, original_real, original_imaginary, compensated
   plt.ylabel("Im")
 
   # Title the plot
-  plt.title("Nyquist Lead Compensation")
+  plt.title("Nyquist Design via Lead Compensation")
 
-  # Enable the grid and legend
+  # Enable the grid, legend, and axis
   plt.grid(True)
   plt.legend()
-
   plt.axis('equal')
 
+  # Save the figure and then show it
   plt.savefig("output/nyquist_lead_design.png")
   plt.show()
 
 def main():
+  # Load up the filename
   filename = "output/nyquist_lead_design.csv"
 
+  # Get the frequency, original real/imaginary data, and the compensated real/imaginary data
   (
     frequencies,
     original_real,
@@ -243,6 +245,7 @@ def main():
     compensated_imaginary
   ) = load_lead_design_data(filename)
 
+  # Plot the function
   plot_lead_design(
     frequencies,
     original_real,
