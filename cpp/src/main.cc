@@ -814,9 +814,12 @@ void ExportLagNyquistDesign() {
   // Construct NyquistDesign using the original plant
   NyquistDesign design(plant);
 
-  // Define the lag compensator
-  double compensator_gain = 1.0, lag_zero = 1.0;
-  double lag_pole = 0.2;
+  // Define the lag compensators
+  double compensator_gain = 1.0;
+
+  double lag_1_zero = 0.1, lag_1_pole = 0.02;
+  double lag_2_zero = 1.0, lag_2_pole = 0.2;
+  double lag_3_zero = 10.0, lag_3_pole = 2.0;
 
   // Define the frequency sampling
   double max_frequency = 100.0;
@@ -829,7 +832,7 @@ void ExportLagNyquistDesign() {
     throw std::runtime_error("Could not open Nyquist lag design output file.");
 
   // Write to the CSV the column names
-  output_file << "frequency," << "original_real," << "original_imaginary," << "compensated_real," << "compensated_imaginary" << std::endl;
+  output_file << "frequency," << "original_real," << "original_imaginary," << "lag_1_real," << "lag_1_imaginary," << "lag_2_real," << "lag_2_imaginary," << "lag_3_real," << "lag_3_imaginary"  << std::endl;
 
   // Sweep from omega = 0 to omega = 100
   for (int i = 0; i < num_samples; i++) {
@@ -841,11 +844,22 @@ void ExportLagNyquistDesign() {
     // Evaluate the original transfer function
     std::complex<double> original_response = plant.Evaluate(s);
 
-    // Evaluate the lag compensated transfer function
-    std::complex<double> compensated_response = design.CalculateLagCompensatedResponse(omega, compensator_gain, lag_zero, lag_pole);
+    // Evaluate the transfer function for each of the Lag Compensated Response
+    std::complex<double> lag_1_response = design.CalculateLagCompensatedResponse(omega, compensator_gain, lag_1_zero, lag_1_pole);
+    std::complex<double> lag_2_response = design.CalculateLagCompensatedResponse(omega, compensator_gain, lag_2_zero, lag_2_pole);
+    std::complex<double> lag_3_response = design.CalculateLagCompensatedResponse(omega, compensator_gain, lag_3_zero, lag_3_pole);
 
     // Export the corresponding points
-    output_file << omega << "," << original_response.real() << "," << original_response.imag() << "," << compensated_response.real() << "," << compensated_response.imag() << std::endl;
+    output_file << omega << ","
+            << original_response.real() << ","
+            << original_response.imag() << ","
+            << lag_1_response.real() << ","
+            << lag_1_response.imag() << ","
+            << lag_2_response.real() << ","
+            << lag_2_response.imag() << ","
+            << lag_3_response.real() << ","
+            << lag_3_response.imag()
+            << std::endl;
   }
 
   output_file.close();
