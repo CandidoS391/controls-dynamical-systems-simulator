@@ -822,9 +822,12 @@ void ExportLagNyquistDesign() {
   double lag_3_zero = 10.0, lag_3_pole = 2.0;
 
   // Define the frequency sampling
+  double min_frequency = 0.0001;
   double max_frequency = 100.0;
   int num_samples = 10000;
-  double freq_step = max_frequency / (num_samples - 1);
+  
+  double log_min = std::log10(min_frequency), log_max = std::log10(max_frequency);
+  double log_step = (log_max - log_min) / (num_samples - 1);
 
   // Open the lag CSV
   std::ofstream output_file("../output/nyquist_lag_design.csv");
@@ -836,7 +839,7 @@ void ExportLagNyquistDesign() {
 
   // Sweep from omega = 0 to omega = 100
   for (int i = 0; i < num_samples; i++) {
-    double omega = i * freq_step;
+    double omega = std::pow(10.0, log_min + i * log_step);
 
     // Complex complex variable s
     std::complex<double> s(0, omega);

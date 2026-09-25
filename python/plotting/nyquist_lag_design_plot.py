@@ -7,8 +7,12 @@ def load_lag_design_data(filename):
   frequencies = []
   original_real = []
   original_imaginary = []
-  compensated_real = []
-  compensated_imaginary = []
+  lag_1_real = []
+  lag_1_imaginary = []
+  lag_2_real = []
+  lag_2_imaginary = []
+  lag_3_real = []
+  lag_3_imaginary = []
 
   # Open up the file and start to read in the data row by row
   with open(filename, "r") as file:
@@ -18,10 +22,17 @@ def load_lag_design_data(filename):
       frequencies.append(float(row["frequency"]))
       original_real.append(float(row["original_real"]))
       original_imaginary.append(float(row["original_imaginary"]))
-      compensated_real.append(float(row["compensated_real"]))
-      compensated_imaginary.append(float(row["compensated_imaginary"]))
 
-  return frequencies, original_real, original_imaginary, compensated_real, compensated_imaginary
+      lag_1_real.append(float(row["lag_1_real"]))
+      lag_1_imaginary.append(float(row["lag_1_imaginary"]))
+
+      lag_2_real.append(float(row["lag_2_real"]))
+      lag_2_imaginary.append(float(row["lag_2_imaginary"]))
+
+      lag_3_real.append(float(row["lag_3_real"]))
+      lag_3_imaginary.append(float(row["lag_3_imaginary"]))
+
+  return frequencies, original_real, original_imaginary, lag_1_real, lag_1_imaginary, lag_2_real, lag_2_imaginary, lag_3_real, lag_3_imaginary
 
 def find_nearest_frequency_index(frequencies, target_frequency):
     nearest_index = 0
@@ -36,31 +47,7 @@ def find_nearest_frequency_index(frequencies, target_frequency):
 
     return nearest_index
 
-# Create a new contour segement helper function
-def plot_frequency_segment(frequencies, real_values, imaginary_values, start_frequency, end_frequency, color="tab:orange"):
-  # Identify the starting index
-  start_idx = find_nearest_frequency_index(
-     frequencies,
-     start_frequency
-  )
-
-  # Identify the end index
-  end_idx = find_nearest_frequency_index(
-     frequencies,
-     end_frequency
-  )
-
-  # Plot the real/imaginary values from starting index up until the end index
-  plt.plot(
-     real_values[start_idx:end_idx],
-     imaginary_values[start_idx:end_idx],
-     color=color
-  )
-
-  return start_idx, end_idx
-
-
-def plot_lag_design(frequencies, original_real, original_imaginary, compensated_real, compensated_imaginary):
+def plot_lag_design(frequencies, original_real, original_imaginary, lag_1_real, lag_1_imaginary, lag_2_real, lag_2_imaginary, lag_3_real, lag_3_imaginary):
   # Create a brand new lag design figure
   plt.figure()
 
@@ -72,31 +59,24 @@ def plot_lag_design(frequencies, original_real, original_imaginary, compensated_
     color="tab:blue"
   )
 
-  # Plot the selected low_frequency portion
-  plot_frequency_segment(
-     frequencies,
-     compensated_real,
-     compensated_imaginary,
-     0.0,
-     0.15
+  # Plot the tree lag-compensated Nyquist contours
+  plt.plot(
+     lag_1_real,
+     lag_1_imaginary,
+     label="Lag 1",
+     color="tab:orange"
   )
-
-  # Plot the transition-frequency portion
-  plot_frequency_segment(
-     frequencies,
-     compensated_real,
-     compensated_imaginary,
-     0.25,
-     0.9
-  )
-
-  # Plot the high-frequency portion
-  plot_frequency_segment(
-     frequencies,
-     compensated_real,
-     compensated_imaginary,
-     1.1,
-     5.0
+  plt.plot(
+     lag_2_real,
+     lag_2_imaginary,
+     label="Lag 2",
+     color="tab:green"
+  )  
+  plt.plot(
+     lag_3_real,
+     lag_3_imaginary,
+     label="Lag 3",
+     color="tab:red"
   )
 
   # Plot the Real and imaginary axeses
@@ -138,22 +118,30 @@ def main():
   # Load up the filename
   filename = "output/nyquist_lag_design.csv"
 
-  # Get the frequency, original real/imaginary data, and the compensated real/imaginary data
+  # Get the frequency, original real/imaginary data, and the lag-compensated real/imaginary data
   (
     frequencies,
     original_real,
     original_imaginary,
-    compensated_real,
-    compensated_imaginary
+    lag_1_real,
+    lag_1_imaginary,
+    lag_2_real,
+    lag_2_imaginary,
+    lag_3_real,
+    lag_3_imaginary
   ) = load_lag_design_data(filename)
 
-  # Plot the function
+  # Plot the graph
   plot_lag_design(
     frequencies,
     original_real,
     original_imaginary,
-    compensated_real,
-    compensated_imaginary
+    lag_1_real,
+    lag_1_imaginary,
+    lag_2_real,
+    lag_2_imaginary,
+    lag_3_real,
+    lag_3_imaginary
   )
 
 if __name__ == "__main__":
