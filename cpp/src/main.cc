@@ -818,7 +818,7 @@ void ExportLagNyquistDesign() {
   double compensator_gain = 1.0;
 
   double lag_1_zero = 0.1, lag_1_pole = 0.02;
-  double lag_2_zero = 1.0, lag_2_pole = 0.2;
+  double lag_2_zero = 1.0, lag_2_pole = 0.5;
   double lag_3_zero = 10.0, lag_3_pole = 2.0;
 
   // Define the frequency sampling
