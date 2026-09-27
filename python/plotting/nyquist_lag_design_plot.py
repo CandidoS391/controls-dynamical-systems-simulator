@@ -1,6 +1,7 @@
 import csv
 import matplotlib.pyplot as plt
 import math
+import numpy as np
 
 def load_lag_design_data(filename):
   # Create all of the required lists to hold all the data.
@@ -109,6 +110,29 @@ def add_contour_arrow(real_values, imaginary_values, start_idx, end_idx, color):
     )
   )
 
+def plot_phase_margin_arc(gc_real, gc_imaginary):
+  gc_phase = math.atan2(gc_imaginary, gc_real)
+
+  reference_phase = -math.pi
+  arc_radius = 0.35
+
+  theta = np.linspace(
+    reference_phase,
+    gc_phase,
+    100
+  )
+
+  arc_real = arc_radius * np.cos(theta)
+  arc_imaginary = arc_radius * np.sin(theta)
+
+  plt.plot(
+    arc_real,
+    arc_imaginary,
+    color="black",
+    linestyle="--",
+    linewidth=1.2
+  )
+
 def plot_lag_design(frequencies, original_real, original_imaginary, lag_1_real, lag_1_imaginary, lag_2_real, lag_2_imaginary, lag_3_real, lag_3_imaginary):
   # Create a brand new lag design figure
   plt.figure()
@@ -147,10 +171,34 @@ def plot_lag_design(frequencies, original_real, original_imaginary, lag_1_real, 
     lag_2_imaginary
   )
 
-  # Find the real, imaginary, and frequency values
+  # Find the real, imaginary, and frequency values at the gain crossover
   gc_real = lag_2_real[lag_2_gc_idx]
   gc_imaginary = lag_2_imaginary[lag_2_gc_idx]
   gc_frequency = frequencies[lag_2_gc_idx]
+
+  # Calculate the actual phase margin
+  gc_phase = math.degrees(
+    math.atan2(gc_imaginary, gc_real)
+  )
+  phase_margin = 180.0 + gc_phase
+
+  # Find the middle of the PM arc
+  pm_mid_angle = math.radians(
+    (-180.0 + gc_phase) / 2.0
+  )
+
+  # Find a radius for the PM label
+  label_radius = 0.75
+
+  label_x = label_radius * math.cos(pm_mid_angle)
+  label_y = label_radius * math.sin(pm_mid_angle)
+
+  # Add the label
+  plt.text(
+    -1.25,
+    -0.65,
+    rf"$\phi_{{PM}}={phase_margin:.1f}^\circ$"
+  )
 
   # Visualize the crossover
   plt.scatter(
@@ -200,6 +248,20 @@ def plot_lag_design(frequencies, original_real, original_imaginary, lag_1_real, 
     lag_3_start_idx,
     lag_3_end_idx,
     "tab:red"
+  )
+
+  # Draw a radius from the origin to the Lag 2 gain crossover point
+  plt.plot(
+    [0.0, gc_real],
+    [0.0, gc_imaginary],
+    color="black",
+    linewidth=1.5
+  )
+
+  # Draw the phase margin arc
+  plot_phase_margin_arc(
+    gc_real,
+    gc_imaginary
   )
 
   # Plot the Real and imaginary axeses
