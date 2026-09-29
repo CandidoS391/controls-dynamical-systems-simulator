@@ -869,6 +869,82 @@ void ExportLagNyquistDesign() {
   std::cout << "Lag Nyquist design data exported successfully.";
 }
 
+void ExportLagLeadNyquistDesign() {
+  // Define the original plant
+  TransferFunction plant({10}, {1, 6, 11, 6});
+
+  // Construct NyquistDesign using the original plant
+  NyquistDesign design(plant);
+  
+  // ---- Define the Lag-Lead compensators
+  double compensator_gain = 1.0;
+
+  // Lead-Lag 1
+  double lead_1_zero = 1.0;
+  double lead_1_pole = 3.0;
+  double lag_1_zero = 0.4;
+  double lag_1_pole = 0.1;
+
+  // Lead-Lag 2
+  double lead_2_zero = 1.0;
+  double lead_2_pole = 5.0;
+  double lag_2_zero = 1.0;
+  double lag_2_pole = 0.5;
+
+  // Lead-Lag 3
+  double lead_3_zero = 0.5;
+  double lead_3_pole = 5.0;
+  double lag_3_zero = 2.0;
+  double lag_3_pole = 0.5;
+
+  // Define the logarithmic sweep
+  double min_frequency = 0.0001;
+  double max_frequency = 100.0;
+  int num_samples = 10000;
+
+  double log_min = std::log10(min_frequency), log_max = std::log10(max_frequency);
+  double log_step = (log_max - log_min) / (num_samples - 1); 
+  
+  // Open the Lag-Lead compensation file
+  std::ofstream output_file("../output/nyquist_lag_lead_design.csv");
+  if (!output_file.is_open())
+    throw std::runtime_error("Could not open Nyquist lag-lead design output file.");
+
+  // Write to the CSV the column names
+  output_file << "frequency," << "original_real," << "original_imaginary," << "lag_1_real," << "lag_1_imaginary," << "lag_2_real," << "lag_2_imaginary," << "lag_3_real," << "lag_3_imaginary"  << std::endl;
+
+  // Sweep from omega = 0 to omega = 100
+  for (int i = 0; i < num_samples; i++) {
+    double omega = std::pow(10.0, log_min + i * log_step);
+
+    // Complex complex variable s
+    std::complex<double> s(0, omega);
+
+    // Evaluate the original transfer function
+    std::complex<double> original_response = plant.Evaluate(s);
+
+    // Evaluate the transfer function for each of the Lag Compensated Response
+    std::complex<double> lag_1_response = design.CalculateLagLeadCompensatedResponse(omega, compensator_gain, lead_1_zero, lead_1_pole, lag_1_zero, lag_1_pole);
+    std::complex<double> lag_2_response = design.CalculateLagLeadCompensatedResponse(omega, compensator_gain, lead_2_zero, lead_2_pole, lag_2_zero, lag_2_pole);
+    std::complex<double> lag_3_response = design.CalculateLagLeadCompensatedResponse(omega, compensator_gain, lead_3_zero, lead_3_pole, lag_3_zero, lag_3_pole);
+
+    // Export the corresponding points
+    output_file << omega << ","
+            << original_response.real() << ","
+            << original_response.imag() << ","
+            << lag_1_response.real() << ","
+            << lag_1_response.imag() << ","
+            << lag_2_response.real() << ","
+            << lag_2_response.imag() << ","
+            << lag_3_response.real() << ","
+            << lag_3_response.imag()
+            << std::endl;
+  }
+
+  output_file.close();
+  std::cout << "Lag Nyquist design data exported successfully.";  
+}
+
 int main() {
   ExportLagNyquistDesign();
   
