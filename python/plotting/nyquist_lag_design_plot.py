@@ -264,6 +264,26 @@ def plot_lag_design(frequencies, original_real, original_imaginary, lag_1_real, 
     gc_imaginary
   )
 
+  # Plot the contour labels
+  plt.text(
+      0.55,
+      -1.80,
+      r"$GH_1$",
+      fontsize=12
+  )
+  plt.text(
+      -0.80,
+      -1.15,
+      r"$GH_2$",
+      fontsize=12
+  )
+  plt.text(
+      -0.62,
+      0.37,
+      r"$GH_3$",
+      fontsize=12
+  )
+
   # Plot the Real and imaginary axeses
   plt.axhline(
     0,
